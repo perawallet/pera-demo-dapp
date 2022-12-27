@@ -1,0 +1,26 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  width: 100vw;
+
+  font-family: "League Spartan", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.button {
+  --button-bg: black;
+  --button-height: 110px;
+
+  margin-bottom: 10px;
+
+  padding: 10px 20px;
+
+  font-size: 15px;
+  font-family: "League Spartan", sans-serif;
+}

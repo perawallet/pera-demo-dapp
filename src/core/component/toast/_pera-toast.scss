@@ -1,0 +1,13 @@
+.pera-toast {
+  margin-top: 4px;
+  padding: 16px 20px;
+
+  color: #6b46fe;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 0 1px rgba(12, 26, 75, 0.1), 0 30px 40px rgba(20, 37, 63, 0.08);
+
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+}
