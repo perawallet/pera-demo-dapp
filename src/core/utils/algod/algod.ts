@@ -5,16 +5,8 @@ export enum ChainType {
   TestNet = "testnet"
 }
 
-const mainNetClient = new algosdk.Algodv2(
-  process.env.REACT_APP_ALGOSDK_TOKEN!,
-  process.env.REACT_APP_ALGOSDK_SERVER_MAINNET,
-  Number(process.env.REACT_APP_ALGOSDK_PORT)
-);
-const testNetClient = new algosdk.Algodv2(
-  process.env.REACT_APP_ALGOSDK_TOKEN!,
-  process.env.REACT_APP_ALGOSDK_SERVER_TESTNET,
-  Number(process.env.REACT_APP_ALGOSDK_PORT)
-);
+const mainNetClient = new algosdk.Algodv2("", "https://mainnet-api.algonode.cloud", "");
+const testNetClient = new algosdk.Algodv2("", "https://testnet-api.algonode.cloud", "");
 
 function clientForChain(chain: ChainType): algosdk.Algodv2 {
   switch (chain) {
