@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/pera-demo-dapp/static/css/main.52ddb7da.chunk.css",
+    "main.js": "/pera-demo-dapp/static/js/main.9da98952.chunk.js",
+    "main.js.map": "/pera-demo-dapp/static/js/main.9da98952.chunk.js.map",
+    "runtime-main.js": "/pera-demo-dapp/static/js/runtime-main.536664ec.js",
+    "runtime-main.js.map": "/pera-demo-dapp/static/js/runtime-main.536664ec.js.map",
+    "static/css/2.61444cb8.chunk.css": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css",
+    "static/js/2.febc71b3.chunk.js": "/pera-demo-dapp/static/js/2.febc71b3.chunk.js",
+    "static/js/2.febc71b3.chunk.js.map": "/pera-demo-dapp/static/js/2.febc71b3.chunk.js.map",
+    "static/js/3.aec77d68.chunk.js": "/pera-demo-dapp/static/js/3.aec77d68.chunk.js",
+    "static/js/3.aec77d68.chunk.js.map": "/pera-demo-dapp/static/js/3.aec77d68.chunk.js.map",
+    "index.html": "/pera-demo-dapp/index.html",
+    "static/css/2.61444cb8.chunk.css.map": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css.map",
+    "static/css/main.52ddb7da.chunk.css.map": "/pera-demo-dapp/static/css/main.52ddb7da.chunk.css.map",
+    "static/js/2.febc71b3.chunk.js.LICENSE.txt": "/pera-demo-dapp/static/js/2.febc71b3.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.536664ec.js",
+    "static/css/2.61444cb8.chunk.css",
+    "static/js/2.febc71b3.chunk.js",
+    "static/css/main.52ddb7da.chunk.css",
+    "static/js/main.9da98952.chunk.js"
+  ]
+}
