@@ -105,3 +105,19 @@
 .app__text-purple {
   color: #6b46fe;
 }
+
+@media screen and (max-width: 789px) {
+  .app {
+    padding: 0 24px;
+  }
+
+  .app__actions {
+    grid-template-columns: 1fr 1fr;
+
+    .app__button {
+      --button-width: 100%;
+
+      margin: 0;
+    }
+  }
+}
