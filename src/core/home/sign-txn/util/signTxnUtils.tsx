@@ -78,6 +78,29 @@ function getAppIndex(chain: ChainType): number {
   throw new Error(`App not defined for chain ${chain}`);
 }
 
+const createAssetOptInTxn = async (
+  chain: ChainType,
+  address: string,
+  assetIndex: number
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+    from: address,
+    to: address,
+    amount: 0,
+    assetIndex,
+    note: new Uint8Array(Buffer.from("example note value")),
+    suggestedParams
+  });
+
+  const txnsToSign = [{txn}];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
 const singlePayTxn: Scenario = async (
   chain: ChainType,
   address: string
@@ -1760,6 +1783,7 @@ const assetReconfigTxnClearAll: Scenario = async (
   });
 
   const txnsToSign = [{txn, message: "This is a transaction message"}];
+
   return {
     transaction: [txnsToSign]
   };
@@ -1779,6 +1803,7 @@ const assetDeleteTxn: Scenario = async (
   });
 
   const txnsToSign = [{txn, message: "This is a transaction message"}];
+
   return {
     transaction: [txnsToSign]
   };
@@ -2717,3 +2742,5 @@ export const scenarios: Array<{name: string; scenario: Scenario}> = [
     scenario: appCallWithBoxes
   }
 ];
+
+export {createAssetOptInTxn};

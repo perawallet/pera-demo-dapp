@@ -3,21 +3,27 @@ import "./_home.scss";
 import {Button, Dropdown, DropdownOption, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraOnramp} from "@perawallet/onramp";
+import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
 import PeraToast from "../component/toast/PeraToast";
-import {ChainType} from "../utils/algod/algod";
+import {ChainType, clientForChain} from "../utils/algod/algod";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
+import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 
 const peraWallet = new PeraWalletConnect();
+const peraOnRamp = new PeraOnramp({
+  optInEnabled: true
+});
 
 function Home() {
-  const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
+  const [chainType, setChainType] = useState<ChainType>(ChainType.MainNet);
   const [chainDropdownSelectedOption, setChainDropdownSelectedOption] =
     useState<DropdownOption<"mainnet" | "testnet", any> | null>({
-      id: "testnet",
-      title: "TestNet"
+      id: "mainnet",
+      title: "MainNet"
     });
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
@@ -31,7 +37,7 @@ function Home() {
     peraWallet
       .reconnectSession()
       .then((accounts) => {
-        if (accounts.length) {
+        if (accounts) {
           setAccountAddress(accounts[0]);
 
           handleSetLog("Connected to Pera Wallet");
@@ -89,6 +95,12 @@ function Home() {
         />
       )}
 
+      {isConnectedToPeraWallet && (
+        <Button customClassName={"app__button--connect"} onClick={handleAddFunds}>
+          {"Add funds"}
+        </Button>
+      )}
+
       <Button
         customClassName={"app__button--connect"}
         onClick={
@@ -108,6 +120,60 @@ function Home() {
       )}
     </div>
   );
+
+  function handleAddFunds() {
+    if (accountAddress) {
+      addFunds();
+
+      peraOnRamp.on({
+        OPT_IN_REQUEST: async ({accountAddress: addr, assetID}) => {
+          try {
+            const {transaction: txnsToSign} = await createAssetOptInTxn(
+              chainType,
+              addr,
+              Number(assetID)
+            );
+
+            const transactions: SignerTransaction[] = txnsToSign.reduce(
+              (acc, val) => acc.concat(val),
+              []
+            );
+
+            const signedTxn = await peraWallet.signTransaction([transactions]);
+
+            await clientForChain(chainType).sendRawTransaction(signedTxn).do();
+
+            peraOnRamp.close();
+
+            addFunds();
+          } catch (error) {
+            handleSetLog(`${error}`);
+          }
+        },
+        ADD_FUNDS_COMPLETED: () => {
+          handleSetLog("Add funds completed");
+        },
+        ADD_FUNDS_FAILED: () => {
+          handleSetLog("Add funds failed");
+        }
+      });
+    }
+  }
+
+  function addFunds() {
+    if (accountAddress) {
+      peraOnRamp
+        .addFunds({
+          accountAddress
+        })
+        .then(() => {
+          handleSetLog("Funds added");
+        })
+        .catch((e) => {
+          handleSetLog(`${e}`);
+        });
+    }
+  }
 
   async function handleConnectWalletClick() {
     const newAccounts = await peraWallet.connect();
