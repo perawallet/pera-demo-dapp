@@ -2040,6 +2040,98 @@ const appCallWithBoxes: Scenario = async (
   };
 };
 
+const invalidAuthAddress: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: address,
+    to: testAccounts[0].addr,
+    amount: 100000,
+    note: new Uint8Array(Buffer.from("example note value")),
+    suggestedParams
+  });
+
+  const txnsToSign = [
+    {txn, message: "This is a transaction message", authAddr: "INVALID_ADDRESS"}
+  ];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
+const validAuthAddress: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: address,
+    to: testAccounts[0].addr,
+    amount: 100000,
+    note: new Uint8Array(Buffer.from("example note value")),
+    suggestedParams
+  });
+
+  const txnsToSign = [
+    {txn, message: "This is a transaction message", authAddr: testAccounts[1].addr}
+  ];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
+const invalidSignerAddress: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: address,
+    to: testAccounts[0].addr,
+    amount: 100000,
+    note: new Uint8Array(Buffer.from("example note value")),
+    suggestedParams
+  });
+
+  const txnsToSign = [
+    {txn, message: "This is a transaction message", signers: ["INVALID_ADDRESS"]}
+  ];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
+const validSignerAddress: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: address,
+    to: testAccounts[0].addr,
+    amount: 100000,
+    note: new Uint8Array(Buffer.from("example note value")),
+    suggestedParams
+  });
+
+  const txnsToSign = [
+    {txn, message: "This is a transaction message", signers: [testAccounts[1].addr]}
+  ];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
 const swapAlgoToUSDC: Scenario = async (
   chain: ChainType,
   address: string
@@ -2740,6 +2832,22 @@ export const scenarios: Array<{name: string; scenario: Scenario}> = [
   {
     name: "55. Application txn with boxes",
     scenario: appCallWithBoxes
+  },
+  {
+    name: "56. Invalid auth address",
+    scenario: invalidAuthAddress
+  },
+  {
+    name: "57. Valid auth address",
+    scenario: validAuthAddress
+  },
+  {
+    name: "58. Invalid signers",
+    scenario: invalidSignerAddress
+  },
+  {
+    name: "59. Valid signers",
+    scenario: validSignerAddress
   }
 ];
 
