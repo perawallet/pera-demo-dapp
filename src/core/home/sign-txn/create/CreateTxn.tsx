@@ -2,6 +2,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 
 import "./_create-txn.scss";
 
+import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 import algosdk, {isValidAddress} from "algosdk";
 import {
   Button,
@@ -9,6 +10,8 @@ import {
   DropdownOption,
   FormField,
   Input,
+  List,
+  ListItem,
   Textarea
 } from "@hipo/react-ui-toolkit";
 import {useState} from "react";
@@ -26,6 +29,7 @@ interface CreateTxnModalProps {
 }
 
 function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) {
+  const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [transactionDropdownOption, setTransactionDropdownOption] =
     useState<DropdownOption<"pay" | "axfer", any> | null>({
       id: "pay",
@@ -81,10 +85,31 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
 
       {renderForm()}
 
+      {transactions.length > 0 && (
+        <List items={transactions}>
+          {(item, _a, index) => (
+            <ListItem>{`Txn ${(index || 0) + 1} type: ${item.txn.type}`}</ListItem>
+          )}
+        </List>
+      )}
+
       <Button
-        onClick={
-          signTxn
+        onClick={handleCreateTransaction}
+        customClassName={
+          "create-txn__cta"
         }>{`Create ${transactionDropdownOption?.title} Transaction`}</Button>
+
+      <Button
+        onClick={handleGroupTxn}
+        customClassName={
+          "create-txn__cta"
+        }>{`Create Group Txn with created transactions`}</Button>
+
+      <Button
+        onClick={signTxn}
+        customClassName={
+          "create-txn__cta"
+        }>{`Sign ${transactions.length} Transactions`}</Button>
     </Modal>
   );
 
@@ -101,7 +126,7 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               />
             </FormField>
 
-            <FormField label={"Amount"}>
+            <FormField label={"Amount (on microAlgos)"}>
               <Input
                 value={amount}
                 name={"amount"}
@@ -154,7 +179,7 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               />
             </FormField>
 
-            <FormField label={"Amount"}>
+            <FormField label={"Amount (on microAlgos)"}>
               <Input
                 value={amount}
                 name={"amount"}
@@ -192,59 +217,86 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
     }
   }
 
+  function handleGroupTxn() {
+    try {
+      algosdk.assignGroupID(transactions.map((toSign) => toSign.txn));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function handleCreateTransaction() {
+    if (transactionDropdownOption?.id === "pay") {
+      await createPayTransaction();
+    } else if (transactionDropdownOption?.id === "axfer") {
+      await createAxferTransaction();
+    }
+
+    resetForm();
+  }
+
   async function createPayTransaction() {
-    const suggestedParams = await apiGetTxnParams(chain);
+    try {
+      const suggestedParams = await apiGetTxnParams(chain);
 
-    const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-      from: address,
-      to: toAddress,
-      amount: Number(amount),
-      note: new Uint8Array(Buffer.from(note)),
-      rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
-      closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
-      suggestedParams
-    });
+      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        from: address,
+        to: toAddress,
+        amount: Number(amount),
+        note: new Uint8Array(Buffer.from(note)),
+        rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+        closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
+        suggestedParams
+      });
 
-    return txn;
+      setTransactions([...transactions, {txn}]);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function createAxferTransaction() {
-    const suggestedParams = await apiGetTxnParams(chain);
+    try {
+      const suggestedParams = await apiGetTxnParams(chain);
 
-    const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from: address,
-      to: toAddress,
-      amount: 0,
-      assetIndex: Number(assetIndex),
-      note: new Uint8Array(Buffer.from("example note value")),
-      rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
-      closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
-      suggestedParams
-    });
+      const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+        from: address,
+        to: toAddress,
+        amount: 0,
+        assetIndex: Number(assetIndex),
+        note: new Uint8Array(Buffer.from("example note value")),
+        rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+        closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
+        suggestedParams
+      });
 
-    return txn;
+      setTransactions([...transactions, {txn}]);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function signTxn() {
     try {
-      if (!transactionDropdownOption) return;
-
-      if (transactionDropdownOption.id === "pay") {
-        const payTxn = await createPayTransaction();
-
-        const signedTransactions = await peraWallet.signTransaction([[{txn: payTxn}]]);
-
-        console.log(signedTransactions);
-      } else if (transactionDropdownOption.id === "axfer") {
-        const axferTxn = await createAxferTransaction();
-
-        const signedTransactions = await peraWallet.signTransaction([[{txn: axferTxn}]]);
-
-        console.log(signedTransactions);
+      if (transactions.length === 0) {
+        return;
       }
+
+      const signedTransactions = await peraWallet.signTransaction([transactions]);
+
+      console.log(signedTransactions);
     } catch (error) {
       console.log(error);
     }
+  }
+
+  function resetForm() {
+    setToAddress("");
+    setAmount("");
+    setRekeyTo("");
+    setCloseTo("");
+    setNote("");
+    setAssetIndex("");
   }
 }
 
