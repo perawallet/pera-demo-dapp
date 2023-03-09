@@ -1,0 +1,70 @@
+:root {
+  --modal-transition-duration: 0.2s;
+}
+
+#modal-root {
+  position: relative;
+  z-index: 4;
+}
+
+.ReactModal__Overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  background-color: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+
+  transition: opacity var(--modal-transition-duration) ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.modal {
+  position: relative;
+  top: 50%;
+  left: 50%;
+
+  display: flex;
+  flex-direction: column;
+
+  width: fit-content;
+
+  max-width: 75vw;
+  max-height: calc(90 * var(--vh));
+
+  background-color: white;
+
+  border-radius: 12px;
+
+  transform: translate(-50%, -50%);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.modal__close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+
+  cursor: pointer;
+}
+
+@media screen and (max-width: 789px) {
+  .modal {
+    width: 100%;
+    max-width: unset;
+    height: calc(100 * var(--vh));
+    max-height: calc(100 * var(--vh));
+  }
+}

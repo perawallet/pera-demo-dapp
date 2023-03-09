@@ -2124,7 +2124,11 @@ const validSignerAddress: Scenario = async (
   });
 
   const txnsToSign = [
-    {txn, message: "This is a transaction message", signers: [testAccounts[1].addr]}
+    {
+      txn,
+      message: "This is a transaction message",
+      signers: [address]
+    }
   ];
 
   return {

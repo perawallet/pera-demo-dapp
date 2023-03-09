@@ -5,6 +5,8 @@ import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletM
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
+import CreateTxn from "./create/CreateTxn";
+import useModalVisibilityState from "../../hooks/useModalVisibilityState";
 
 interface SignTxnProps {
   accountAddress: string;
@@ -22,9 +24,22 @@ function SignTxn({
   refecthAccountDetail
 }: SignTxnProps) {
   const [isRequestPending, setIsRequestPending] = useState(false);
+  const {isModalOpen, openModal, closeModal} = useModalVisibilityState();
 
   return (
     <>
+      <Button customClassName={"app__button--connect"} onClick={openModal}>
+        {"Create Transaction"}
+      </Button>
+
+      <CreateTxn
+        chain={chain}
+        peraWallet={peraWallet}
+        address={accountAddress}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
+
       <div style={{marginTop: "45px"}}>
         <h3>{"Mainnet only, do not sign!"}</h3>
         {chain === ChainType.TestNet && <small>{"Switch to MainNet to see txns"}</small>}
@@ -77,6 +92,8 @@ function SignTxn({
         (acc, val) => acc.concat(val),
         []
       );
+
+      console.log(transactions);
 
       const signedTransactions = await peraWallet.signTransaction([transactions]);
 
