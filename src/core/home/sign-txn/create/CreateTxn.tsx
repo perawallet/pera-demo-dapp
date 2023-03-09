@@ -2,7 +2,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 
 import "./_create-txn.scss";
 
-import algosdk from "algosdk";
+import algosdk, {isValidAddress} from "algosdk";
 import {
   Button,
   Dropdown,
@@ -35,6 +35,8 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [assetIndex, setAssetIndex] = useState<string>("");
+  const [rekeyTo, setRekeyTo] = useState<string>("");
+  const [closeTo, setCloseTo] = useState<string>("");
 
   return (
     <Modal
@@ -107,6 +109,22 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               />
             </FormField>
 
+            <FormField label={"Rekey To"}>
+              <Input
+                value={rekeyTo}
+                name={"rekeyto"}
+                onChange={(e) => setRekeyTo(e.currentTarget.value)}
+              />
+            </FormField>
+
+            <FormField label={"Close To"}>
+              <Input
+                value={closeTo}
+                name={"closeTo"}
+                onChange={(e) => setCloseTo(e.currentTarget.value)}
+              />
+            </FormField>
+
             <FormField label={"Note"}>
               <Textarea
                 value={note}
@@ -144,6 +162,22 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               />
             </FormField>
 
+            <FormField label={"Rekey To"}>
+              <Input
+                value={rekeyTo}
+                name={"rekeyto"}
+                onChange={(e) => setRekeyTo(e.currentTarget.value)}
+              />
+            </FormField>
+
+            <FormField label={"Close To"}>
+              <Input
+                value={closeTo}
+                name={"closeTo"}
+                onChange={(e) => setCloseTo(e.currentTarget.value)}
+              />
+            </FormField>
+
             <FormField label={"Note"}>
               <Textarea
                 value={note}
@@ -166,6 +200,8 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       to: toAddress,
       amount: Number(amount),
       note: new Uint8Array(Buffer.from(note)),
+      rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+      closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
       suggestedParams
     });
 
@@ -181,6 +217,8 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       amount: 0,
       assetIndex: Number(assetIndex),
       note: new Uint8Array(Buffer.from("example note value")),
+      rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+      closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
       suggestedParams
     });
 
