@@ -19,11 +19,11 @@ const peraOnRamp = new PeraOnramp({
 });
 
 function Home() {
-  const [chainType, setChainType] = useState<ChainType>(ChainType.MainNet);
+  const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
   const [chainDropdownSelectedOption, setChainDropdownSelectedOption] =
     useState<DropdownOption<"mainnet" | "testnet", any> | null>({
-      id: "mainnet",
-      title: "MainNet"
+      id: "testnet",
+      title: "TestNet"
     });
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
@@ -95,7 +95,7 @@ function Home() {
         />
       )}
 
-      {isConnectedToPeraWallet && (
+      {isConnectedToPeraWallet && chainType === "mainnet" && (
         <Button customClassName={"app__button--connect"} onClick={handleAddFunds}>
           {"Add funds"}
         </Button>
