@@ -109,7 +109,12 @@ function SignTxn({
           handleSetLog(`Transaction sended network: ${name}`);
         }, transactionTimeout);
       } else {
-        await clientForChain(chain).sendRawTransaction(signedTransactions).do();
+        for (let i = 0; i < txnsToSign.length; i++) {
+          await clientForChain(chain)
+            // eslint-disable-next-line no-magic-numbers
+            .sendRawTransaction(signedTransactions.slice(i * 16, (i + 1) * 16))
+            .do();
+        }
 
         handleSetLog(`Transaction sended network: ${name}`);
       }
