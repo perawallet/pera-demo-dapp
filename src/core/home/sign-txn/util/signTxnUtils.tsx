@@ -1920,6 +1920,38 @@ const tooManyTxns: Scenario = async (
   };
 };
 
+const fiveHundredTxns: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const groups: Array<Array<{txn: algosdk.Transaction}>> = [];
+
+  const numGroups = 32; // 64 / 16
+  for (let i = 0; i < numGroups; i++) {
+    const group: Array<{txn: algosdk.Transaction}> = [];
+    for (let j = 0; j < 16; j++) {
+      group.push({
+        txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+          from: address,
+          to: testAccounts[0].addr,
+          amount: 0,
+          note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 64`)),
+          suggestedParams
+        })
+      });
+    }
+
+    algosdk.assignGroupID(group.map((toSign) => toSign.txn));
+    groups.push(group);
+  }
+
+  return {
+    transaction: groups
+  };
+};
+
 const futureTransaction: Scenario = async (
   chain: ChainType,
   address: string
@@ -2891,6 +2923,10 @@ export const scenarios: Array<{name: string; scenario: Scenario}> = [
   {
     name: "59. Valid signers",
     scenario: validSignerAddress
+  },
+  {
+    name: "60. 512 Transactions",
+    scenario: fiveHundredTxns
   }
 ];
 
