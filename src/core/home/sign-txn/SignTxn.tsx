@@ -61,6 +61,15 @@ function SignTxn({
             </ListItem>
           )}
         </List>
+
+        <Button
+          customClassName={"app__button"}
+          style={{width: "160px"}}
+          onClick={signArbitraryData}
+          shouldDisplaySpinner={isRequestPending}
+          isDisabled={isRequestPending}>
+          {isRequestPending ? "Loading..." : "Sign Arbitrary Data (no cost)"}
+        </Button>
       </div>
 
       <div style={{marginTop: "45px"}}>
@@ -83,6 +92,29 @@ function SignTxn({
     </>
   );
 
+  async function signArbitraryData() {
+    try {
+      const signedData: Uint8Array[] = await peraWallet.signData(
+        [
+          {
+            data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
+            message: "Timestamp confirmation"
+          },
+          {
+            data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
+            message: "User agent confirmation"
+          }
+        ],
+        accountAddress
+      );
+
+      console.log({signedData});
+      handleSetLog("Data signed successfully");
+    } catch (error) {
+      handleSetLog(`${error}`);
+    }
+  }
+
   async function signTransaction(scenario: Scenario, name: string) {
     setIsRequestPending(true);
 
@@ -97,9 +129,9 @@ function SignTxn({
         []
       );
 
-      console.log(transactions);
-
       const signedTransactions = await peraWallet.signTransaction([transactions]);
+
+      console.log({transactions, signedTransactions});
 
       handleSetLog(`Transaction signed successfully: ${name}`);
 
