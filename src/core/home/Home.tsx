@@ -12,6 +12,7 @@ import PeraToast from "../component/toast/PeraToast";
 import {ChainType, clientForChain} from "../utils/algod/algod";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
 import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
+import peraApiManager from "../utils/pera/api/peraApiManager";
 
 const peraWallet = new PeraWalletConnect();
 const peraOnRamp = new PeraOnramp({
@@ -207,12 +208,14 @@ function Home() {
         id: "testnet",
         title: "TestNet"
       });
+      peraApiManager.updateFetcher(ChainType.TestNet);
     } else if (option?.id === "mainnet") {
       setChainType(ChainType.MainNet);
       setChainDropdownSelectedOption({
         id: "mainnet",
         title: "MainNet"
       });
+      peraApiManager.updateFetcher(ChainType.MainNet);
     }
   }
 }

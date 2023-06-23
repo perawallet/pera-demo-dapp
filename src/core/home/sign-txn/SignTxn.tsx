@@ -28,13 +28,10 @@ function SignTxn({
 
   return (
     <>
-      {chain === "testnet" && (
         <Button customClassName={"app__button--connect"} onClick={openModal}>
           {"Create Transaction"}
         </Button>
-      )}
 
-      {chain === "testnet" && isModalOpen && (
         <CreateTxn
           chain={chain}
           peraWallet={peraWallet}
@@ -42,7 +39,6 @@ function SignTxn({
           isOpen={isModalOpen}
           onClose={closeModal}
         />
-      )}
 
       <div style={{marginTop: "45px"}}>
         <h3>{"Mainnet only, do not sign!"}</h3>

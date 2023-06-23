@@ -3,7 +3,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 import "./_create-txn.scss";
 
 import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
-import algosdk, {isValidAddress} from "algosdk";
+import algosdk from "algosdk";
 import {
   Button,
   Dropdown,
@@ -18,7 +18,8 @@ import {useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 
 import Modal from "../../../component/modal/Modal";
-import {apiGetTxnParams, ChainType} from "../../../utils/algod/algod";
+import {ChainType} from "../../../utils/algod/algod";
+import CreateTxnButton from "./button/CreateTxnButton";
 
 interface CreateTxnModalProps {
   chain: ChainType;
@@ -28,6 +29,17 @@ interface CreateTxnModalProps {
   peraWallet: PeraWalletConnect;
 }
 
+export interface TxnForm {
+  address: string;
+  toAddress: string;
+  amount: string;
+  note: string;
+  assetIndex: string;
+  rekeyTo: string;
+  closeTo: string;
+  transactionAmount: number;
+}
+
 function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) {
   const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [transactionDropdownOption, setTransactionDropdownOption] =
@@ -35,12 +47,16 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       id: "pay",
       title: "pay"
     });
-  const [toAddress, setToAddress] = useState<string>("");
-  const [amount, setAmount] = useState<string>("");
-  const [note, setNote] = useState<string>("");
-  const [assetIndex, setAssetIndex] = useState<string>("");
-  const [rekeyTo, setRekeyTo] = useState<string>("");
-  const [closeTo, setCloseTo] = useState<string>("");
+  const [formState, setFormState] = useState<TxnForm>({
+    address,
+    toAddress: "",
+    amount: "",
+    note: "",
+    assetIndex: "",
+    rekeyTo: "",
+    closeTo: "",
+    transactionAmount: 1
+  });
 
   return (
     <Modal
@@ -85,6 +101,17 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
 
       {renderForm()}
 
+      <FormField label={"Transaction Amount (optional)"}>
+        <Input
+          value={formState.transactionAmount}
+          name={"transactionAmount"}
+          type={"number"}
+          onChange={(e) =>
+            setFormState({...formState, transactionAmount: Number(e.currentTarget.value)})
+          }
+        />
+      </FormField>
+
       {transactions.length > 0 && (
         <List items={transactions}>
           {(item, _a, index) => (
@@ -93,11 +120,13 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
         </List>
       )}
 
-      <Button
-        onClick={handleCreateTransaction}
-        customClassName={
-          "create-txn__cta"
-        }>{`Create ${transactionDropdownOption?.title} Transaction`}</Button>
+      <CreateTxnButton
+        txnForm={formState}
+        type={transactionDropdownOption!.id}
+        chain={chain}
+        onResetForm={resetForm}
+        onSetTransactions={handleSetTransactions}
+      />
 
       <Button
         onClick={handleGroupTxn}
@@ -120,41 +149,51 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
           <>
             <FormField label={"To Address"}>
               <Input
-                value={toAddress}
+                value={formState.toAddress}
                 name={"to"}
-                onChange={(e) => setToAddress(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, toAddress: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Amount (on microAlgos)"}>
               <Input
-                value={amount}
+                value={formState.amount}
                 name={"amount"}
-                onChange={(e) => setAmount(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, amount: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Rekey To"}>
               <Input
-                value={rekeyTo}
+                value={formState.rekeyTo}
                 name={"rekeyto"}
-                onChange={(e) => setRekeyTo(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, rekeyTo: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Close To"}>
               <Input
-                value={closeTo}
+                value={formState.closeTo}
                 name={"closeTo"}
-                onChange={(e) => setCloseTo(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, closeTo: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Note"}>
               <Textarea
-                value={note}
+                value={formState.note}
                 name={"note"}
-                onChange={(e) => setNote(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, note: e.currentTarget.value})
+                }
               />
             </FormField>
           </>
@@ -165,49 +204,61 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
           <>
             <FormField label={"To Address"}>
               <Input
-                value={toAddress}
+                value={formState.toAddress}
                 name={"to"}
-                onChange={(e) => setToAddress(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, toAddress: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Asset Index"}>
               <Input
-                value={assetIndex}
+                value={formState.assetIndex}
                 name={"assetIndex"}
-                onChange={(e) => setAssetIndex(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, assetIndex: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Amount (on microAlgos)"}>
               <Input
-                value={amount}
+                value={formState.amount}
                 name={"amount"}
-                onChange={(e) => setAmount(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, amount: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Rekey To"}>
               <Input
-                value={rekeyTo}
+                value={formState.rekeyTo}
                 name={"rekeyto"}
-                onChange={(e) => setRekeyTo(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, rekeyTo: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Close To"}>
               <Input
-                value={closeTo}
+                value={formState.closeTo}
                 name={"closeTo"}
-                onChange={(e) => setCloseTo(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, closeTo: e.currentTarget.value})
+                }
               />
             </FormField>
 
             <FormField label={"Note"}>
               <Textarea
-                value={note}
+                value={formState.note}
                 name={"note"}
-                onChange={(e) => setNote(e.currentTarget.value)}
+                onChange={(e) =>
+                  setFormState({...formState, note: e.currentTarget.value})
+                }
               />
             </FormField>
           </>
@@ -217,60 +268,13 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
     }
   }
 
+  function handleSetTransactions(newTxns: SignerTransaction[]) {
+    setTransactions([...transactions, ...newTxns]);
+  }
+
   function handleGroupTxn() {
     try {
       algosdk.assignGroupID(transactions.map((toSign) => toSign.txn));
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function handleCreateTransaction() {
-    if (transactionDropdownOption?.id === "pay") {
-      await createPayTransaction();
-    } else if (transactionDropdownOption?.id === "axfer") {
-      await createAxferTransaction();
-    }
-
-    resetForm();
-  }
-
-  async function createPayTransaction() {
-    try {
-      const suggestedParams = await apiGetTxnParams(chain);
-
-      const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        from: address,
-        to: toAddress,
-        amount: Number(amount),
-        note: new Uint8Array(Buffer.from(note)),
-        rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
-        closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
-        suggestedParams
-      });
-
-      setTransactions([...transactions, {txn}]);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function createAxferTransaction() {
-    try {
-      const suggestedParams = await apiGetTxnParams(chain);
-
-      const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-        from: address,
-        to: toAddress,
-        amount: 0,
-        assetIndex: Number(assetIndex),
-        note: new Uint8Array(Buffer.from("example note value")),
-        rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
-        closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
-        suggestedParams
-      });
-
-      setTransactions([...transactions, {txn}]);
     } catch (error) {
       console.log(error);
     }
@@ -284,19 +288,23 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
 
       const signedTransactions = await peraWallet.signTransaction([transactions]);
 
-      console.log(signedTransactions);
+      console.log({signedTransactions});
     } catch (error) {
       console.log(error);
     }
   }
 
   function resetForm() {
-    setToAddress("");
-    setAmount("");
-    setRekeyTo("");
-    setCloseTo("");
-    setNote("");
-    setAssetIndex("");
+    setFormState({
+      ...formState,
+      toAddress: "",
+      amount: "",
+      note: "",
+      assetIndex: "",
+      rekeyTo: "",
+      closeTo: "",
+      transactionAmount: 1
+    });
   }
 }
 
