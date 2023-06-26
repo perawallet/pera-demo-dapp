@@ -1,0 +1,2 @@
+export const TRANSACTION_LIMIT = 1000;
+export const TRANSACTION_IN_GROUP_LIMIT = 16;
