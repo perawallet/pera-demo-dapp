@@ -61,15 +61,6 @@ function SignTxn({
             </ListItem>
           )}
         </List>
-
-        <Button
-          customClassName={"app__button"}
-          style={{width: "160px"}}
-          onClick={signArbitraryData}
-          shouldDisplaySpinner={isRequestPending}
-          isDisabled={isRequestPending}>
-          {isRequestPending ? "Loading..." : "Sign Arbitrary Data (no cost)"}
-        </Button>
       </div>
 
       <div style={{marginTop: "45px"}}>
@@ -88,6 +79,15 @@ function SignTxn({
             </ListItem>
           )}
         </List>
+
+        <Button
+          customClassName={"app__button"}
+          style={{width: "160px"}}
+          onClick={signArbitraryData}
+          shouldDisplaySpinner={isRequestPending}
+          isDisabled={isRequestPending}>
+          {isRequestPending ? "Loading..." : "Sign Arbitrary Data"}
+        </Button>
       </div>
     </>
   );
