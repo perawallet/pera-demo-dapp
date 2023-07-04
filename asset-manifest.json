@@ -1,26 +1,26 @@
 {
   "files": {
     "main.css": "/pera-demo-dapp/static/css/main.d61ca55a.chunk.css",
-    "main.js": "/pera-demo-dapp/static/js/main.b622481b.chunk.js",
-    "main.js.map": "/pera-demo-dapp/static/js/main.b622481b.chunk.js.map",
-    "runtime-main.js": "/pera-demo-dapp/static/js/runtime-main.44bbbd25.js",
-    "runtime-main.js.map": "/pera-demo-dapp/static/js/runtime-main.44bbbd25.js.map",
+    "main.js": "/pera-demo-dapp/static/js/main.c8f92a0a.chunk.js",
+    "main.js.map": "/pera-demo-dapp/static/js/main.c8f92a0a.chunk.js.map",
+    "runtime-main.js": "/pera-demo-dapp/static/js/runtime-main.f7fecec0.js",
+    "runtime-main.js.map": "/pera-demo-dapp/static/js/runtime-main.f7fecec0.js.map",
     "static/css/2.61444cb8.chunk.css": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css",
-    "static/js/2.5e896f7f.chunk.js": "/pera-demo-dapp/static/js/2.5e896f7f.chunk.js",
-    "static/js/2.5e896f7f.chunk.js.map": "/pera-demo-dapp/static/js/2.5e896f7f.chunk.js.map",
-    "static/js/3.5089b29b.chunk.js": "/pera-demo-dapp/static/js/3.5089b29b.chunk.js",
-    "static/js/3.5089b29b.chunk.js.map": "/pera-demo-dapp/static/js/3.5089b29b.chunk.js.map",
+    "static/js/2.c1cbb423.chunk.js": "/pera-demo-dapp/static/js/2.c1cbb423.chunk.js",
+    "static/js/2.c1cbb423.chunk.js.map": "/pera-demo-dapp/static/js/2.c1cbb423.chunk.js.map",
+    "static/js/3.1456b3a2.chunk.js": "/pera-demo-dapp/static/js/3.1456b3a2.chunk.js",
+    "static/js/3.1456b3a2.chunk.js.map": "/pera-demo-dapp/static/js/3.1456b3a2.chunk.js.map",
     "index.html": "/pera-demo-dapp/index.html",
     "static/css/2.61444cb8.chunk.css.map": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css.map",
     "static/css/main.d61ca55a.chunk.css.map": "/pera-demo-dapp/static/css/main.d61ca55a.chunk.css.map",
-    "static/js/2.5e896f7f.chunk.js.LICENSE.txt": "/pera-demo-dapp/static/js/2.5e896f7f.chunk.js.LICENSE.txt",
+    "static/js/2.c1cbb423.chunk.js.LICENSE.txt": "/pera-demo-dapp/static/js/2.c1cbb423.chunk.js.LICENSE.txt",
     "static/media/close.950baffa.svg": "/pera-demo-dapp/static/media/close.950baffa.svg"
   },
   "entrypoints": [
-    "static/js/runtime-main.44bbbd25.js",
+    "static/js/runtime-main.f7fecec0.js",
     "static/css/2.61444cb8.chunk.css",
-    "static/js/2.5e896f7f.chunk.js",
+    "static/js/2.c1cbb423.chunk.js",
     "static/css/main.d61ca55a.chunk.css",
-    "static/js/main.b622481b.chunk.js"
+    "static/js/main.c8f92a0a.chunk.js"
   ]
 }
