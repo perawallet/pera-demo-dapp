@@ -46,13 +46,18 @@ function CreateTxnButton({
   );
 
   async function handleCreateTransaction() {
-    if (type === "pay") {
-      await createPayTransaction();
-    } else if (type === "axfer") {
-      await createAxferTransaction();
+    try {
+      if (type === "pay") {
+        await createPayTransaction();
+      } else if (type === "axfer") {
+        await createAxferTransaction();
+      }
+
+      onResetForm();
+    } catch {
+      console.log("Failed to create transactions.");
     }
 
-    onResetForm();
   }
 
   async function createPayTransaction() {

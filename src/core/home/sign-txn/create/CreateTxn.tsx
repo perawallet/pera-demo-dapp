@@ -20,6 +20,8 @@ import {PeraWalletConnect} from "@perawallet/connect";
 import Modal from "../../../component/modal/Modal";
 import {ChainType} from "../../../utils/algod/algod";
 import CreateTxnButton from "./button/CreateTxnButton";
+import {separateIntoChunks} from "../../../utils/array/arrayUtils";
+import {TRANSACTION_IN_GROUP_LIMIT} from "../../../transaction/transactionConstants";
 
 interface CreateTxnModalProps {
   chain: ChainType;
@@ -274,7 +276,11 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
 
   function handleGroupTxn() {
     try {
-      algosdk.assignGroupID(transactions.map((toSign) => toSign.txn));
+      const transactionChunks = separateIntoChunks(transactions, TRANSACTION_IN_GROUP_LIMIT);
+
+      for (const transactionChunk of transactionChunks) {
+        algosdk.assignGroupID(transactionChunk.map((toSign) => toSign.txn));
+      }
     } catch (error) {
       console.log(error);
     }
