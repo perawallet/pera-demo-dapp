@@ -1,6 +1,6 @@
 import "./_home.scss";
 
-import {Button, Dropdown, DropdownOption, useToaster} from "@hipo/react-ui-toolkit";
+import {Button, Dropdown, DropdownOption, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
@@ -14,7 +14,7 @@ import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useG
 import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import peraApiManager from "../utils/pera/api/peraApiManager";
 
-const peraWallet = new PeraWalletConnect();
+let peraWallet = new PeraWalletConnect();
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -33,6 +33,11 @@ function Home() {
     chain: chainType,
     accountAddress: accountAddress || ""
   });
+  const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
+
+  useEffect(() => {
+    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
+  }, [isConnectCompactMode]);
 
   useEffect(() => {
     peraWallet
@@ -89,6 +94,14 @@ function Home() {
         {"Pera Wallet"} <small>{"Example dApp"}</small>
       </h1>
 
+      {!isConnectedToPeraWallet && (
+        <div className={"app__compact-mode-switch"}>
+          <p>{"Pera Connect Compact Mode: "}</p>
+
+          <Switch onToggle={handleCompactModeSwitch} isToggledOn={isConnectCompactMode} />
+        </div>
+      )}
+
       {accountInformationState.data && (
         <AccountBalance
           accountInformation={accountInformationState.data}
@@ -121,6 +134,10 @@ function Home() {
       )}
     </div>
   );
+
+  function handleCompactModeSwitch() {
+    setConnectCompactMode(!isConnectCompactMode);
+  }
 
   function handleAddFunds() {
     if (accountAddress) {
