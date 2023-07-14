@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 
 import "./_create-txn.scss";
@@ -12,16 +13,17 @@ import {
   Input,
   List,
   ListItem,
+  Switch,
   Textarea
 } from "@hipo/react-ui-toolkit";
 import {useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 
 import Modal from "../../../component/modal/Modal";
-import {ChainType} from "../../../utils/algod/algod";
+import {ChainType, clientForChain} from "../../../utils/algod/algod";
 import CreateTxnButton from "./button/CreateTxnButton";
 import {separateIntoChunks} from "../../../utils/array/arrayUtils";
-import {TRANSACTION_IN_GROUP_LIMIT} from "../../../transaction/transactionConstants";
+import {ALGORAND_DEFAULT_TXN_WAIT_ROUNDS, TRANSACTION_IN_GROUP_LIMIT} from "../../../transaction/transactionConstants";
 
 interface CreateTxnModalProps {
   chain: ChainType;
@@ -59,6 +61,7 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
     closeTo: "",
     transactionAmount: 1
   });
+  const [sendBlockchain, setSendBlockchain] = useState(false);
 
   return (
     <Modal
@@ -112,6 +115,10 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
             setFormState({...formState, transactionAmount: Number(e.currentTarget.value)})
           }
         />
+      </FormField>
+
+      <FormField label={"Send Blockchain"}>
+        <Switch onToggle={handleSendBlockchain} isToggledOn={sendBlockchain} />
       </FormField>
 
       {transactions.length > 0 && (
@@ -295,9 +302,27 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       const signedTransactions = await peraWallet.signTransaction([transactions]);
 
       console.log({signedTransactions});
+
+      if (sendBlockchain) {
+        for (const signedTransaction of signedTransactions) {
+          await clientForChain(chain).sendRawTransaction(signedTransaction).do();
+  
+          await algosdk.waitForConfirmation(
+            clientForChain(chain),
+            transactions[0].txn.txID(),
+            ALGORAND_DEFAULT_TXN_WAIT_ROUNDS
+          );
+        }
+
+        console.log("Transactions sent to blockchain")
+      }
     } catch (error) {
       console.log(error);
     }
+  }
+
+  function handleSendBlockchain() {
+    setSendBlockchain(!sendBlockchain);
   }
 
   function resetForm() {
