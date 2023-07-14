@@ -58,6 +58,12 @@
   margin: 0 0 15px;
 }
 
+.app__compact-mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 .app__button {
   --button-bg: #6b46fe;
 
