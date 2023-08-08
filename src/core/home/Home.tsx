@@ -13,8 +13,10 @@ import {ChainType, clientForChain} from "../utils/algod/algod";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
 import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import peraApiManager from "../utils/pera/api/peraApiManager";
+import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 
-let peraWallet = new PeraWalletConnect();
+const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
+let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -137,6 +139,8 @@ function Home() {
 
   function handleCompactModeSwitch() {
     setConnectCompactMode(!isConnectCompactMode);
+
+    localStorage.setItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE, localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE) === "true" ? "false" : "true");
   }
 
   function handleAddFunds() {

@@ -42,12 +42,19 @@ export interface TxnForm {
   rekeyTo: string;
   closeTo: string;
   transactionAmount: number;
+  voteKey?: string;
+  selectionKey?: string;
+  stateProofKey?: string;
+  voteFirst?: number;
+  voteLast?: number;
+  voteKeyDilution?: number;
+  isOnlineKeyregTxn?: boolean;
 }
 
 function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) {
   const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [transactionDropdownOption, setTransactionDropdownOption] =
-    useState<DropdownOption<"pay" | "axfer", any> | null>({
+    useState<DropdownOption<"pay" | "axfer" | "keyreg", any> | null>({
       id: "pay",
       title: "pay"
     });
@@ -85,6 +92,10 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
             {
               id: "axfer",
               title: "axfer"
+            },
+            {
+              id: "keyreg",
+              title: "keyreg"
             }
           ]}
           selectedOption={transactionDropdownOption}
@@ -272,6 +283,83 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
             </FormField>
           </>
         );
+
+      case "keyreg":
+        return (
+          <>
+            <FormField label={`${formState.isOnlineKeyregTxn ? "Online" : "Offline"} Keyreg Transaction`}>
+              <Switch isToggledOn={formState.isOnlineKeyregTxn || false} onToggle={() => setFormState({...formState, isOnlineKeyregTxn: !formState.isOnlineKeyregTxn})} />
+            </FormField>
+
+            {formState.isOnlineKeyregTxn && (
+              <>
+                <FormField label={"Vote Key"}>
+                  <Input
+                    value={formState.voteKey}
+                    name={"voteKey"}
+                    onChange={(e) =>
+                      setFormState({...formState, voteKey: e.currentTarget.value})
+                    }
+                  />
+                </FormField>
+
+                <FormField label={"Selection Key"}>
+                  <Input
+                    value={formState.selectionKey}
+                    name={"selectionKey"}
+                    onChange={(e) =>
+                      setFormState({...formState, selectionKey: e.currentTarget.value})
+                    }
+                  />
+                </FormField>
+
+                <FormField label={"State Proof Key"}>
+                  <Input
+                    value={formState.stateProofKey}
+                    name={"stateProofKey"}
+                    onChange={(e) =>
+                      setFormState({...formState, stateProofKey: e.currentTarget.value})
+                    }
+                  />
+                </FormField>
+
+                <FormField label={"Vote First"}>
+                  <Input
+                    value={formState.voteFirst}
+                    name={"voteFirst"}
+                    type={"number"}
+                    onChange={(e) =>
+                      setFormState({...formState, voteFirst: Number(e.currentTarget.value)})
+                    }
+                  />
+                </FormField>
+
+                <FormField label={"Vote Last"}>
+                  <Input
+                    value={formState.voteLast}
+                    name={"voteLast"}
+                    type={"number"}
+                    onChange={(e) =>
+                      setFormState({...formState, voteLast: Number(e.currentTarget.value)})
+                    }
+                  />
+                </FormField>
+
+                <FormField label={"Vote Key Dilution"}>
+                  <Input
+                    value={formState.voteKeyDilution}
+                    name={"voteKeyDilution"}
+                    type={"number"}
+                    onChange={(e) =>
+                      setFormState({...formState, voteKeyDilution: Number(e.currentTarget.value)})
+                    }
+                  />
+                </FormField>
+              </>
+            )}
+          </>
+        )
+
       default:
         return null;
     }
