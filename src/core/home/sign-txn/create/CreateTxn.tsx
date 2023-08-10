@@ -291,6 +291,16 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               <Switch isToggledOn={formState.isOnlineKeyregTxn || false} onToggle={() => setFormState({...formState, isOnlineKeyregTxn: !formState.isOnlineKeyregTxn})} />
             </FormField>
 
+            <FormField label={"Rekey To (optional)"}>
+              <Input
+                value={formState.rekeyTo}
+                name={"rekeyto"}
+                onChange={(e) =>
+                  setFormState({...formState, rekeyTo: e.currentTarget.value})
+                }
+              />
+            </FormField>
+
             {formState.isOnlineKeyregTxn && (
               <>
                 <FormField label={"Vote Key"}>

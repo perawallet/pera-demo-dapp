@@ -99,12 +99,14 @@ function CreateTxnButton({
           voteFirst: voteFirst!,
           voteLast: voteLast!,
           voteKeyDilution: voteKeyDilution!,
+          rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });
       } else {
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
           from: address,
           nonParticipation: true,
+          rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });
       }
