@@ -109,7 +109,8 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
     assetIndex: "",
     rekeyTo: "",
     closeTo: "",
-    transactionAmount: 1
+    transactionAmount: 1,
+    assetTxnType: "create"
   });
   const [sendBlockchain, setSendBlockchain] = useState(false);
 
