@@ -1,7 +1,7 @@
 import {useRef, useState} from "react";
 import {Button} from "@hipo/react-ui-toolkit";
 import algosdk, {isValidAddress} from "algosdk";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import useAsyncProcess from "../../../../hooks/useAsyncProcess/useAsyncProcess";
 import peraApi, {Asset} from "../../../../utils/pera/api/peraApi";

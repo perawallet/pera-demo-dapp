@@ -2,9 +2,9 @@ import "./_home.scss";
 
 import {Button, Dropdown, DropdownOption, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
-import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
 import {PeraOnramp} from "@perawallet/onramp";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";

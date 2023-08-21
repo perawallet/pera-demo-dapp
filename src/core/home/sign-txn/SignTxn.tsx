@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
-import {PeraWalletConnect} from "@perawallet/connect";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
