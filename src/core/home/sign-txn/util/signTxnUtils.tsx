@@ -350,6 +350,29 @@ const singleAppOptIn: Scenario = async (
   };
 };
 
+const singleAppOptInWithAppRekey: Scenario = async (
+  chain: ChainType
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const appIndex = getAppIndex(chain);
+
+  const txn = algosdk.makeApplicationOptInTxnFromObject({
+    from: testAccounts[1].addr,
+    appIndex,
+    note: new Uint8Array(Buffer.from("example note value")),
+    appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
+    rekeyTo: testAccounts[2].addr,
+    suggestedParams
+  });
+
+  const txnsToSign = [{txn}];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
 const singleAppCall: Scenario = async (
   chain: ChainType,
   address: string
@@ -2927,6 +2950,10 @@ export const scenarios: Array<{name: string; scenario: Scenario}> = [
   {
     name: "60. 512 Transactions",
     scenario: fiveHundredTxns
+  },
+  {
+    name: "61. Sign single app opt-in with rekey",
+    scenario: singleAppOptInWithAppRekey
   }
 ];
 

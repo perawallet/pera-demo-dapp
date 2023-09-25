@@ -1,6 +1,6 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Button} from "@hipo/react-ui-toolkit";
-import algosdk, {isValidAddress} from "algosdk";
+import algosdk, {Transaction, isValidAddress} from "algosdk";
 import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import useAsyncProcess from "../../../../hooks/useAsyncProcess/useAsyncProcess";
@@ -17,7 +17,7 @@ function CreateTxnButton({
   onSetTransactions
 }: {
   txnForm: TxnForm;
-  type: "pay" | "axfer";
+  type: "pay" | "axfer" | "keyreg";
   chain: ChainType;
   onResetForm: VoidFunction;
   onSetTransactions: (txns: SignerTransaction[]) => void;
@@ -30,16 +30,40 @@ function CreateTxnButton({
     assetIndex,
     rekeyTo,
     closeTo,
-    transactionAmount
+    transactionAmount,
+    voteKey,
+    selectionKey,
+    stateProofKey,
+    voteFirst,
+    voteLast,
+    voteKeyDilution,
+    isOnlineKeyregTxn
   } = txnForm;
   const {runAsyncProcess} = useAsyncProcess<ListRequestResponse<Asset>>();
   const assetsRef = useRef<ListRequestResponse<Asset>>();
   const [isPending, setPendingState] = useState(false);
+  const [isDisabled, setDisablingState] = useState(false);
+
+  useEffect(() => {
+    if (type === "keyreg") {
+      if (isOnlineKeyregTxn) {
+        if (voteKey && selectionKey && stateProofKey && voteFirst && voteLast &&
+          voteKeyDilution) {
+          setDisablingState(false);
+        } else {
+          setDisablingState(true);
+        }
+      } else {
+        setDisablingState(false);
+      }
+    }
+  }, [isOnlineKeyregTxn, voteKey, selectionKey, stateProofKey, voteFirst, voteLast, voteKeyDilution, type]);
 
   return (
     <Button
       onClick={handleCreateTransaction}
       shouldDisplaySpinner={isPending}
+      isDisabled={isDisabled}
       customClassName={
         "create-txn__cta"
       }>{`Create ${type} Transaction`}</Button>
@@ -51,13 +75,46 @@ function CreateTxnButton({
         await createPayTransaction();
       } else if (type === "axfer") {
         await createAxferTransaction();
+      } else if (type === "keyreg") {
+        await createKeyregTransaction();
       }
 
       onResetForm();
     } catch {
       console.log("Failed to create transactions.");
     }
+  }
 
+  async function createKeyregTransaction() {
+    try {
+      const suggestedParams = await apiGetTxnParams(chain);
+      let txn: Transaction;
+
+      if (isOnlineKeyregTxn) {
+        txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+          from: address,
+          voteKey: voteKey!,
+          selectionKey: selectionKey!,
+          stateProofKey: stateProofKey!,
+          voteFirst: voteFirst!,
+          voteLast: voteLast!,
+          voteKeyDilution: voteKeyDilution!,
+          rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+          suggestedParams
+        });
+      } else {
+        txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+          from: address,
+          nonParticipation: true,
+          rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+          suggestedParams
+        });
+      }
+
+      onSetTransactions([{txn}]);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function createPayTransaction() {

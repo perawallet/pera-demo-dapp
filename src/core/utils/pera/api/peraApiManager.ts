@@ -3,8 +3,8 @@ import {FetcherConfig} from "../../../network/fetcher/fetcherTypes";
 import {ChainType} from "../../algod/algod";
 
 const PERA_API_URLS = {
-  mainnet: "https://mainnet.staging.api.perawallet.app/v1/",
-  testnet: "https://testnet.staging.api.perawallet.app/v1/"
+  mainnet: "https://mainnet.api.perawallet.app/v1/",
+  testnet: "https://testnet.api.perawallet.app/v1/"
 };
 
 const PERA_API_DEFAULT_OPTIONS: Omit<FetcherConfig, "baseUrl"> = {
@@ -12,7 +12,6 @@ const PERA_API_DEFAULT_OPTIONS: Omit<FetcherConfig, "baseUrl"> = {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      "X-API-Key": "pera-web-staging-U-jZ3m-LR6-ed-7fLTmekDl0-95N5jUX"
     }
   },
   bodyParser: JSON.stringify
