@@ -148,6 +148,7 @@ function SignTxn({
       }
     } catch (error) {
       handleSetLog(`${error}`);
+      console.log(error);
     } finally {
       setIsRequestPending(false);
       refecthAccountDetail();

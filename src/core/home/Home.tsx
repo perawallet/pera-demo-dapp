@@ -198,11 +198,15 @@ function Home() {
   }
 
   async function handleConnectWalletClick() {
-    const newAccounts = await peraWallet.connect();
-
-    handleSetLog("Connected to Pera Wallet");
-
-    setAccountAddress(newAccounts[0]);
+    try {
+      const newAccounts = await peraWallet.connect();
+  
+      handleSetLog("Connected to Pera Wallet");
+  
+      setAccountAddress(newAccounts[0]);
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   function handleDisconnectWalletClick() {
