@@ -15,8 +15,10 @@ import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import peraApiManager from "../utils/pera/api/peraApiManager";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 
+const PROJECT_ID = "cd16838f7a5ae77b3b4e21c57798eba2";
+
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
+let peraWallet = new PeraWalletConnect({projectId: PROJECT_ID, compactMode: isCompactMode === "true"});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -38,7 +40,7 @@ function Home() {
   const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
 
   useEffect(() => {
-    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
+    peraWallet = new PeraWalletConnect({projectId: PROJECT_ID, compactMode: isConnectCompactMode});
   }, [isConnectCompactMode]);
 
   useEffect(() => {
@@ -51,9 +53,7 @@ function Home() {
           handleSetLog("Connected to Pera Wallet");
         }
 
-        peraWallet.connector?.on("disconnect", () => {
-          setAccountAddress(null);
-        });
+        peraWallet.disconnect();
       })
       .catch((e) => console.log(e));
 
