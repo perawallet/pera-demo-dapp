@@ -205,7 +205,8 @@ function Home() {
   
       setAccountAddress(newAccounts[0]);
     } catch (e) {
-      console.log(e)
+      console.log(e);
+      handleSetLog(`${e}`);
     }
   }
 
