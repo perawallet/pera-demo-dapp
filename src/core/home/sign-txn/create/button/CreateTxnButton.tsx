@@ -8,6 +8,7 @@ import peraApi, {Asset} from "../../../../utils/pera/api/peraApi";
 import {getSearchParams} from "../../../../utils/url/urlUtils";
 import {TxnForm} from "../CreateTxn";
 import {ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
+import {PeraTransactionType} from "../../../../transaction/transactionTypes";
 
 function CreateTxnButton({
   txnForm,
@@ -17,7 +18,7 @@ function CreateTxnButton({
   onSetTransactions
 }: {
   txnForm: TxnForm;
-  type: "pay" | "axfer" | "keyreg";
+  type: PeraTransactionType;
   chain: ChainType;
   onResetForm: VoidFunction;
   onSetTransactions: (txns: SignerTransaction[]) => void;
@@ -31,13 +32,29 @@ function CreateTxnButton({
     rekeyTo,
     closeTo,
     transactionAmount,
+
+    // keyreg
     voteKey,
     selectionKey,
     stateProofKey,
     voteFirst,
     voteLast,
     voteKeyDilution,
-    isOnlineKeyregTxn
+    isOnlineKeyregTxn,
+
+    // acfg
+
+    assetTxnType,
+    unitName,
+    assetName,
+    defaultFrozen,
+    manager,
+    reserve,
+    freeze,
+    clawback,
+    assetURL,
+    total,
+    decimals
   } = txnForm;
   const {runAsyncProcess} = useAsyncProcess<ListRequestResponse<Asset>>();
   const assetsRef = useRef<ListRequestResponse<Asset>>();
@@ -77,11 +94,59 @@ function CreateTxnButton({
         await createAxferTransaction();
       } else if (type === "keyreg") {
         await createKeyregTransaction();
+      } else if (type === "acfg") {
+        await createAcfgTransaction();
       }
 
       onResetForm();
     } catch {
       console.log("Failed to create transactions.");
+    }
+  }
+
+  async function createAcfgTransaction() {
+    try {
+      const suggestedParams = await apiGetTxnParams(chain);
+      let txn: Transaction;
+
+      if (assetTxnType === "create") {
+        txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
+          defaultFrozen: defaultFrozen || false,
+          unitName,
+          assetName,
+          manager,
+          reserve,
+          freeze,
+          clawback,
+          assetURL,
+          total: total || 1,
+          decimals: decimals || 0,
+          from: address,
+          suggestedParams
+        });
+      } else if (assetTxnType === "modify") {
+        txn = algosdk.makeAssetConfigTxnWithSuggestedParamsFromObject({
+          from: address,
+          manager,
+          freeze,
+          clawback,
+          reserve,
+          assetIndex: Number(assetIndex),
+          suggestedParams,
+          strictEmptyAddressChecking: false
+        })
+      } else {
+        txn = algosdk.makeAssetDestroyTxnWithSuggestedParamsFromObject({
+          from: address,
+          suggestedParams,
+          assetIndex: Number(assetIndex)
+        })
+      }
+      
+
+      onSetTransactions([{txn}]);
+    } catch (e) {
+      console.log(e);
     }
   }
 

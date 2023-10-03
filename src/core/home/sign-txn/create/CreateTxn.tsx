@@ -14,6 +14,8 @@ import {
   List,
   ListItem,
   Switch,
+  Tab,
+  TabItem,
   Textarea
 } from "@hipo/react-ui-toolkit";
 import {useState} from "react";
@@ -24,6 +26,7 @@ import {ChainType, clientForChain} from "../../../utils/algod/algod";
 import CreateTxnButton from "./button/CreateTxnButton";
 import {separateIntoChunks} from "../../../utils/array/arrayUtils";
 import {ALGORAND_DEFAULT_TXN_WAIT_ROUNDS, TRANSACTION_IN_GROUP_LIMIT} from "../../../transaction/transactionConstants";
+import {AssetTransactionType, PeraTransactionType} from "../../../transaction/transactionTypes";
 
 interface CreateTxnModalProps {
   chain: ChainType;
@@ -42,6 +45,8 @@ export interface TxnForm {
   rekeyTo: string;
   closeTo: string;
   transactionAmount: number;
+
+  // keyreg
   voteKey?: string;
   selectionKey?: string;
   stateProofKey?: string;
@@ -49,12 +54,50 @@ export interface TxnForm {
   voteLast?: number;
   voteKeyDilution?: number;
   isOnlineKeyregTxn?: boolean;
+
+  // acfg
+  assetTxnType?: AssetTransactionType;
+  unitName?: string;
+  assetName?: string;
+  defaultFrozen?: boolean;
+  manager?: string;
+  reserve?: string;
+  freeze?: string;
+  clawback?: string;
+  assetURL?: string;
+  total?: number;
+  decimals?: number;
 }
+
+const TXN_DROPDOWN_OPTIONS: DropdownOption<PeraTransactionType, any>[] = [
+  {
+    id: "pay",
+    title: "pay"
+  },
+  {
+    id: "axfer",
+    title: "axfer"
+  },
+  {
+    id: "keyreg",
+    title: "keyreg"
+  },
+  {
+    id: "acfg",
+    title: "acfg"
+  }
+];
+
+const ASSET_TXN_TABS: TabItem[] = [
+  {id: "create", content: "Create"},
+  {id: "modify", content: "Modify"},
+  {id: "destroy", content: "Destroy"}
+]
 
 function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) {
   const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [transactionDropdownOption, setTransactionDropdownOption] =
-    useState<DropdownOption<"pay" | "axfer" | "keyreg", any> | null>({
+    useState<DropdownOption<PeraTransactionType> | null>({
       id: "pay",
       title: "pay"
     });
@@ -66,7 +109,8 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
     assetIndex: "",
     rekeyTo: "",
     closeTo: "",
-    transactionAmount: 1
+    transactionAmount: 1,
+    assetTxnType: "create"
   });
   const [sendBlockchain, setSendBlockchain] = useState(false);
 
@@ -84,20 +128,7 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
         <Dropdown
           customClassName={"app__header__chain-select-dropdown"}
           role={"menu"}
-          options={[
-            {
-              id: "pay",
-              title: "pay"
-            },
-            {
-              id: "axfer",
-              title: "axfer"
-            },
-            {
-              id: "keyreg",
-              title: "keyreg"
-            }
-          ]}
+          options={TXN_DROPDOWN_OPTIONS}
           selectedOption={transactionDropdownOption}
           onSelect={(option) => {
             setTransactionDropdownOption(option);
@@ -116,17 +147,6 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       </FormField>
 
       {renderForm()}
-
-      <FormField label={"Transaction Amount (optional)"}>
-        <Input
-          value={formState.transactionAmount}
-          name={"transactionAmount"}
-          type={"number"}
-          onChange={(e) =>
-            setFormState({...formState, transactionAmount: Number(e.currentTarget.value)})
-          }
-        />
-      </FormField>
 
       <FormField label={"Send Blockchain"}>
         <Switch onToggle={handleSendBlockchain} isToggledOn={sendBlockchain} />
@@ -281,6 +301,17 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
                 }
               />
             </FormField>
+
+            <FormField label={"Transaction Amount (optional)"}>
+              <Input
+                value={formState.transactionAmount}
+                name={"transactionAmount"}
+                type={"number"}
+                onChange={(e) =>
+                  setFormState({...formState, transactionAmount: Number(e.currentTarget.value)})
+                }
+              />
+            </FormField>
           </>
         );
 
@@ -368,11 +399,213 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
               </>
             )}
           </>
+        );
+
+      case "acfg":
+        return (
+          <>
+            <Tab items={ASSET_TXN_TABS} initialActiveTabIndex={0} customClassName={"create-txn__asset-tab"} onTabChange={handleAssetTabChange}>
+              {getAssetTransactionForms()}
+            </Tab>
+          </>
         )
 
       default:
         return null;
     }
+  }
+
+  function handleAssetTabChange(index: number) {
+    let txnType: AssetTransactionType = "create";
+
+    if (index === 0) txnType = "create";
+    else if (index === 1) txnType = "modify";
+    else txnType = "destroy";
+
+    setFormState({...formState, assetTxnType: txnType})
+  }
+
+  function getAssetTransactionForms() {
+    const create = (
+      <>
+        <FormField label={"Unit Name"}>
+          <Input
+            value={formState.unitName}
+            name={"unit"}
+            onChange={(e) =>
+              setFormState({...formState, unitName: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+        <FormField label={"Asset Name"}>
+          <Input
+            value={formState.assetName}
+            name={"asset-name"}
+            onChange={(e) =>
+              setFormState({...formState, assetName: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+        <FormField label={"Manager"}>
+          <Input
+            value={formState.manager}
+            name={"manager"}
+            onChange={(e) =>
+              setFormState({...formState, manager: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Reserve"}>
+          <Input
+            value={formState.reserve}
+            name={"reserve"}
+            onChange={(e) =>
+              setFormState({...formState, reserve: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Freeze"}>
+          <Input
+            value={formState.freeze}
+            name={"freeze"}
+            onChange={(e) =>
+              setFormState({...formState, freeze: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Clawback"}>
+          <Input
+            value={formState.clawback}
+            name={"clawback"}
+            onChange={(e) =>
+              setFormState({...formState, clawback: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Asset URL"}>
+          <Input
+            value={formState.assetURL}
+            name={"asset-url"}
+            onChange={(e) =>
+              setFormState({...formState, assetURL: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Total"}>
+          <Input
+            value={formState.total}
+            type={"number"}
+            name={"total"}
+            onChange={(e) =>
+              setFormState({...formState, total: Number(e.currentTarget.value)})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Decimal"}>
+          <Input
+            value={formState.decimals}
+            type={"number"}
+            name={"decimals"}
+            onChange={(e) =>
+              setFormState({...formState, decimals: Number(e.currentTarget.value)})
+            }
+          />
+        </FormField>
+
+        <FormField label={"Default Frozen"}>
+          <Switch isToggledOn={formState.defaultFrozen || false} onToggle={() => setFormState({...formState, defaultFrozen: !formState.defaultFrozen})} />
+        </FormField>
+      </>
+    );
+
+    const modify = (
+      <>
+        <FormField label={"Asset Index"}>
+          <Input
+            value={formState.assetIndex}
+            name={"asset-index"}
+            type={"number"}
+            onChange={(e) =>
+              setFormState({...formState, assetIndex: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+        <FormField label={"Manager"}>
+          <Input
+            value={formState.manager}
+            name={"manager"}
+            onChange={(e) =>
+              setFormState({...formState, manager: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Reserve"}>
+          <Input
+            value={formState.reserve}
+            name={"reserve"}
+            onChange={(e) =>
+              setFormState({...formState, reserve: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Freeze"}>
+          <Input
+            value={formState.freeze}
+            name={"freeze"}
+            onChange={(e) =>
+              setFormState({...formState, freeze: e.currentTarget.value})
+            }
+          />
+        </FormField>
+
+
+        <FormField label={"Clawback"}>
+          <Input
+            value={formState.clawback}
+            name={"clawback"}
+            onChange={(e) =>
+              setFormState({...formState, clawback: e.currentTarget.value})
+            }
+          />
+        </FormField>
+      </>
+    );
+
+    const destroy = (
+      <>
+        <FormField label={"Asset Index"}>
+          <Input
+            value={formState.assetIndex}
+            name={"asset-index"}
+            type={"number"}
+            onChange={(e) =>
+              setFormState({...formState, assetIndex: e.currentTarget.value})
+            }
+          />
+        </FormField>
+      </>
+    );
+
+    return [create, modify, destroy];
   }
 
   function handleSetTransactions(newTxns: SignerTransaction[]) {
