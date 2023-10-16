@@ -1,26 +1,26 @@
 {
   "files": {
     "main.css": "/pera-demo-dapp/static/css/main.c74028e2.chunk.css",
-    "main.js": "/pera-demo-dapp/static/js/main.ced98873.chunk.js",
-    "main.js.map": "/pera-demo-dapp/static/js/main.ced98873.chunk.js.map",
+    "main.js": "/pera-demo-dapp/static/js/main.265de2ae.chunk.js",
+    "main.js.map": "/pera-demo-dapp/static/js/main.265de2ae.chunk.js.map",
     "runtime-main.js": "/pera-demo-dapp/static/js/runtime-main.f7fecec0.js",
     "runtime-main.js.map": "/pera-demo-dapp/static/js/runtime-main.f7fecec0.js.map",
     "static/css/2.61444cb8.chunk.css": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css",
-    "static/js/2.3a3ebdd1.chunk.js": "/pera-demo-dapp/static/js/2.3a3ebdd1.chunk.js",
-    "static/js/2.3a3ebdd1.chunk.js.map": "/pera-demo-dapp/static/js/2.3a3ebdd1.chunk.js.map",
+    "static/js/2.9c63d0da.chunk.js": "/pera-demo-dapp/static/js/2.9c63d0da.chunk.js",
+    "static/js/2.9c63d0da.chunk.js.map": "/pera-demo-dapp/static/js/2.9c63d0da.chunk.js.map",
     "static/js/3.1456b3a2.chunk.js": "/pera-demo-dapp/static/js/3.1456b3a2.chunk.js",
     "static/js/3.1456b3a2.chunk.js.map": "/pera-demo-dapp/static/js/3.1456b3a2.chunk.js.map",
     "index.html": "/pera-demo-dapp/index.html",
     "static/css/2.61444cb8.chunk.css.map": "/pera-demo-dapp/static/css/2.61444cb8.chunk.css.map",
     "static/css/main.c74028e2.chunk.css.map": "/pera-demo-dapp/static/css/main.c74028e2.chunk.css.map",
-    "static/js/2.3a3ebdd1.chunk.js.LICENSE.txt": "/pera-demo-dapp/static/js/2.3a3ebdd1.chunk.js.LICENSE.txt",
+    "static/js/2.9c63d0da.chunk.js.LICENSE.txt": "/pera-demo-dapp/static/js/2.9c63d0da.chunk.js.LICENSE.txt",
     "static/media/close.950baffa.svg": "/pera-demo-dapp/static/media/close.950baffa.svg"
   },
   "entrypoints": [
     "static/js/runtime-main.f7fecec0.js",
     "static/css/2.61444cb8.chunk.css",
-    "static/js/2.3a3ebdd1.chunk.js",
+    "static/js/2.9c63d0da.chunk.js",
     "static/css/main.c74028e2.chunk.css",
-    "static/js/main.ced98873.chunk.js"
+    "static/js/main.265de2ae.chunk.js"
   ]
 }
