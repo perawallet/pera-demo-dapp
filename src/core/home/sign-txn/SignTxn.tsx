@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
 import {PeraWalletConnect} from "@perawallet/connect";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 import algosdk from "algosdk";
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
@@ -77,36 +77,62 @@ function SignTxn({
           )}
         </List>
 
-        <Button
-          customClassName={"app__button"}
-          style={{width: "160px"}}
-          onClick={signArbitraryData}
-          shouldDisplaySpinner={isRequestPending}
-          isDisabled={isRequestPending}>
-          {isRequestPending ? "Loading..." : "Sign Arbitrary Data"}
-        </Button>
+        <div style={{display: "flex", gap: "20px"}}>
+          <Button
+            customClassName={"app__button"}
+            style={{width: "160px"}}
+            onClick={signSingleArbitraryData}
+            shouldDisplaySpinner={isRequestPending}
+            isDisabled={isRequestPending}>
+            {isRequestPending ? "Loading..." : "Sign Single Arbitrary Data"}
+          </Button>
+
+          <Button
+            customClassName={"app__button"}
+            style={{width: "160px"}}
+            onClick={signMultipleArbitraryData}
+            shouldDisplaySpinner={isRequestPending}
+            isDisabled={isRequestPending}>
+            {isRequestPending ? "Loading..." : "Sign Multiple Arbitrary Data"}
+          </Button>
+        </div>
       </div>
     </>
   );
 
-  async function signArbitraryData() {
+  async function signSingleArbitraryData() {
+    const unsignedData = [
+      {
+        data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
+        message: "Timestamp confirmation"
+      }];
+
+    await signArbitraryData(unsignedData);
+  }
+
+  async function signMultipleArbitraryData() {
+    const unsignedData = [
+      {
+        data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
+        message: "Timestamp confirmation"
+      },
+      {
+        data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
+        message: "User agent confirmation"
+      }
+    ];
+
+    await signArbitraryData(unsignedData);
+  }
+
+  async function signArbitraryData(arbitraryData: PeraWalletArbitraryData[]) {
     try {
-      const unsignedData = [
-        {
-          data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
-          message: "Timestamp confirmation"
-        },
-        {
-          data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
-          message: "User agent confirmation"
-        }
-      ];
       const signedData: Uint8Array[] = await peraWallet.signData(
-        unsignedData,
+        arbitraryData,
         accountAddress
       );
 
-      unsignedData.forEach((data, index) => {
+      arbitraryData.forEach((data, index) => {
         const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
 
         console.log({data, signedData: signedData[index], isVerified});
