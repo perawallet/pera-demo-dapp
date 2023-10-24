@@ -170,7 +170,6 @@ function CreateTxnButton({
       } else {
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
           from: address,
-          nonParticipation: true,
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });
