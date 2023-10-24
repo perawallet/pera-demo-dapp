@@ -1,7 +1,6 @@
 /* eslint-disable */
 import algosdk, {SuggestedParams} from "algosdk";
-import {apiGetTxnParams, ChainType, clientForChain} from "../../../utils/algod/algod";
-import Notiboy from "notiboy-js-sdk";
+import {apiGetTxnParams, ChainType} from "../../../utils/algod/algod";
 
 const testAccounts = [
   algosdk.mnemonicToSecretKey(
@@ -2637,35 +2636,35 @@ const singleZoneTransferTxn: Scenario = async (
   };
 };
 
-const notiboyGlobalOptIn: Scenario = async (
-  chain: ChainType,
-  address: string
-): Promise<ScenarioReturnType> => {
-  const indexer = new algosdk.Indexer("", "https://mainnet-idx.algonode.cloud", "");
-  const notiboy = new Notiboy(clientForChain(chain), indexer);
-  const userGlobalOptin = await notiboy.userContractOptin(address);
-  const transactions: IScenarioTxn[][] = [];
-  userGlobalOptin.map((txn) => {
-    transactions.push([{txn}]);
-  });
+// const notiboyGlobalOptIn: Scenario = async (
+//   chain: ChainType,
+//   address: string
+// ): Promise<ScenarioReturnType> => {
+//   const indexer = new algosdk.Indexer("", "https://mainnet-idx.algonode.cloud", "");
+//   const notiboy = new Notiboy(clientForChain(chain), indexer);
+//   const userGlobalOptin = await notiboy.userContractOptin(address);
+//   const transactions: IScenarioTxn[][] = [];
+//   userGlobalOptin.map((txn) => {
+//     transactions.push([{txn}]);
+//   });
 
-  return {
-    transaction: transactions
-  };
-};
+//   return {
+//     transaction: transactions
+//   };
+// };
 
-const notiboyChannelOptIn: Scenario = async (
-  chain: ChainType,
-  address: string
-): Promise<ScenarioReturnType> => {
-  const indexer = new algosdk.Indexer("", "https://mainnet-idx.algonode.cloud", "");
-  const notiboy = new Notiboy(clientForChain(chain), indexer);
-  const channelOptinTxn = await notiboy.userChannelOptin(address, 1025363595);
+// const notiboyChannelOptIn: Scenario = async (
+//   chain: ChainType,
+//   address: string
+// ): Promise<ScenarioReturnType> => {
+//   const indexer = new algosdk.Indexer("", "https://mainnet-idx.algonode.cloud", "");
+//   const notiboy = new Notiboy(clientForChain(chain), indexer);
+//   const channelOptinTxn = await notiboy.userChannelOptin(address, 1025363595);
 
-  return {
-    transaction: [[{txn: channelOptinTxn}]]
-  };
-};
+//   return {
+//     transaction: [[{txn: channelOptinTxn}]]
+//   };
+// };
 
 export const mainnetScenarios: Array<{name: string; scenario: Scenario}> = [
   {
@@ -2700,14 +2699,14 @@ export const mainnetScenarios: Array<{name: string; scenario: Scenario}> = [
     name: "8. Zone Transfer",
     scenario: singleZoneTransferTxn
   },
-  {
-    name: "9. Notiboy Global Optin",
-    scenario: notiboyGlobalOptIn
-  },
-  {
-    name: "10. Notiboy Channel Optin",
-    scenario: notiboyChannelOptIn
-  }
+  // {
+  //   name: "9. Notiboy Global Optin",
+  //   scenario: notiboyGlobalOptIn
+  // },
+  // {
+  //   name: "10. Notiboy Channel Optin",
+  //   scenario: notiboyChannelOptIn
+  // }
 ];
 
 export const scenarios: Array<{name: string; scenario: Scenario}> = [
