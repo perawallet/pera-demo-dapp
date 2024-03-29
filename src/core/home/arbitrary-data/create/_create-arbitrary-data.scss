@@ -1,0 +1,13 @@
+.create-arbitrary-data-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.create-arbitrary-data.modal {
+  overflow-y: scroll;
+
+  width: 70vw;
+
+  padding: 28px;
+}
