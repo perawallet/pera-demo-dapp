@@ -95,7 +95,14 @@ function CreateArbitraryData({
         <div>
           <h5>{"Arbitrary Data"}</h5>
 
-          <ReactJson src={formState} name={null} />
+          <ReactJson src={{
+            ...formState,
+            arc60domain: formState.arc60Domain.id,
+            metadata: {
+              ...formState.metadata,
+              scope: formState.metadata.scope.id
+            }
+          }} name={null} />
         </div>
       </div>
 
