@@ -2,7 +2,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 import * as arc60Schema from "../arc-60/arc60-schema.json";
 import "./_create-arbitrary-data.scss";
 
-import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
 import {Button, Dropdown, FormField, Input} from "@hipo/react-ui-toolkit";
 import {canonicalize} from 'json-canonicalize'
 import {useState} from "react";
