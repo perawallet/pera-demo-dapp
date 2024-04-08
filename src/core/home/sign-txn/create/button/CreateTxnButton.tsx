@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState} from "react";
+import {Buffer} from 'buffer';
 import {Button} from "@hipo/react-ui-toolkit";
 import algosdk, {Transaction, isValidAddress} from "algosdk";
 import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";

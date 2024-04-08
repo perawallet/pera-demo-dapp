@@ -1,4 +1,5 @@
 /* eslint-disable */
+import {Buffer} from 'buffer';
 import algosdk, {SuggestedParams} from "algosdk";
 import {apiGetTxnParams, ChainType, clientForChain} from "../../../utils/algod/algod";
 import Notiboy from "notiboy-js-sdk";

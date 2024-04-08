@@ -1,3 +1,7 @@
+import {Buffer} from 'buffer';
+
+window.Buffer = Buffer;
+
 import "@hipo/react-ui-toolkit/dist/main.css";
 import "./_index.scss";
 

@@ -1,6 +1,6 @@
 import "./_home.scss";
 
-import {Button, Dropdown, DropdownOption, Switch, useToaster} from "@hipo/react-ui-toolkit";
+import {Button, Select, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
@@ -15,18 +15,34 @@ import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import peraApiManager from "../utils/pera/api/peraApiManager";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 
-const PROJECT_ID = "cd16838f7a5ae77b3b4e21c57798eba2";
+console.log("a")
+console.log(new PeraWalletConnect({projectId: "cd16838f7a5ae77b3b4e21c57798eba2"}))
 
+const PROJECT_ID = "cd16838f7a5ae77b3b4e21c57798eba2";
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-let peraWallet = new PeraWalletConnect({projectId: PROJECT_ID, compactMode: isCompactMode === "true"});
+const peraWallet = new PeraWalletConnect({
+  projectId: PROJECT_ID,
+  compactMode: isCompactMode === "true"
+});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
 
+try {
+  const a = new PeraWalletConnect({
+    projectId: PROJECT_ID,
+    compactMode: isCompactMode === "true"
+  });
+
+  console.log({a})
+} catch (e) {
+  console.log("errr: ", e);
+}
+
 function Home() {
   const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
   const [chainDropdownSelectedOption, setChainDropdownSelectedOption] =
-    useState<DropdownOption<"mainnet" | "testnet", any> | null>({
+    useState<{id: "mainnet" | "testnet", title: string} | null>({
       id: "testnet",
       title: "TestNet"
     });
@@ -39,9 +55,9 @@ function Home() {
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
 
-  useEffect(() => {
-    peraWallet = new PeraWalletConnect({projectId: PROJECT_ID, compactMode: isConnectCompactMode});
-  }, [isConnectCompactMode]);
+  // useEffect(() => {
+  // peraWallet = new PeraWalletConnect({projectId: PROJECT_ID, compactMode: isConnectCompactMode});
+  // }, [isConnectCompactMode]);
 
   useEffect(() => {
     peraWallet
@@ -63,7 +79,25 @@ function Home() {
   return (
     <div className={`app ${isConnectedToPeraWallet ? "app--connected" : ""}`}>
       <div className={"app__header"}>
-        <Dropdown
+        <Select
+          role={"listbox"}
+          options={[
+            {
+              id: "testnet",
+            },
+            {
+              id: "mainnet",
+            }
+          ]}
+          onSelect={(option) => {
+            handleSelectChainType(option);
+          }}
+          value={chainDropdownSelectedOption}>
+          <Select.Trigger>
+            {chainType}
+          </Select.Trigger>
+        </Select>
+        {/* <Dropdown
           customClassName={"app__header__chain-select-dropdown"}
           role={"menu"}
           options={[
@@ -81,7 +115,7 @@ function Home() {
             handleSelectChainType(option);
           }}
           hasDeselectOption={false}
-        />
+        /> */}
       </div>
 
       {chainType === ChainType.MainNet && (
@@ -200,9 +234,9 @@ function Home() {
   async function handleConnectWalletClick() {
     try {
       const newAccounts = await peraWallet.connect();
-  
+
       handleSetLog("Connected to Pera Wallet");
-  
+
       setAccountAddress(newAccounts[0]);
     } catch (e) {
       console.log(e);
@@ -226,7 +260,7 @@ function Home() {
   }
 
   function handleSelectChainType(
-    option: DropdownOption<"mainnet" | "testnet", any> | null
+    option: {id: "mainnet" | "testnet"} | null
   ) {
     if (option?.id === "testnet") {
       setChainType(ChainType.TestNet);

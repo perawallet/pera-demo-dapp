@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {Buffer} from 'buffer';
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
