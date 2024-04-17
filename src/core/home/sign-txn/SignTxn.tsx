@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
-import {PeraWalletConnect} from "@perawallet/connect";
-import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
-import algosdk from "algosdk";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
+import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
+
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
@@ -125,29 +125,30 @@ function SignTxn({
     await signArbitraryData(unsignedData);
   }
 
-  async function signArbitraryData(arbitraryData: PeraWalletArbitraryData[]) {
-    try {
-      const signedData: Uint8Array[] = await peraWallet.signData(
-        arbitraryData,
-        accountAddress
-      );
+  function signArbitraryData(arbitraryData: PeraWalletArbitraryData[]) {
+    console.log(arbitraryData)
+    // try {
+    //   const signedData: Uint8Array[] = await peraWallet.signData(
+    //     arbitraryData,
+    //     accountAddress
+    //   );
 
-      arbitraryData.forEach((data, index) => {
-        const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
+    //   arbitraryData.forEach((data, index) => {
+    //     const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
 
-        console.log({data, signedData: signedData[index], isVerified});
+    //     console.log({data, signedData: signedData[index], isVerified});
 
-        if (!isVerified) {
-          handleSetLog(`Arbitrary data did not match with signed data!`);
-        }
-      });
+    //     if (!isVerified) {
+    //       handleSetLog(`Arbitrary data did not match with signed data!`);
+    //     }
+    //   });
 
-      console.log({signedData});
-      handleSetLog("Data signed successfully");
-    } catch (error) {
-      console.log(error)
-      handleSetLog(`${error}`);
-    }
+    //   console.log({signedData});
+    //   handleSetLog("Data signed successfully");
+    // } catch (error) {
+    //   console.log(error)
+    //   handleSetLog(`${error}`);
+    // }
   }
 
   async function signTransaction(scenario: Scenario, name: string) {

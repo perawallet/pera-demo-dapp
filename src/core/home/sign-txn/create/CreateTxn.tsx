@@ -3,7 +3,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 
 import "./_create-txn.scss";
 
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 import algosdk from "algosdk";
 import {
   Button,
@@ -19,7 +19,7 @@ import {
   Textarea
 } from "@hipo/react-ui-toolkit";
 import {useState} from "react";
-import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
 
 import Modal from "../../../component/modal/Modal";
 import {ChainType, clientForChain} from "../../../utils/algod/algod";

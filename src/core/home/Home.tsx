@@ -2,9 +2,9 @@ import "./_home.scss";
 
 import {Button, Dropdown, DropdownOption, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
-import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
 import {PeraOnramp} from "@perawallet/onramp";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
@@ -16,7 +16,7 @@ import peraApiManager from "../utils/pera/api/peraApiManager";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
+const peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true", projectId: "ca5ebef6982a7374064b42fdf884659a"});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -37,9 +37,9 @@ function Home() {
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
 
-  useEffect(() => {
-    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
-  }, [isConnectCompactMode]);
+  // useEffect(() => {
+  //   peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
+  // }, [isConnectCompactMode]);
 
   useEffect(() => {
     peraWallet
@@ -51,9 +51,9 @@ function Home() {
           handleSetLog("Connected to Pera Wallet");
         }
 
-        peraWallet.connector?.on("disconnect", () => {
-          setAccountAddress(null);
-        });
+        // peraWallet.connector?.on("disconnect", () => {
+        //   setAccountAddress(null);
+        // });
       })
       .catch((e) => console.log(e));
 
