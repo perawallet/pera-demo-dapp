@@ -1,8 +1,7 @@
 import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
-import {PeraWalletConnect} from "@perawallet/connect";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
-import algosdk from "algosdk";
+import {PeraWalletConnect} from "@perawallet/connect-beta";
+import {SignerTransaction} from "@perawallet/connect-beta/dist/util/model/peraWalletModels";
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
@@ -89,39 +88,39 @@ function SignTxn({
     </>
   );
 
-  async function signArbitraryData() {
-    try {
-      const unsignedData = [
-        {
-          data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
-          message: "Timestamp confirmation"
-        },
-        {
-          data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
-          message: "User agent confirmation"
-        }
-      ];
-      const signedData: Uint8Array[] = await peraWallet.signData(
-        unsignedData,
-        accountAddress
-      );
+  function signArbitraryData() {
+    // try {
+    //   const unsignedData = [
+    //     {
+    //       data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
+    //       message: "Timestamp confirmation"
+    //     },
+    //     {
+    //       data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
+    //       message: "User agent confirmation"
+    //     }
+    //   ];
+    //   const signedData: Uint8Array[] = await peraWallet.signData(
+    //     unsignedData,
+    //     accountAddress
+    //   );
 
-      unsignedData.forEach((data, index) => {
-        const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
+    //   unsignedData.forEach((data, index) => {
+    //     const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
 
-        console.log({data, signedData: signedData[index], isVerified});
+    //     console.log({data, signedData: signedData[index], isVerified});
 
-        if (!isVerified) {
-          handleSetLog(`Arbitrary data did not match with signed data!`);
-        }
-      });
+    //     if (!isVerified) {
+    //       handleSetLog(`Arbitrary data did not match with signed data!`);
+    //     }
+    //   });
 
-      console.log({signedData});
-      handleSetLog("Data signed successfully");
-    } catch (error) {
-      console.log(error)
-      handleSetLog(`${error}`);
-    }
+    //   console.log({signedData});
+    //   handleSetLog("Data signed successfully");
+    // } catch (error) {
+    //   console.log(error)
+    //   handleSetLog(`${error}`);
+    // }
   }
 
   async function signTransaction(scenario: Scenario, name: string) {
