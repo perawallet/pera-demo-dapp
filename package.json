@@ -4,12 +4,12 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "@hipo/react-ui-toolkit": "1.0.0-beta",
-    "@perawallet/connect-beta": "2.0.0",
+    "@hipo/react-ui-toolkit": "1.1.2",
+    "@perawallet/connect-beta": "2.0.1",
     "@perawallet/onramp": "1.1.1",
-    "@testing-library/jest-dom": "5.16.2",
-    "@testing-library/react": "12.1.4",
-    "@testing-library/user-event": "13.5.0",
+    "@testing-library/jest-dom": "6.4.2",
+    "@testing-library/react": "15.0.5",
+    "@testing-library/user-event": "14.5.2",
     "@types/react-modal": "3.13.1",
     "ajv": "^8.12.0",
     "algosdk": "2.7.0",
@@ -18,12 +18,12 @@
     "crypto-browserify": "^3.12.0",
     "https-browserify": "^1.0.0",
     "json-canonicalize": "^1.0.6",
-    "notiboy-js-sdk": "1.1.0",
     "os-browserify": "^0.3.0",
     "postcss": "^8.4.38",
     "process": "^0.11.10",
-    "react": "18.0.0",
-    "react-dom": "18.0.0",
+    "react": "18.3.1",
+    "react-app-rewired": "^2.2.1",
+    "react-dom": "18.3.1",
     "react-json-view": "^1.21.3",
     "react-modal": "3.16.1",
     "react-scripts": "5.0.0",
@@ -36,28 +36,32 @@
     "webpack": "5.91.0"
   },
   "devDependencies": {
-    "@hipo/eslint-config-base": "^4.2.1",
-    "@hipo/eslint-config-react": "^2.1.0",
-    "@hipo/eslint-config-typescript": "^1.1.0",
-    "@hipo/stylelint-config-base": "^2.3.0",
-    "@typescript-eslint/eslint-plugin": "^5.6.0",
-    "@typescript-eslint/parser": "^5.6.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-import-resolver-typescript": "^2.5.0",
-    "prettier": "^2.5.1",
-    "react-error-overlay": "^6.0.9",
+    "@hipo/eslint-config-base": "4.2.1",
+    "@hipo/eslint-config-react": "2.1.0",
+    "@hipo/eslint-config-typescript": "1.1.0",
+    "@hipo/stylelint-config-base": "2.3.0",
+    "eslint": "7.7.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-import-resolver-typescript": "2.5.0",
+    "prettier": "2.5.1",
+    "react-error-overlay": "6.0.9",
     "sass": "1.56.1",
-    "stylelint": "^13.12.0",
-    "stylelint-no-unsupported-browser-features": "^4.1.4",
-    "stylelint-order": "^4.1.0",
-    "stylelint-scss": "^3.19.0"
+    "stylelint": "13.12.0",
+    "stylelint-no-unsupported-browser-features": "4.1.4",
+    "stylelint-order": "4.1.0",
+    "stylelint-scss": "3.19.0"
+  },
+  "overrides": {
+    "react-json-view": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject"
   },
   "eslintConfig": {
     "extends": [

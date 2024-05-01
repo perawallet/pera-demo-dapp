@@ -161,8 +161,8 @@ function CreateTxnButton({
           voteKey: voteKey!,
           selectionKey: selectionKey!,
           stateProofKey: stateProofKey!,
-          voteFirst: voteFirst!,
-          voteLast: voteLast!,
+          voteFirst: suggestedParams.firstRound,
+          voteLast: suggestedParams.lastRound,
           voteKeyDilution: voteKeyDilution!,
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
@@ -170,7 +170,6 @@ function CreateTxnButton({
       } else {
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
           from: address,
-          nonParticipation: true,
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });

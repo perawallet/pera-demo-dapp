@@ -7,6 +7,7 @@ import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
 import CreateTxn from "./create/CreateTxn";
 import useModalVisibilityState from "../../hooks/useModalVisibilityState";
+import CreateArbitraryData from "../arbitrary-data/create/CreateArbitraryData";
 
 interface SignTxnProps {
   accountAddress: string;
@@ -25,6 +26,7 @@ function SignTxn({
 }: SignTxnProps) {
   const [isRequestPending, setIsRequestPending] = useState(false);
   const {isModalOpen, openModal, closeModal} = useModalVisibilityState();
+  const {isModalOpen: isArbitrarySignDataModalOpen, openModal: openArbitraryDataSignModal, closeModal: closeArbitraryDataSignModal} = useModalVisibilityState();
 
   return (
     <>
@@ -39,6 +41,12 @@ function SignTxn({
         isOpen={isModalOpen}
         onClose={closeModal}
       />
+
+      <Button customClassName={"app__button--connect"} onClick={openArbitraryDataSignModal}>
+        {"Create Arbitrary Data"}
+      </Button>
+
+      <CreateArbitraryData address={accountAddress} isOpen={isArbitrarySignDataModalOpen} onClose={closeArbitraryDataSignModal} peraWallet={peraWallet} />
 
       <div style={{marginTop: "45px"}}>
         <h3>{"Mainnet only, do not sign!"}</h3>
@@ -75,53 +83,9 @@ function SignTxn({
             </ListItem>
           )}
         </List>
-
-        <Button
-          customClassName={"app__button"}
-          style={{width: "160px"}}
-          onClick={signArbitraryData}
-          shouldDisplaySpinner={isRequestPending}
-          isDisabled={isRequestPending}>
-          {isRequestPending ? "Loading..." : "Sign Arbitrary Data"}
-        </Button>
       </div>
     </>
   );
-
-  function signArbitraryData() {
-    // try {
-    //   const unsignedData = [
-    //     {
-    //       data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
-    //       message: "Timestamp confirmation"
-    //     },
-    //     {
-    //       data: new Uint8Array(Buffer.from(`agent//${navigator.userAgent}`)),
-    //       message: "User agent confirmation"
-    //     }
-    //   ];
-    //   const signedData: Uint8Array[] = await peraWallet.signData(
-    //     unsignedData,
-    //     accountAddress
-    //   );
-
-    //   unsignedData.forEach((data, index) => {
-    //     const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
-
-    //     console.log({data, signedData: signedData[index], isVerified});
-
-    //     if (!isVerified) {
-    //       handleSetLog(`Arbitrary data did not match with signed data!`);
-    //     }
-    //   });
-
-    //   console.log({signedData});
-    //   handleSetLog("Data signed successfully");
-    // } catch (error) {
-    //   console.log(error)
-    //   handleSetLog(`${error}`);
-    // }
-  }
 
   async function signTransaction(scenario: Scenario, name: string) {
     setIsRequestPending(true);

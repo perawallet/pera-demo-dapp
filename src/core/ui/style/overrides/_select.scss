@@ -1,0 +1,11 @@
+.select-trigger.button {
+  height: 100%;
+
+  background-color: white;
+}
+
+.select-item--is-selected {
+  .check-icon {
+    margin-left: 6px;
+  }
+}
