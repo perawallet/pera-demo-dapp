@@ -15,10 +15,10 @@ const testAccounts = [
 ];
 
 export function signTxnWithTestAccount(txn: algosdk.Transaction): Uint8Array {
-  const sender = algosdk.encodeAddress(txn.from.publicKey);
+  const sender = algosdk.encodeAddress(txn.sender.publicKey);
 
   for (const testAccount of testAccounts) {
-    if (testAccount.addr === sender) {
+    if (testAccount.addr.toString() === sender) {
       return txn.signTxn(testAccount.sk);
     }
   }
@@ -86,8 +86,8 @@ const createAssetOptInTxn = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -108,8 +108,8 @@ const singlePayTxn: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -128,8 +128,8 @@ const singlePayTxnWithClose: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     closeRemainderTo: testAccounts[1].addr,
@@ -149,8 +149,8 @@ const singlePayTxnWithRekey: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     rekeyTo: testAccounts[2].addr,
@@ -171,8 +171,8 @@ const singlePayTxnWithRekeyAndClose: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     rekeyTo: testAccounts[2].addr,
@@ -194,8 +194,8 @@ const singlePayTxnWithInvalidAuthAddress: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -218,8 +218,8 @@ const singleAssetOptInTxn: Scenario = async (
   const assetIndex = getAssetIndex(chain, AssetTransactionType.OptIn);
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -241,8 +241,8 @@ const singleAssetOptInTxnToInvalidAsset: Scenario = async (
   const assetIndex = 100;
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -264,8 +264,8 @@ const singleAssetTransferTxn: Scenario = async (
   const assetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -287,8 +287,8 @@ const singleAssetTransferTxnWithClose: Scenario = async (
   const assetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -311,8 +311,8 @@ const singleInvalidAssetTransferTxn: Scenario = async (
   const assetIndex = 100; // Invalid asset id
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -335,7 +335,7 @@ const singleAppOptIn: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationOptInTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -357,7 +357,7 @@ const singleAppOptInWithAppRekey: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationOptInTxnFromObject({
-    from: testAccounts[1].addr,
+    sender: testAccounts[1].addr,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -381,7 +381,7 @@ const singleAppCall: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -404,7 +404,7 @@ const singleAppCallNoArgs: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [],
@@ -427,7 +427,7 @@ const singleAppCallWithRekey: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -451,7 +451,7 @@ const singleAppCloseOut: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationCloseOutTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -474,7 +474,7 @@ const singleAppClearState: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationClearStateTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -498,7 +498,7 @@ const singleAppCreate: Scenario = async (
   const clearProgram = Uint8Array.from([3, 129, 1, 67]);
 
   const txn = algosdk.makeApplicationCreateTxnFromObject({
-    from: address,
+    sender: address,
     approvalProgram,
     clearProgram,
     numGlobalInts: 1,
@@ -528,7 +528,7 @@ const singleAppCreateExtraPage: Scenario = async (
   const clearProgram = Uint8Array.from([3, 129, 1, 67]);
 
   const txn = algosdk.makeApplicationCreateTxnFromObject({
-    from: address,
+    sender: address,
     approvalProgram,
     clearProgram,
     numGlobalInts: 1,
@@ -561,7 +561,7 @@ const singleAppUpdate: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationUpdateTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     approvalProgram,
     clearProgram,
@@ -586,7 +586,7 @@ const singleAppDelete: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationDeleteTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
@@ -609,8 +609,8 @@ const sign1FromGroupTxn: Scenario = async (
   const optInAssetIndex = getAssetIndex(chain, AssetTransactionType.OptIn);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -618,8 +618,8 @@ const sign1FromGroupTxn: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 1000000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -644,8 +644,8 @@ const sign2FromGroupTxn: Scenario = async (
   const optInAssetIndex = getAssetIndex(chain, AssetTransactionType.OptIn);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -653,8 +653,8 @@ const sign2FromGroupTxn: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 1000000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -662,8 +662,8 @@ const sign2FromGroupTxn: Scenario = async (
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 500000,
     note: new Uint8Array(Buffer.from("this is a payment txn")),
     suggestedParams
@@ -691,16 +691,16 @@ const signGroupWithPayOptinTransfer: Scenario = async (
   const optInAssetIndex = getAssetIndex(chain, AssetTransactionType.OptIn);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 500000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -708,8 +708,8 @@ const signGroupWithPayOptinTransfer: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -732,16 +732,16 @@ const signGroupWithPayRekey: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 500000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 500000,
     note: new Uint8Array(Buffer.from("example note value")),
     rekeyTo: testAccounts[2].addr,
@@ -766,8 +766,8 @@ const signTxnWithAssetClose: Scenario = async (
   const closeAssetIndex = getAssetIndex(chain, AssetTransactionType.Close);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -775,8 +775,8 @@ const signTxnWithAssetClose: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex: closeAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -801,8 +801,8 @@ const signTxnWithRekey: Scenario = async (
   const assetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -810,8 +810,8 @@ const signTxnWithRekey: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -837,8 +837,8 @@ const signTxnWithRekeyAndAssetClose: Scenario = async (
   const assetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     assetIndex,
     amount: 10,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -846,8 +846,8 @@ const signTxnWithRekeyAndAssetClose: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 20,
     assetIndex: closeAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -856,8 +856,8 @@ const signTxnWithRekeyAndAssetClose: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 30,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -866,8 +866,8 @@ const signTxnWithRekeyAndAssetClose: Scenario = async (
   });
 
   const txn4 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 40,
     assetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -900,8 +900,8 @@ const signGroupOf7: Scenario = async (
   const closeAssetIndex = getAssetIndex(chain, AssetTransactionType.Close);
 
   const optIn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -909,8 +909,8 @@ const signGroupOf7: Scenario = async (
   });
 
   const assetXfer = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -918,8 +918,8 @@ const signGroupOf7: Scenario = async (
   });
 
   const assetClose = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50,
     assetIndex: closeAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -928,16 +928,16 @@ const signGroupOf7: Scenario = async (
   });
 
   const payment = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 500000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const accountClose = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 0,
     note: new Uint8Array(Buffer.from("example note value")),
     closeRemainderTo: testAccounts[1].addr,
@@ -945,8 +945,8 @@ const signGroupOf7: Scenario = async (
   });
 
   const accountRekey = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000,
     note: new Uint8Array(Buffer.from("example note value")),
     rekeyTo: testAccounts[2].addr,
@@ -954,8 +954,8 @@ const signGroupOf7: Scenario = async (
   });
 
   const accountRekeyAndClose = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 50000,
     note: new Uint8Array(Buffer.from("example note value")),
     closeRemainderTo: testAccounts[1].addr,
@@ -992,8 +992,8 @@ const fullTxnGroup: Scenario = async (
     const assetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
     const optIn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from: address,
-      to: address,
+      sender: address,
+      receiver: address,
       amount: 0,
       assetIndex,
       note: new Uint8Array(Buffer.from("example note value")),
@@ -1001,8 +1001,8 @@ const fullTxnGroup: Scenario = async (
     });
 
     const closeOut = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from: address,
-      to: address,
+      sender: address,
+      receiver: address,
       amount: 0,
       assetIndex,
       note: new Uint8Array(Buffer.from("example note value")),
@@ -1028,24 +1028,24 @@ const multipleNonAtomicTxns: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
@@ -1071,8 +1071,8 @@ const multipleNonAtomicTxnsForOnlyAssets: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1080,8 +1080,8 @@ const multipleNonAtomicTxnsForOnlyAssets: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 10000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1089,8 +1089,8 @@ const multipleNonAtomicTxnsForOnlyAssets: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 30000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1117,16 +1117,16 @@ const multipleNonAtomicTxnsMixed: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1134,8 +1134,8 @@ const multipleNonAtomicTxnsMixed: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 10000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1160,32 +1160,32 @@ const atomicGroupAndNonAtomicTxnsForOnlyPayment: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("txn 4")),
     suggestedParams
@@ -1215,16 +1215,16 @@ const atomicGroupAndNonAtomicTxnsMixed: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1232,8 +1232,8 @@ const atomicGroupAndNonAtomicTxnsMixed: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 10000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1241,8 +1241,8 @@ const atomicGroupAndNonAtomicTxnsMixed: Scenario = async (
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("txn 4")),
     suggestedParams
@@ -1267,32 +1267,32 @@ const multipleAtomicGroupsForOnlyPayment: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100003,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 1")),
     suggestedParams
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
@@ -1318,8 +1318,8 @@ const multipleAtomicGroupsForOnlyAssets: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1327,8 +1327,8 @@ const multipleAtomicGroupsForOnlyAssets: Scenario = async (
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 10000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1336,8 +1336,8 @@ const multipleAtomicGroupsForOnlyAssets: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1345,8 +1345,8 @@ const multipleAtomicGroupsForOnlyAssets: Scenario = async (
   });
 
   const txn4 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 2000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1372,32 +1372,32 @@ const multipleAtomicGroupsWithInvalidAsset: Scenario = async (
   const invalidAssetIndex = 100;
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 2000,
     assetIndex: invalidAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100003,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 1")),
     suggestedParams
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
@@ -1423,16 +1423,16 @@ const multipleAtomicGroupsMixed1: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 10000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1440,8 +1440,8 @@ const multipleAtomicGroupsMixed1: Scenario = async (
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1449,8 +1449,8 @@ const multipleAtomicGroupsMixed1: Scenario = async (
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
@@ -1476,24 +1476,24 @@ const multipleAtomicGroupsMixed2: Scenario = async (
   const transferAssetIndex = getAssetIndex(chain, AssetTransactionType.Transfer);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 2000,
     assetIndex: transferAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1501,8 +1501,8 @@ const multipleAtomicGroupsMixed2: Scenario = async (
   });
 
   const txn4 = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: address,
+    sender: address,
+    receiver: address,
     amount: 0,
     assetIndex: optInAssetIndex,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1527,32 +1527,32 @@ const multipleAtomicGroupSignOnly2: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100004,
     note: new Uint8Array(Buffer.from("txn 4")),
     suggestedParams
@@ -1576,24 +1576,24 @@ const atomicGroupAndNonAtomicTxnsSignOnly2: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100001,
     note: new Uint8Array(Buffer.from("atomic group 1 txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("atomic group 2 txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
@@ -1616,24 +1616,24 @@ const atomicNoSignTxn: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100002,
     note: new Uint8Array(Buffer.from("txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
@@ -1658,24 +1658,24 @@ const atomicAndSingleNoSignTxn: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn 1")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100002,
     note: new Uint8Array(Buffer.from("txn 2")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100003,
     note: new Uint8Array(Buffer.from("txn 3")),
     suggestedParams
@@ -1699,8 +1699,8 @@ const txnWithLargeNote: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("max length note (512)" + "!".repeat(491))),
     suggestedParams
@@ -1719,7 +1719,7 @@ const assetCreateTxnMaxInfoAndRekey: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
-    from: address,
+    sender: address,
     decimals: 2,
     defaultFrozen: false,
     total: BigInt("0xffffffffffffffff"),
@@ -1754,7 +1754,7 @@ const assetCreateTxnMinInfo: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
-    from: address,
+    sender: address,
     decimals: 0,
     defaultFrozen: false,
     total: 1,
@@ -1774,7 +1774,7 @@ const assetReconfigTxnResetAll: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetConfigTxnWithSuggestedParamsFromObject({
-    from: address,
+    sender: address,
     assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
     clawback: address,
     freeze: testAccounts[0].addr,
@@ -1798,7 +1798,7 @@ const assetReconfigTxnClearAll: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetConfigTxnWithSuggestedParamsFromObject({
-    from: address,
+    sender: address,
     assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
     strictEmptyAddressChecking: false,
     note: new Uint8Array(Buffer.from("example note value")),
@@ -1819,7 +1819,7 @@ const assetDeleteTxn: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetDestroyTxnWithSuggestedParamsFromObject({
-    from: address,
+    sender: address,
     assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -1839,23 +1839,23 @@ const zeroFeeTxnGroup: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn with 0 fee")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100001,
     note: new Uint8Array(Buffer.from("txn with double fee")),
     suggestedParams
   });
 
   txn2.fee += txn1.fee;
-  txn1.fee = 0;
+  txn1.fee = 0n;
 
   const group1 = [{txn: txn1, signers: []}, {txn: txn2}];
   algosdk.assignGroupID(group1.map((toSign) => toSign.txn));
@@ -1879,8 +1879,8 @@ const maxNumberOfTxns: Scenario = async (
     for (let j = 0; j < 16; j++) {
       group.push({
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: testAccounts[0].addr,
+          sender: address,
+          receiver: testAccounts[0].addr,
           amount: 0,
           note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 64`)),
           suggestedParams
@@ -1911,8 +1911,8 @@ const tooManyTxns: Scenario = async (
     for (let j = 0; j < 16; j++) {
       group.push({
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: testAccounts[0].addr,
+          sender: address,
+          receiver: testAccounts[0].addr,
           amount: 0,
           note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 65`)),
           suggestedParams
@@ -1928,8 +1928,8 @@ const tooManyTxns: Scenario = async (
   groups.push([
     {
       txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        from: address,
-        to: testAccounts[0].addr,
+        sender: address,
+        receiver: testAccounts[0].addr,
         amount: 0,
         note: new Uint8Array(Buffer.from(`No 65 of 65`)),
         suggestedParams
@@ -1956,8 +1956,8 @@ const fiveHundredTxns: Scenario = async (
     for (let j = 0; j < 16; j++) {
       group.push({
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: testAccounts[0].addr,
+          sender: address,
+          receiver: testAccounts[0].addr,
           amount: 0,
           note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 64`)),
           suggestedParams
@@ -1987,20 +1987,21 @@ const futureTransaction: Scenario = async (
   const differenceInSeconds = Math.round((futureTrxDate - exactDate) / 1000);
   const blockRound = Math.abs(Math.round(differenceInSeconds / 4));
 
-  const firstRoundFuture = suggestedParams.firstRound + blockRound;
+  const firstRoundFuture = Number(suggestedParams.firstValid) + blockRound;
   const lastRoundFuture = firstRoundFuture + 1000;
 
   const newSuggestedParams: SuggestedParams = {
     fee: suggestedParams.fee,
-    firstRound: firstRoundFuture,
-    lastRound: lastRoundFuture,
+    firstValid: firstRoundFuture,
+    lastValid: lastRoundFuture,
     genesisHash: suggestedParams.genesisHash,
-    genesisID: suggestedParams.genesisID
+    genesisID: suggestedParams.genesisID,
+    minFee: suggestedParams.minFee
   };
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("Example future transaction")),
     suggestedParams: newSuggestedParams
@@ -2021,40 +2022,40 @@ const invalidGroupingIssue: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn1 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn4 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txn5 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: testAccounts[0].addr,
-    to: address,
+    sender: testAccounts[0].addr,
+    receiver: address,
     amount: 1000000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -2080,7 +2081,7 @@ const appCallWithBoxes: Scenario = async (
   const appIndex = getAppIndex(chain);
 
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
-    from: address,
+    sender: address,
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [],
@@ -2102,8 +2103,8 @@ const invalidAuthAddress: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -2125,15 +2126,15 @@ const validAuthAddress: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr.toString(),
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
   });
 
   const txnsToSign = [
-    {txn, message: "This is a transaction message", authAddr: testAccounts[1].addr}
+    {txn, message: "This is a transaction message", authAddr: testAccounts[1].addr.toString()}
   ];
 
   return {
@@ -2148,8 +2149,8 @@ const invalidSignerAddress: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -2171,8 +2172,8 @@ const validSignerAddress: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
     suggestedParams
@@ -2201,8 +2202,8 @@ const swapAlgoToUSDC: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           assetIndex: 31566704,
           suggestedParams
@@ -2212,8 +2213,8 @@ const swapAlgoToUSDC: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "NGIHJMECRSFHIEQDHBVTLR54K7DOZWM5M6UM3A5CIOYSP6H3QTGSHHGJCQ",
+          sender: address,
+          receiver: "NGIHJMECRSFHIEQDHBVTLR54K7DOZWM5M6UM3A5CIOYSP6H3QTGSHHGJCQ",
           amount: 5000000,
           suggestedParams
         })
@@ -2222,7 +2223,7 @@ const swapAlgoToUSDC: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 605929989,
           appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
           suggestedParams
@@ -2231,7 +2232,7 @@ const swapAlgoToUSDC: Scenario = async (
     ]
   ];
 
-  groups[2][0].txn.fee = 2000;
+  groups[2][0].txn.fee = 2000n;
 
   // Assign Group ID
   groups.forEach((txns) => algosdk.assignGroupID(txns.map((toSign) => toSign.txn)));
@@ -2251,8 +2252,8 @@ const swapAlgoToGoETH: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           assetIndex: 386195940,
           suggestedParams
@@ -2262,8 +2263,8 @@ const swapAlgoToGoETH: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "6NXX7RGJFLEI3HEQEZXDP73SMQKAPWS4N7CEQJ4IEVONUWYWJLT4NM5QQM",
+          sender: address,
+          receiver: "6NXX7RGJFLEI3HEQEZXDP73SMQKAPWS4N7CEQJ4IEVONUWYWJLT4NM5QQM",
           amount: 3000000,
           suggestedParams
         })
@@ -2272,7 +2273,7 @@ const swapAlgoToGoETH: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 607660059,
           appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
           suggestedParams
@@ -2281,7 +2282,7 @@ const swapAlgoToGoETH: Scenario = async (
     ]
   ];
 
-  groups[2][0].txn.fee = 2000;
+  groups[2][0].txn.fee = 2000n;
 
   // Assign Group ID
   groups.forEach((txns) => algosdk.assignGroupID(txns.map((toSign) => toSign.txn)));
@@ -2301,8 +2302,8 @@ const depositAlgoFF: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "AV6PFVXWDQ7RVNQYOEXCWXCLXVJ5V57WVMVQZ2TWH4EKTB7GSWKUIAUPXQ",
+          sender: address,
+          receiver: "AV6PFVXWDQ7RVNQYOEXCWXCLXVJ5V57WVMVQZ2TWH4EKTB7GSWKUIAUPXQ",
           amount: 2000000,
           suggestedParams
         })
@@ -2311,7 +2312,7 @@ const depositAlgoFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 686498781,
           appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
           suggestedParams
@@ -2320,7 +2321,7 @@ const depositAlgoFF: Scenario = async (
     ]
   ];
 
-  groups[1][0].txn.fee = 3000;
+  groups[1][0].txn.fee = 3000n;
 
   // Assign Group ID
   groups.forEach((txns) => algosdk.assignGroupID(txns.map((toSign) => toSign.txn)));
@@ -2340,8 +2341,8 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           assetIndex: 919950894,
           suggestedParams
@@ -2351,8 +2352,8 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "KIW56KLIBX5UMWS5RT346TNA4HRV5H445S2LMQLRCR73SOHRVSM5TZBQ4A",
+          sender: address,
+          receiver: "KIW56KLIBX5UMWS5RT346TNA4HRV5H445S2LMQLRCR73SOHRVSM5TZBQ4A",
           amount: 1160825,
           assetIndex: 31566704,
           suggestedParams
@@ -2362,8 +2363,8 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "KIW56KLIBX5UMWS5RT346TNA4HRV5H445S2LMQLRCR73SOHRVSM5TZBQ4A",
+          sender: address,
+          receiver: "KIW56KLIBX5UMWS5RT346TNA4HRV5H445S2LMQLRCR73SOHRVSM5TZBQ4A",
           amount: 3977452,
           suggestedParams
         })
@@ -2372,7 +2373,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_1"))],
           suggestedParams
@@ -2382,7 +2383,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_2"))],
           suggestedParams
@@ -2392,7 +2393,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_3"))],
           suggestedParams
@@ -2402,7 +2403,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_4"))],
           suggestedParams
@@ -2412,7 +2413,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_5"))],
           suggestedParams
@@ -2422,7 +2423,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_6"))],
           suggestedParams
@@ -2432,7 +2433,7 @@ const poolAlgoUsdcFF: Scenario = async (
     [
       {
         txn: algosdk.makeApplicationNoOpTxnFromObject({
-          from: address,
+          sender: address,
           appIndex: 919954173,
           appArgs: [new Uint8Array(Buffer.from("pool_step_7"))],
           suggestedParams
@@ -2441,7 +2442,7 @@ const poolAlgoUsdcFF: Scenario = async (
     ]
   ];
 
-  groups[3][0].txn.fee = 29000;
+  groups[3][0].txn.fee = 29000n;
 
   // Assign Group ID
   groups.forEach((txns) => algosdk.assignGroupID(txns.map((toSign) => toSign.txn)));
@@ -2461,8 +2462,8 @@ const authAlgoGems: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           note: new Uint8Array(Buffer.from("challenge/1449301/gems")),
           suggestedParams
@@ -2486,8 +2487,8 @@ const buyNFTAlgogems: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           assetIndex: 886237574,
           suggestedParams
@@ -2497,8 +2498,8 @@ const buyNFTAlgogems: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: "N4EJ2ZFGWCEL4PVTCJSLD7RC4WVIUNO57V7LW2FQY7DFOP4EEN4XYC5UEM",
-          to: address,
+          sender: "N4EJ2ZFGWCEL4PVTCJSLD7RC4WVIUNO57V7LW2FQY7DFOP4EEN4XYC5UEM",
+          receiver: address,
           amount: 1,
           assetIndex: 886237574,
           suggestedParams
@@ -2508,8 +2509,8 @@ const buyNFTAlgogems: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "RJASLRMECMQL66PH2KLMFSCYMOOBOK7KRX3XMAWDKDB2PQ5J3U5FMPAJNE",
+          sender: address,
+          receiver: "RJASLRMECMQL66PH2KLMFSCYMOOBOK7KRX3XMAWDKDB2PQ5J3U5FMPAJNE",
           amount: 3600000,
           suggestedParams
         })
@@ -2518,8 +2519,8 @@ const buyNFTAlgogems: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "VWZBFLBUN6O5A5W6IWHMDUVP5NH2LPV4ZYFMAHP4FQBBYP627MP6WPOEG4",
+          sender: address,
+          receiver: "VWZBFLBUN6O5A5W6IWHMDUVP5NH2LPV4ZYFMAHP4FQBBYP627MP6WPOEG4",
           amount: 400000,
           suggestedParams
         })
@@ -2545,8 +2546,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: address,
+          sender: address,
+          receiver: address,
           amount: 0,
           assetIndex: 865021507,
           suggestedParams
@@ -2556,8 +2557,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: "CATN6JYGMBZF4OAQBXZTGALLB3X3XUUU6CQAKXUPNKVOC32VNTRWK25HD4",
-          to: address,
+          sender: "CATN6JYGMBZF4OAQBXZTGALLB3X3XUUU6CQAKXUPNKVOC32VNTRWK25HD4",
+          receiver: address,
           amount: 1,
           assetIndex: 865021507,
           suggestedParams
@@ -2567,8 +2568,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "BSKX6GSPTSY2KKXBO5L367OBY5SJT6GD25FV3RY25VLOGCMORQ6COPCOXY",
+          sender: address,
+          receiver: "BSKX6GSPTSY2KKXBO5L367OBY5SJT6GD25FV3RY25VLOGCMORQ6COPCOXY",
           amount: 196900,
           suggestedParams
         })
@@ -2577,8 +2578,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "ANGEL3CMT7TEXSBJR3DCTJTZCQFOF6FJB6PDKU4IOAMTNPXGR7XUYKOU5Y",
+          sender: address,
+          receiver: "ANGEL3CMT7TEXSBJR3DCTJTZCQFOF6FJB6PDKU4IOAMTNPXGR7XUYKOU5Y",
           amount: 18803950,
           suggestedParams
         })
@@ -2587,8 +2588,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "XNFT36FUCFRR6CK675FW4BEBCCCOJ4HOSMGCN6J2W6ZMB34KM2ENTNQCP4",
+          sender: address,
+          receiver: "XNFT36FUCFRR6CK675FW4BEBCCCOJ4HOSMGCN6J2W6ZMB34KM2ENTNQCP4",
           amount: 689150,
           suggestedParams
         })
@@ -2597,8 +2598,8 @@ const buyNFTAlgoxNFT: Scenario = async (
     [
       {
         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: "CATN6JYGMBZF4OAQBXZTGALLB3X3XUUU6CQAKXUPNKVOC32VNTRWK25HD4",
+          sender: address,
+          receiver: "CATN6JYGMBZF4OAQBXZTGALLB3X3XUUU6CQAKXUPNKVOC32VNTRWK25HD4",
           amount: 1000,
           suggestedParams
         })
@@ -2621,8 +2622,8 @@ const singleZoneTransferTxn: Scenario = async (
   const suggestedParams = await apiGetTxnParams(chain);
 
   const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-    from: address,
-    to: testAccounts[0].addr,
+    sender: address,
+    receiver: testAccounts[0].addr,
     amount: 1000000,
     assetIndex: 444035862,
     note: new Uint8Array(Buffer.from("example note value")),

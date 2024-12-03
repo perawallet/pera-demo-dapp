@@ -121,12 +121,12 @@ function CreateTxnButton({
           assetURL,
           total: total || 1,
           decimals: decimals || 0,
-          from: address,
+          sender: address,
           suggestedParams
         });
       } else if (assetTxnType === "modify") {
         txn = algosdk.makeAssetConfigTxnWithSuggestedParamsFromObject({
-          from: address,
+          sender: address,
           manager,
           freeze,
           clawback,
@@ -137,7 +137,7 @@ function CreateTxnButton({
         })
       } else {
         txn = algosdk.makeAssetDestroyTxnWithSuggestedParamsFromObject({
-          from: address,
+          sender: address,
           suggestedParams,
           assetIndex: Number(assetIndex)
         })
@@ -157,19 +157,19 @@ function CreateTxnButton({
 
       if (isOnlineKeyregTxn) {
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
-          from: address,
+          sender: address,
           voteKey: voteKey!,
           selectionKey: selectionKey!,
           stateProofKey: stateProofKey!,
-          voteFirst: suggestedParams.firstRound,
-          voteLast: suggestedParams.lastRound,
+          voteFirst: suggestedParams.firstValid,
+          voteLast: suggestedParams.lastValid,
           voteKeyDilution: voteKeyDilution!,
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });
       } else {
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
-          from: address,
+          sender: address,
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           suggestedParams
         });
@@ -187,8 +187,8 @@ function CreateTxnButton({
       const suggestedParams = await apiGetTxnParams(chain);
 
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-        from: address,
-        to: toAddress,
+        sender: address,
+        receiver: toAddress,
         amount: Number(amount),
         note: new Uint8Array(Buffer.from(note)),
         rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
@@ -216,8 +216,8 @@ function CreateTxnButton({
         const assetId = assetsRef.current!.results[i].asset_id;
 
         const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from: address,
-          to: toAddress,
+          sender: address,
+          receiver: toAddress,
           amount: 0,
           assetIndex: transactionAmount === 1 ? Number(assetIndex) : assetId,
           note: new Uint8Array(Buffer.from(`Transaction no: ${i + 1}`)),

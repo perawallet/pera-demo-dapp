@@ -1,6 +1,6 @@
 import "./_home.scss";
 
-import {Button, Dropdown, DropdownOption, Switch, useToaster} from "@hipo/react-ui-toolkit";
+import {Button, Select, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useEffect, useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
@@ -12,8 +12,8 @@ import PeraToast from "../component/toast/PeraToast";
 import {ChainType, clientForChain} from "../utils/algod/algod";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
 import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
-import peraApiManager from "../utils/pera/api/peraApiManager";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
+import peraApiManager from "../utils/pera/api/peraApiManager";
 
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
 let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
@@ -21,10 +21,21 @@ const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
 
+const chainOptions = [
+  {
+    id: "testnet",
+    title: "TestNet"
+  },
+  {
+    id: "mainnet",
+    title: "MainNet"
+  }
+];
+
 function Home() {
   const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
   const [chainDropdownSelectedOption, setChainDropdownSelectedOption] =
-    useState<DropdownOption<"mainnet" | "testnet", any> | null>({
+    useState<{id: "testnet" | "mainnet", title: string}>({
       id: "testnet",
       title: "TestNet"
     });
@@ -45,7 +56,7 @@ function Home() {
     peraWallet
       .reconnectSession()
       .then((accounts) => {
-        if (accounts) {
+        if (accounts && accounts[0]) {
           setAccountAddress(accounts[0]);
 
           handleSetLog("Connected to Pera Wallet");
@@ -56,32 +67,26 @@ function Home() {
         });
       })
       .catch((e) => console.log(e));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className={`app ${isConnectedToPeraWallet ? "app--connected" : ""}`}>
       <div className={"app__header"}>
-        <Dropdown
-          customClassName={"app__header__chain-select-dropdown"}
-          role={"menu"}
-          options={[
-            {
-              id: "testnet",
-              title: "TestNet"
-            },
-            {
-              id: "mainnet",
-              title: "MainNet"
-            }
-          ]}
-          selectedOption={chainDropdownSelectedOption}
-          onSelect={(option) => {
-            handleSelectChainType(option);
-          }}
-          hasDeselectOption={false}
-        />
+        <Select role={"menu"} options={chainOptions} value={chainDropdownSelectedOption} onSelect={handleSelectChainType}>
+          <Select.Trigger customClassName={"button app__button--connect"}>
+            {chainDropdownSelectedOption?.title}
+          </Select.Trigger>
+
+          <Select.Content>
+            <ul>
+              {chainOptions.map((option) => (
+                <Select.Item option={option} as={"li"}>
+                  {option.title}
+                </Select.Item>
+              ))}
+            </ul>
+          </Select.Content>
+        </Select>
       </div>
 
       {chainType === ChainType.MainNet && (
@@ -200,9 +205,9 @@ function Home() {
   async function handleConnectWalletClick() {
     try {
       const newAccounts = await peraWallet.connect();
-  
+
       handleSetLog("Connected to Pera Wallet");
-  
+
       setAccountAddress(newAccounts[0]);
     } catch (e) {
       console.log(e);
@@ -226,7 +231,7 @@ function Home() {
   }
 
   function handleSelectChainType(
-    option: DropdownOption<"mainnet" | "testnet", any> | null
+    option: {id: "mainnet" | "testnet"; title: string} | null
   ) {
     if (option?.id === "testnet") {
       setChainType(ChainType.TestNet);

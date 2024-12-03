@@ -5,6 +5,7 @@ import PeraToast from "../../component/toast/PeraToast";
 import {getAccountInformation} from "../../utils/account/accountUtils";
 import {ChainType} from "../../utils/algod/algod";
 import useAsyncProcess from "../useAsyncProcess/useAsyncProcess";
+import algosdk from "algosdk";
 
 function useGetAccountDetailRequest({
   chain,
@@ -16,7 +17,7 @@ function useGetAccountDetailRequest({
   const {
     state: accountInformationState,
     runAsyncProcess: runGetAccountInformationAsyncProcess
-  } = useAsyncProcess<AccountInformationData>();
+  } = useAsyncProcess<algosdk.modelsv2.Account>();
   const {display: displayToast} = useToaster();
 
   const refetchAccountDetail = useCallback(() => {

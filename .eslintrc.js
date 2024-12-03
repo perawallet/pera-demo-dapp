@@ -3,16 +3,13 @@ const path = require("path");
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
-  plugins: ["react", "react-hooks", "@typescript-eslint", "jsx-a11y"],
+  plugins: ["react", "react-hooks", "jsx-a11y"],
   env: {
     browser: true,
     jest: true,
     es6: true
   },
   extends: [
-    "@hipo/eslint-config-base",
-    "@hipo/eslint-config-react",
-    "@hipo/eslint-config-typescript",
     "plugin:jsx-a11y/recommended",
     "prettier"
   ],

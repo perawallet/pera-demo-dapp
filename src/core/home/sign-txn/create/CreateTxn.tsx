@@ -7,16 +7,15 @@ import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletM
 import algosdk from "algosdk";
 import {
   Button,
-  Dropdown,
-  DropdownOption,
   FormField,
   Input,
   List,
   ListItem,
+  Select,
   Switch,
   Tab,
   TabItem,
-  Textarea
+  Textarea,
 } from "@hipo/react-ui-toolkit";
 import {useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
@@ -69,24 +68,27 @@ export interface TxnForm {
   decimals?: number;
 }
 
-const TXN_DROPDOWN_OPTIONS: DropdownOption<PeraTransactionType, any>[] = [
-  {
-    id: "pay",
-    title: "pay"
-  },
-  {
-    id: "axfer",
-    title: "axfer"
-  },
-  {
-    id: "keyreg",
-    title: "keyreg"
-  },
-  {
-    id: "acfg",
-    title: "acfg"
-  }
-];
+const TXN_DROPDOWN_OPTIONS: {
+  id: PeraTransactionType;
+  title: string
+}[] = [
+    {
+      id: "pay",
+      title: "pay"
+    },
+    {
+      id: "axfer",
+      title: "axfer"
+    },
+    {
+      id: "keyreg",
+      title: "keyreg"
+    },
+    {
+      id: "acfg",
+      title: "acfg"
+    }
+  ];
 
 const ASSET_TXN_TABS: TabItem[] = [
   {id: "create", content: "Create"},
@@ -97,7 +99,7 @@ const ASSET_TXN_TABS: TabItem[] = [
 function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) {
   const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [transactionDropdownOption, setTransactionDropdownOption] =
-    useState<DropdownOption<PeraTransactionType> | null>({
+    useState<typeof TXN_DROPDOWN_OPTIONS[number] | null>({
       id: "pay",
       title: "pay"
     });
@@ -125,16 +127,23 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       <h3 style={{marginBottom: "10px"}}>{"Create Transaction"}</h3>
 
       <FormField label={"Transaction Type"}>
-        <Dropdown
-          customClassName={"app__header__chain-select-dropdown"}
-          role={"menu"}
-          options={TXN_DROPDOWN_OPTIONS}
-          selectedOption={transactionDropdownOption}
-          onSelect={(option) => {
-            setTransactionDropdownOption(option);
-          }}
-          hasDeselectOption={false}
-        />
+        <Select options={TXN_DROPDOWN_OPTIONS}
+          value={transactionDropdownOption}
+          onSelect={(option) => setTransactionDropdownOption(option)}>
+          <Select.Trigger customClassName={"button app__button--connect"}>
+            {transactionDropdownOption?.title}
+          </Select.Trigger>
+
+          <Select.Content>
+            <ul>
+              {TXN_DROPDOWN_OPTIONS.map((option) => (
+                <Select.Item option={option} as={"li"}>
+                  {option.title}
+                </Select.Item>
+              ))}
+            </ul>
+          </Select.Content>
+        </Select>
       </FormField>
 
       <FormField label={"From Address"}>
@@ -637,7 +646,6 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       if (sendBlockchain) {
         for (const signedTransaction of signedTransactions) {
           await clientForChain(chain).sendRawTransaction(signedTransaction).do();
-  
           await algosdk.waitForConfirmation(
             clientForChain(chain),
             transactions[0].txn.txID(),

@@ -9,7 +9,6 @@ const DEFAULT_INITIAL_ASYNC_PROCESS_STATE: AsyncProcessState = {
   error: null
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 function useAsyncProcess<Data extends any>(options?: UseAsyncProcessOptions<Data>) {
   const {initialState, shouldResetDataWhenPending = true} = options || {};
   const [asyncState, setAsyncState] = useState<AsyncProcessState<Data>>(
