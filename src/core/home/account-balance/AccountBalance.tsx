@@ -1,3 +1,4 @@
+import algosdk from "algosdk";
 import {getAccountBalanceText} from "../../utils/account/accountUtils";
 import {ChainType} from "../../utils/algod/algod";
 import {getWalletDetailsFromStorage} from "../../utils/storage/storageUtils";
@@ -7,7 +8,7 @@ function AccountBalance({
   accountInformation,
   chain
 }: {
-  accountInformation: AccountInformationData;
+  accountInformation: algosdk.modelsv2.Account;
   chain: ChainType;
 }) {
   const walletDetails = getWalletDetailsFromStorage();

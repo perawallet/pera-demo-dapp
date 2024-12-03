@@ -20,6 +20,7 @@
 .app__header {
   position: fixed;
   top: 0;
+  z-index: 3;
 
   display: flex;
   justify-content: right;
