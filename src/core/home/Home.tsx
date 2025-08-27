@@ -14,6 +14,7 @@ import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useG
 import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 import peraApiManager from "../utils/pera/api/peraApiManager";
+import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
 let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
@@ -47,6 +48,11 @@ function Home() {
     accountAddress: accountAddress || ""
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
+  const [showDeeplink, setShowDeeplink] = useState(false);
+
+  const toggleDeeplink = () => {
+    setShowDeeplink(!showDeeplink)
+  }
 
   useEffect(() => {
     peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
@@ -72,6 +78,10 @@ function Home() {
   return (
     <div className={`app ${isConnectedToPeraWallet ? "app--connected" : ""}`}>
       <div className={"app__header"}>
+
+        <div className={"app__deeplink"}>
+          <Button onClick={toggleDeeplink}>Deeplink Generator</Button>
+        </div>
         <Select role={"menu"} options={chainOptions} value={chainDropdownSelectedOption} onSelect={handleSelectChainType}>
           <Select.Trigger customClassName={"button app__button--connect"}>
             {chainDropdownSelectedOption?.title}
@@ -138,6 +148,15 @@ function Home() {
           chain={chainType}
           refecthAccountDetail={refetchAccountDetail}
         />
+      )}
+
+      {showDeeplink && 
+        (<div className="app__deeplink_modal">
+          <div className="app__deeplink_header">
+            <Button onClick={toggleDeeplink}>Close</Button>
+          </div>
+          <DeeplinkGenerator />
+        </div>
       )}
     </div>
   );
