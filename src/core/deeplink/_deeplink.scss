@@ -1,0 +1,55 @@
+.deeplink__root{
+    width: 60%;    
+    min-width: 500px;
+    display: flex;
+    margin: 0 auto;
+    flex-direction: column;
+    align-items: start;
+    overflow: scroll;
+    max-height: calc(100% - 150px);
+
+    .deeplink__row {
+        margin-top: 24px;
+        width: 100%;
+    }
+
+    .deeplink__input {
+        width: 100%;
+    }
+
+    .deeplink__select {
+        width: 100%;
+        min-height: 48px;
+        padding: 5px;
+    }
+
+    .deeplink__label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
+
+    .deeplink__button {
+        --button-bg: #6b46fe;
+        width: 100%;
+        height: 48px;
+
+        margin-top: 30px;
+
+        border-radius: 6px;
+
+        box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .deeplink__error {
+        color: #e54343;
+        margin-top: 24px;
+    }
+
+    .deeplink__output {
+        padding-top: 48px;
+
+        .deeplink__qr {
+            margin-top: 24px;
+        }
+    }
+}
