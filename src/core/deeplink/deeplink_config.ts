@@ -33,7 +33,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("label", false, "$LABEL")],
     templates: {
       new: "add-contact/?address=$ADDRESS&label=$LABEL",
-      old: null,
+      old: "$ADDRESS",
       universal: "add-contact/?address=$ADDRESS&label=$LABEL",
     },
   },
@@ -43,7 +43,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("label", false, "$LABEL")],
     templates: {
       new: "edit-contact/?address=$ADDRESS&label=$LABEL",
-      old: null,
+      old: "$ADDRESS",
       universal: "edit-contact/?address=$ADDRESS&label=$LABEL",
     },
   },
@@ -53,7 +53,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("label", false, "$LABEL")],
     templates: {
       new: "register-watch-account/?address=$ADDRESS&label=$LABEL",
-      old: null,
+      old: "$ADDRESS",
       universal: "register-watch-account/?address=$ADDRESS&label=$LABEL",
     },
   },
@@ -63,7 +63,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("label", false, "$LABEL")],
     templates: {
       new: "receiver-account-selection/?address=$ADDRESS",
-      old: null,
+      old: "$ADDRESS",
       universal: "receiver-account-selection/?address=$ADDRESS",
     },
   },
@@ -73,8 +73,25 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("label", false, "$LABEL")],
     templates: {
       new: "address-actions/?address=$ADDRESS&label=$LABEL",
-      old: null,
+      old: "$ADDRESS",
       universal: "address-actions/?address=$ADDRESS&label=$LABEL",
+    },
+  },
+  {
+    key: "algo-transfer",
+    name: "ALGO Transfer",
+    params: [
+      P("assetId", true, "$ASSET_ID"),
+      P("receiverAccountAddress", true, "$ADDRESS", "receiverAccountAddress"),
+      P("amount", true, "$AMOUNT"),
+      P("note", false, "$NOTE"),
+      P("xnote", false, "$XNOTE"),
+      P("label", false, "$LABEL"),
+    ],
+    templates: {
+      new: "asset-transfer/?assetId=0&receiverAccountAddress=$ADDRESS&amount=$AMOUNT&note=$NOTE&xnote=$XNOTE&label=$LABEL",
+      old: "$ADDRESS?amount=$AMOUNT&note=$NOTE",
+      universal: "asset-transfer/?assetId=0&receiverAccountAddress=$ADDRESS&amount=$AMOUNT&note=$NOTE&xnote=$XNOTE&label=$LABEL",
     },
   },
   {
@@ -90,7 +107,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     ],
     templates: {
       new: "asset-transfer/?assetId=$ASSET_ID&receiverAccountAddress=$ADDRESS&amount=$AMOUNT&note=$NOTE&xnote=$XNOTE&label=$LABEL",
-      old: null,
+      old: "$ADDRESS?amount=$AMOUNT&asset=$ASSET_ID&xnote=$XNOTE",
       universal: "asset-transfer/?assetId=$ASSET_ID&receiverAccountAddress=$ADDRESS&amount=$AMOUNT&note=$NOTE&xnote=$XNOTE&label=$LABEL",
     },
   },
@@ -108,12 +125,12 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
       P("votekd", false, "$VOTEKD"),
       P("fee", false, "$FEE"),
       P("note", false, "$NOTE"),
-      P("xnote", false, "XNOTE"), // CSV has no $ here; left as-is for you to adjust
+      P("xnote", false, "$XNOTE"),
     ],
     templates: {
-      new: "keyreg/?senderAddress=$ADDRESS&type=$TYPE&voteKey=$VOTE_KEY&selkey=$SELKEY&sprfkey=$SPFRKEY&votefst=$VOTEFST&votelst=$VOTELST&votekd=$VOTEKD&fee=$FEE&note=$NOTE&xnote=XNOTE",
-      old: null,
-      universal: "keyreg/?senderAddress=$ADDRESS&type=$TYPE&voteKey=$VOTE_KEY&selkey=$SELKEY&sprfkey=$SPFRKEY&votefst=$VOTEFST&votelst=$VOTELST&votekd=$VOTEKD&fee=$FEE&note=$NOTE&xnote=XNOTE",
+      new: "keyreg/?senderAddress=$ADDRESS&type=$TYPE&voteKey=$VOTE_KEY&selkey=$SELKEY&sprfkey=$SPFRKEY&votefst=$VOTEFST&votelst=$VOTELST&votekd=$VOTEKD&fee=$FEE&note=$NOTE&xnote=$XNOTE",
+      old: "$ADDRESS?type=keyreg&selkey=$SELKEY&sprfkey=$SPRFKEY&votefst=$VOTEFST&votekd=$VOTEKD&votekey=$VOTEKEY&votelst=$VOTELST&fee=$FEE&note=$NOTE",
+      universal: "keyreg/?senderAddress=$ADDRESS&type=$TYPE&voteKey=$VOTE_KEY&selkey=$SELKEY&sprfkey=$SPFRKEY&votefst=$VOTEFST&votelst=$VOTELST&votekd=$VOTEKD&fee=$FEE&note=$NOTE&xnote=$XNOTE",
     },
   },
   {
@@ -142,7 +159,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("uri", true, "$URI")],
     templates: {
       new: "wallet-connect/?uri=$URI",
-      old: null,
+      old: "wc:$ID@1?bridge=$BRIDGE&key=$KEY",
       universal: "wallet-connect/?uri=$URI",
     },
   },
@@ -152,7 +169,17 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("assetId", true, "$ASSET_ID")],
     templates: {
       new: "asset-opt-in/?address=$ADDRESS&assetId=$ASSET_ID",
-      old: null,
+      old: "?amount=0&asset=$ASSET_ID",
+      universal: "asset-opt-in/?address=$ADDRESS&assetId=$ASSET_ID",
+    },
+  },
+  {
+    key: "asset-opt-in-with-type",
+    name: "Asset Opt-in (with type)",
+    params: [P("address", true, "$ADDRESS"), P("assetId", true, "$ASSET_ID")],
+    templates: {
+      new: "asset-opt-in/?address=$ADDRESS&type=asset/opt-in&assetId=$ASSET_ID",
+      old: "?amount=0&asset=$ASSET_ID",
       universal: "asset-opt-in/?address=$ADDRESS&assetId=$ASSET_ID",
     },
   },
@@ -162,21 +189,20 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("address", true, "$ADDRESS"), P("notificationGroupType", false, "$NOTIFICATION_GROUP_TYPE")],
     templates: {
       new: "asset-inbox/?address=$ADDRESS",
-      old: null,
+      old: "$ADDRESS&type=asset-inbox",
       universal: "asset-inbox/?address=$ADDRESS",
     },
   },
   {
-    key: "asset-detail-legacy",
-    name: "Asset Detail",
+    key: "asset-transactions",
+    name: "Asset Transactions",
     params: [
       P("address", true, "$ADDRESS"),
       P("assetId", true, "$ASSET_ID"),
-      P("notificationGroupType", false, "$NOTIFICATION_GROUP_TYPE"),
     ],
     templates: {
       new: "asset-detail/?address=$ADDRESS&assetId=$ASSET_ID",
-      old: null,
+      old: "$ADDRESS&type=asset/transactions&asset=$ASSET_ID",
       universal: "asset-detail/?address=$ADDRESS&assetId=$ASSET_ID",
     },
   },
@@ -186,7 +212,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("url", true, "$URL")],
     templates: {
       new: "discover-browser/?url=$URL",
-      old: null,
+      old: "?url=$URL",
       universal: "discover-browser/?url=$URL",
     },
   },
@@ -196,7 +222,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("path", true, "$PATH")],
     templates: {
       new: "discover-path/?path=$PATH",
-      old: null,
+      old: "discover?path=$PATH",
       universal: "discover-path/?path=$PATH",
     },
   },
@@ -206,7 +232,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("path", true, "$PATH")],
     templates: {
       new: "cards-path/?path=$PATH",
-      old: null,
+      old: "cards?path=$PATH",
       universal: "cards-path/?path=$PATH",
     },
   },
@@ -216,7 +242,7 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
     params: [P("path", true, "$PATH")],
     templates: {
       new: "staking-path/?path=$PATH",
-      old: null,
+      old: "staking?path=$PATH",
       universal: "staking-path/?path=$PATH",
     },
   },
@@ -235,16 +261,6 @@ export const DEEP_LINKS: DeeplinkDefinition[] = [
       new: "algo:31566704/transfer?address=KG2HXWIOQSBOBGJEXSIBNEVNTRD4G4EFIJGRKBG2ZOT7NQ",
       old: "algo:31566704/transfer?address=KG2HXWIOQSBOBGJEXSIBNEVNTRD4G4EFIJGRKBG2ZOT7NQ",
       universal: "",
-    },
-  },
-  {
-    key: "asset-detail-v6202516",
-    name: "Asset Detail (v6202516)",
-    params: [P("address", true, "$ADDRESS"), P("assetId", true, "$ASSET_ID")],
-    templates: {
-      new: "asset-detail/?address=$ADDRESS&assetId=$ASSET_ID",
-      old: null,
-      universal: "asset-detail/?address=$ADDRESS&assetId=$ASSET_ID",
     },
   },
   {
