@@ -385,6 +385,10 @@ const singleAppCall: Scenario = async (
     appIndex,
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
+    rejectVersion: 3,
+    access: [{
+      address: "1234"
+    }],
     suggestedParams
   });
 
@@ -432,6 +436,32 @@ const singleAppCallWithRekey: Scenario = async (
     note: new Uint8Array(Buffer.from("example note value")),
     appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
     rekeyTo: testAccounts[2].addr,
+    suggestedParams
+  });
+
+  const txnsToSign = [{txn}];
+
+  return {
+    transaction: [txnsToSign]
+  };
+};
+
+const singleAppCallWithAccessList: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const appIndex = getAppIndex(chain);
+
+  const txn = algosdk.makeApplicationNoOpTxnFromObject({
+    sender: address,
+    appIndex,
+    note: new Uint8Array(Buffer.from("example note value")),
+    appArgs: [Uint8Array.from([0]), Uint8Array.from([0, 1])],
+    access: [{
+      address: address
+    }],
     suggestedParams
   });
 
@@ -2954,7 +2984,11 @@ export const scenarios: Array<{name: string; scenario: Scenario}> = [
   {
     name: "61. Sign single app opt-in with rekey",
     scenario: singleAppOptInWithAppRekey
-  }
+  },
+  {
+    name: "62. Sign single app call access list set (note: tx will fail to validate)",
+    scenario: singleAppCallWithAccessList
+  },
 ];
 
 export {createAssetOptInTxn};
