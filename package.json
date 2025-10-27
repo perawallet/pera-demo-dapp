@@ -8,7 +8,7 @@
     "@perawallet/connect": "npm:@perawallet/connect-beta@1.4.3",
     "@perawallet/onramp": "^1.1.1",
     "@types/react-modal": "^3.13.1",
-    "algosdk": "3.0.0",
+    "algosdk": "3.5.2",
     "notiboy-js-sdk": "^1.1.0",
     "qrcode.react": "^4.2.0",
     "react": "^18.0.0",
