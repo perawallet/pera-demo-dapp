@@ -1,7 +1,7 @@
 import "./_home.scss";
 
 import {Button, Select, Switch, useToaster} from "@hipo/react-ui-toolkit";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
 import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
@@ -17,7 +17,11 @@ import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-let peraWallet = new PeraWalletConnect({compactMode: isCompactMode === "true"});
+const testBridge = "https://finniest-fiona-superoffensively.ngrok-free.dev";
+let peraWallet = new PeraWalletConnect({
+  compactMode: isCompactMode === "true", 
+  bridge: testBridge
+});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -54,8 +58,18 @@ function Home() {
     setShowDeeplink(!showDeeplink)
   }
 
+  const handleSetLog = useCallback((log: string) => {
+    displayToast({
+      timeout: 10000,
+      render() {
+        return <PeraToast message={log} />;
+      }
+    });
+  }, [displayToast]);
+
+
   useEffect(() => {
-    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
+    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode, bridge: testBridge});
   }, [isConnectCompactMode]);
 
   useEffect(() => {
@@ -66,6 +80,7 @@ function Home() {
           setAccountAddress(accounts[0]);
 
           handleSetLog("Connected to Pera Wallet");
+          console.log("Pera Connect:", peraWallet);
         }
 
         peraWallet.connector?.on("disconnect", () => {
@@ -226,6 +241,7 @@ function Home() {
       const newAccounts = await peraWallet.connect();
 
       handleSetLog("Connected to Pera Wallet");
+      console.log("Pera Connect:", peraWallet);
 
       setAccountAddress(newAccounts[0]);
     } catch (e) {
@@ -238,15 +254,6 @@ function Home() {
     peraWallet.disconnect();
 
     setAccountAddress(null);
-  }
-
-  function handleSetLog(log: string) {
-    displayToast({
-      timeout: 10000,
-      render() {
-        return <PeraToast message={log} />;
-      }
-    });
   }
 
   function handleSelectChainType(
