@@ -17,10 +17,8 @@ import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 
 const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-const testBridge = "https://finniest-fiona-superoffensively.ngrok-free.dev";
 let peraWallet = new PeraWalletConnect({
-  compactMode: isCompactMode === "true", 
-  bridge: testBridge
+  compactMode: isCompactMode === "true"
 });
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
@@ -69,7 +67,7 @@ function Home() {
 
 
   useEffect(() => {
-    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode, bridge: testBridge});
+    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
   }, [isConnectCompactMode]);
 
   useEffect(() => {
@@ -141,6 +139,10 @@ function Home() {
         />
       )}
 
+      {peraWallet.isConnected && (
+        <p>{`Connected WC server: ${peraWallet.connector?.bridge}`}</p>
+      )}
+
       {isConnectedToPeraWallet && chainType === "mainnet" && (
         <Button customClassName={"app__button--connect"} onClick={handleAddFunds}>
           {"Add funds"}
@@ -165,14 +167,14 @@ function Home() {
         />
       )}
 
-      {showDeeplink && 
+      {showDeeplink &&
         (<div className="app__deeplink_modal">
           <div className="app__deeplink_header">
             <Button onClick={toggleDeeplink}>Close</Button>
           </div>
           <DeeplinkGenerator />
         </div>
-      )}
+        )}
     </div>
   );
 
