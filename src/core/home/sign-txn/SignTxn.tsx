@@ -129,21 +129,32 @@ function SignTxn({
     try {
       const signedData: Uint8Array[] = await peraWallet.signData(
         arbitraryData,
-        accountAddress
+        accountAddress,
+        true
       );
 
       arbitraryData.forEach((data, index) => {
-        const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
+        const isAlgosdkVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
 
-        console.log({data, signedData: signedData[index], isVerified});
-
-        if (!isVerified) {
-          handleSetLog(`Arbitrary data did not match with signed data!`);
+        if (isAlgosdkVerified) {
+          handleSetLog(`algosdk.verifyBytes: Verified!`);
+        } else {
+          handleSetLog(`algosdk.verifyBytes: Verification failed!`);
+          console.log("algosdk: false")
         }
-      });
 
-      console.log({signedData});
-      handleSetLog("Data signed successfully");
+        const isPeraWalletVerified = peraWallet.verifySignature(data.data, signedData[index], accountAddress)
+
+        if (isPeraWalletVerified) {
+          handleSetLog(`peraWallet.verifySignature: Verified!`);
+          console.log("peraWallet: true")
+        } else {
+          handleSetLog(`peraWallet.verifySignature: Verification failed!`);
+          console.log("peraWallet: false")
+        }
+
+        console.log({data, signedData: signedData[index], isAlgosdkVerified, isPeraWalletVerified});
+      });
     } catch (error) {
       console.log(error)
       handleSetLog(`${error}`);

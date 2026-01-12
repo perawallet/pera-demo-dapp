@@ -45,9 +45,9 @@ function Home() {
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
   const {display: displayToast} = useToaster();
-  const {accountInformationState, refetchAccountDetail} = useGetAccountDetailRequest({
+  const {accountInformation, refetchAccountDetail} = useGetAccountDetailRequest({
     chain: chainType,
-    accountAddress: accountAddress || ""
+    accountAddress
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(peraWallet.compactMode || false);
   const [showDeeplink, setShowDeeplink] = useState(false);
@@ -77,15 +77,16 @@ function Home() {
         if (accounts && accounts[0]) {
           setAccountAddress(accounts[0]);
 
+          refetchAccountDetail();
+
           handleSetLog("Connected to Pera Wallet");
-          console.log("Pera Connect:", peraWallet);
         }
 
         peraWallet.connector?.on("disconnect", () => {
           setAccountAddress(null);
         });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => console.error(e));
   }, []);
 
   return (
@@ -132,15 +133,15 @@ function Home() {
         </div>
       )}
 
-      {accountInformationState.data && (
+      {accountInformation && (
         <AccountBalance
-          accountInformation={accountInformationState.data}
+          accountInformation={accountInformation}
           chain={chainType}
         />
       )}
 
       {peraWallet.isConnected && (
-        <p>{`Connected WC server: ${peraWallet.connector?.bridge}`}</p>
+        <p className={"app__connected-wc-server"}>{`Connected WC server: ${peraWallet.connector?.bridge}`}</p>
       )}
 
       {isConnectedToPeraWallet && chainType === "mainnet" && (
@@ -243,11 +244,10 @@ function Home() {
       const newAccounts = await peraWallet.connect();
 
       handleSetLog("Connected to Pera Wallet");
-      console.log("Pera Connect:", peraWallet);
 
       setAccountAddress(newAccounts[0]);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       handleSetLog(`${e}`);
     }
   }

@@ -1,10 +1,9 @@
 import {useToaster} from "@hipo/react-ui-toolkit";
-import {useCallback, useEffect} from "react";
+import {useCallback, useEffect, useState} from "react";
 
 import PeraToast from "../../component/toast/PeraToast";
 import {getAccountInformation} from "../../utils/account/accountUtils";
 import {ChainType} from "../../utils/algod/algod";
-import useAsyncProcess from "../useAsyncProcess/useAsyncProcess";
 import algosdk from "algosdk";
 
 function useGetAccountDetailRequest({
@@ -12,20 +11,16 @@ function useGetAccountDetailRequest({
   accountAddress
 }: {
   chain: ChainType;
-  accountAddress: string;
+  accountAddress: string | null;
 }) {
-  const {
-    state: accountInformationState,
-    runAsyncProcess: runGetAccountInformationAsyncProcess
-  } = useAsyncProcess<algosdk.modelsv2.Account>();
+  const [accountInformation, setAccountInformation] = useState<algosdk.modelsv2.Account | null>(null);
   const {display: displayToast} = useToaster();
 
-  const refetchAccountDetail = useCallback(() => {
+  const refetchAccountDetail = useCallback(async () => {
     if (chain && accountAddress) {
       try {
-        runGetAccountInformationAsyncProcess(
-          getAccountInformation(chain, accountAddress)
-        );
+        const accountInformation = await getAccountInformation(chain, accountAddress);
+        setAccountInformation(accountInformation);
       } catch (error) {
         displayToast({
           render() {
@@ -34,14 +29,16 @@ function useGetAccountDetailRequest({
         });
       }
     }
-  }, [accountAddress, chain, displayToast, runGetAccountInformationAsyncProcess]);
+  }, [accountAddress, chain, displayToast]);
 
   useEffect(() => {
-    refetchAccountDetail();
-  }, [refetchAccountDetail]);
+    if (accountAddress) {
+      refetchAccountDetail();
+    }
+  }, [accountAddress, refetchAccountDetail]);
 
   return {
-    accountInformationState,
+    accountInformation,
     refetchAccountDetail
   };
 }

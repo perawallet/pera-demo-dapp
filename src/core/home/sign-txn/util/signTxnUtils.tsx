@@ -1,6 +1,7 @@
 /* eslint-disable */
 import algosdk, {SuggestedParams} from "algosdk";
 import {apiGetTxnParams, ChainType} from "../../../utils/algod/algod";
+import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 
 const testAccounts = [
   algosdk.mnemonicToSecretKey(
@@ -26,15 +27,8 @@ export function signTxnWithTestAccount(txn: algosdk.Transaction): Uint8Array {
   throw new Error(`Cannot sign transaction from unknown test account: ${sender}`);
 }
 
-export interface IScenarioTxn {
-  txn: algosdk.Transaction;
-  signers?: string[];
-  authAddr?: string;
-  message?: string;
-}
-
 export type ScenarioReturnType = {
-  transaction: IScenarioTxn[][];
+  transaction: SignerTransaction[][];
   transactionTimeout?: number;
 };
 
