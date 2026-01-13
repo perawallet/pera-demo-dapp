@@ -2,7 +2,6 @@ import "./_home.scss";
 
 import {Button, Select, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useCallback, useEffect, useState} from "react";
-import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
 import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 
@@ -15,11 +14,8 @@ import {createAssetOptInTxn} from "./sign-txn/util/signTxnUtils";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
+import peraWallet, {PeraWalletManager} from "../utils/pera-wallet/PeraWalletManager";
 
-const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE);
-let peraWallet = new PeraWalletConnect({
-  compactMode: isCompactMode === "true"
-});
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
@@ -67,24 +63,25 @@ function Home() {
 
 
   useEffect(() => {
-    peraWallet = new PeraWalletConnect({compactMode: isConnectCompactMode});
-  }, [isConnectCompactMode]);
+    peraWallet.updateConfig({
+      compactMode: isConnectCompactMode,
+      chainId: PeraWalletManager.getChainId(chainType)
+    });
+  }, [isConnectCompactMode, chainType]);
 
   useEffect(() => {
     peraWallet
-      .reconnectSession()
+      .reconnectSessionAndSetupEventHandlers({
+        onDisconnect: async () => {
+          setAccountAddress(null);
+        }
+      })
       .then((accounts) => {
         if (accounts && accounts[0]) {
           setAccountAddress(accounts[0]);
-
           refetchAccountDetail();
-
           handleSetLog("Connected to Pera Wallet");
         }
-
-        peraWallet.connector?.on("disconnect", () => {
-          setAccountAddress(null);
-        });
       })
       .catch((e) => console.error(e));
   }, []);
@@ -180,9 +177,14 @@ function Home() {
   );
 
   function handleCompactModeSwitch() {
-    setConnectCompactMode(!isConnectCompactMode);
+    const newCompactMode = !isConnectCompactMode;
+    setConnectCompactMode(newCompactMode);
 
-    localStorage.setItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE, localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE) === "true" ? "false" : "true");
+    localStorage.setItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE, newCompactMode ? "true" : "false");
+    
+    peraWallet.updateConfig({
+      compactMode: newCompactMode
+    });
   }
 
   function handleAddFunds() {
@@ -241,7 +243,11 @@ function Home() {
 
   async function handleConnectWalletClick() {
     try {
-      const newAccounts = await peraWallet.connect();
+      const newAccounts = await peraWallet.connectAndSetupEventHandlers({
+        onDisconnect: async () => {
+          setAccountAddress(null);
+        }
+      });
 
       handleSetLog("Connected to Pera Wallet");
 
@@ -254,7 +260,6 @@ function Home() {
 
   function handleDisconnectWalletClick() {
     peraWallet.disconnect();
-
     setAccountAddress(null);
   }
 
@@ -262,19 +267,27 @@ function Home() {
     option: {id: "mainnet" | "testnet"; title: string} | null
   ) {
     if (option?.id === "testnet") {
-      setChainType(ChainType.TestNet);
+      const newChainType = ChainType.TestNet;
+      setChainType(newChainType);
       setChainDropdownSelectedOption({
         id: "testnet",
         title: "TestNet"
       });
-      peraApiManager.updateFetcher(ChainType.TestNet);
+      peraApiManager.updateFetcher(newChainType);
+      peraWallet.updateConfig({
+        chainId: PeraWalletManager.getChainId(newChainType)
+      });
     } else if (option?.id === "mainnet") {
-      setChainType(ChainType.MainNet);
+      const newChainType = ChainType.MainNet;
+      setChainType(newChainType);
       setChainDropdownSelectedOption({
         id: "mainnet",
         title: "MainNet"
       });
-      peraApiManager.updateFetcher(ChainType.MainNet);
+      peraApiManager.updateFetcher(newChainType);
+      peraWallet.updateConfig({
+        chainId: PeraWalletManager.getChainId(newChainType)
+      });
     }
   }
 }

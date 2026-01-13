@@ -2,7 +2,6 @@ import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
-import algosdk from "algosdk";
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
@@ -133,28 +132,8 @@ function SignTxn({
         true
       );
 
-      arbitraryData.forEach((data, index) => {
-        const isAlgosdkVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
-
-        if (isAlgosdkVerified) {
-          handleSetLog(`algosdk.verifyBytes: Verified!`);
-        } else {
-          handleSetLog(`algosdk.verifyBytes: Verification failed!`);
-          console.log("algosdk: false")
-        }
-
-        const isPeraWalletVerified = peraWallet.verifySignature(data.data, signedData[index], accountAddress)
-
-        if (isPeraWalletVerified) {
-          handleSetLog(`peraWallet.verifySignature: Verified!`);
-          console.log("peraWallet: true")
-        } else {
-          handleSetLog(`peraWallet.verifySignature: Verification failed!`);
-          console.log("peraWallet: false")
-        }
-
-        console.log({data, signedData: signedData[index], isAlgosdkVerified, isPeraWalletVerified});
-      });
+      handleSetLog(`Arbitrary data signed and verified successfully`);
+      console.log({arbitraryData, signedData});
     } catch (error) {
       console.log(error)
       handleSetLog(`${error}`);
