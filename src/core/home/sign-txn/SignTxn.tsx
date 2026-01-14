@@ -2,7 +2,6 @@ import {useState} from "react";
 import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
 import {PeraWalletConnect} from "@perawallet/connect";
 import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
-import algosdk from "algosdk";
 
 import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
@@ -129,21 +128,12 @@ function SignTxn({
     try {
       const signedData: Uint8Array[] = await peraWallet.signData(
         arbitraryData,
-        accountAddress
+        accountAddress,
+        true
       );
 
-      arbitraryData.forEach((data, index) => {
-        const isVerified = algosdk.verifyBytes(data.data, signedData[index], accountAddress)
-
-        console.log({data, signedData: signedData[index], isVerified});
-
-        if (!isVerified) {
-          handleSetLog(`Arbitrary data did not match with signed data!`);
-        }
-      });
-
-      console.log({signedData});
-      handleSetLog("Data signed successfully");
+      handleSetLog(`Arbitrary data signed and verified successfully`);
+      console.log({arbitraryData, signedData});
     } catch (error) {
       console.log(error)
       handleSetLog(`${error}`);
