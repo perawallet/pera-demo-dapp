@@ -1,10 +1,10 @@
-import {useState} from "react";
-import {Button, List, ListItem} from "@hipo/react-ui-toolkit";
-import {PeraWalletConnect} from "@perawallet/connect";
-import {PeraWalletArbitraryData, SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import { useState } from "react";
+import { Button, List, ListItem } from "@hipo/react-ui-toolkit";
+import { PeraWalletConnect, ScopeType } from "@perawallet/connect";
+import type { PeraWalletArbitraryData, PeraWalletArc60SignData, SignerTransaction, Siwa } from "@perawallet/connect";
 
-import {mainnetScenarios, Scenario, scenarios} from "./util/signTxnUtils";
-import {ChainType, clientForChain} from "../../utils/algod/algod";
+import { mainnetScenarios, Scenario, scenarios } from "./util/signTxnUtils";
+import { ChainType, clientForChain } from "../../utils/algod/algod";
 import CreateTxn from "./create/CreateTxn";
 import useModalVisibilityState from "../../hooks/useModalVisibilityState";
 
@@ -24,7 +24,7 @@ function SignTxn({
   refecthAccountDetail
 }: SignTxnProps) {
   const [isRequestPending, setIsRequestPending] = useState(false);
-  const {isModalOpen, openModal, closeModal} = useModalVisibilityState();
+  const { isModalOpen, openModal, closeModal } = useModalVisibilityState();
 
   return (
     <>
@@ -40,7 +40,7 @@ function SignTxn({
         onClose={closeModal}
       />
 
-      <div style={{marginTop: "45px"}}>
+      <div style={{ marginTop: "45px" }}>
         <h3>{"Mainnet only, do not sign!"}</h3>
         {chain === ChainType.TestNet && <small>{"Switch to MainNet to see txns"}</small>}
 
@@ -59,7 +59,7 @@ function SignTxn({
         </List>
       </div>
 
-      <div style={{marginTop: "45px"}}>
+      <div style={{ marginTop: "45px" }}>
         <h3>{"Both Networks"}</h3>
 
         <List items={scenarios} customClassName={"app__actions"}>
@@ -76,10 +76,10 @@ function SignTxn({
           )}
         </List>
 
-        <div style={{display: "flex", gap: "20px"}}>
+        <div style={{ display: "flex", gap: "20px" }}>
           <Button
             customClassName={"app__button"}
-            style={{width: "160px"}}
+            style={{ width: "160px" }}
             onClick={signSingleArbitraryData}
             shouldDisplaySpinner={isRequestPending}
             isDisabled={isRequestPending}>
@@ -88,11 +88,20 @@ function SignTxn({
 
           <Button
             customClassName={"app__button"}
-            style={{width: "160px"}}
+            style={{ width: "160px" }}
             onClick={signMultipleArbitraryData}
             shouldDisplaySpinner={isRequestPending}
             isDisabled={isRequestPending}>
             {isRequestPending ? "Loading..." : "Sign Multiple Arbitrary Data"}
+          </Button>
+
+          <Button
+            customClassName={"app__button"}
+            style={{ width: "160px" }}
+            onClick={signArc60AuthRequest}
+            shouldDisplaySpinner={isRequestPending}
+            isDisabled={isRequestPending}>
+            {isRequestPending ? "Loading..." : "Sign ARC-60 Auth (preview)"}
           </Button>
         </div>
       </div>
@@ -102,7 +111,7 @@ function SignTxn({
   async function signSingleArbitraryData() {
     const unsignedData = [
       {
-        data: new Uint8Array(Buffer.from(`timestamp//${Date.now()}`)),
+        data: new Uint8Array(Buffer.from(`timestamp`)),
         message: "Timestamp confirmation"
       }];
 
@@ -121,7 +130,62 @@ function SignTxn({
       }
     ];
 
-    await signArbitraryData(unsignedData);
+    await signArbitraryData(unsignedData)
+  }
+
+  async function signArc60AuthRequest() {
+    const domain = window.location.host;
+
+    const siwaPayload: Siwa = {
+      account_address: accountAddress,
+      chain_id: "283",
+      domain,
+      "issued-at": new Date().toISOString(),
+      nonce: crypto.randomUUID(),
+      "request-id": crypto.randomUUID(),
+      statement: "Sign in to Pera Demo dApp with your Algorand account.",
+      type: "ed25519",
+      uri: window.location.origin,
+      version: "1"
+    };
+
+    // RFC 8785 canonical JSON: sorted top-level keys, no whitespace. Safe here
+    // because every value is an ASCII string with no JSON-escape characters.
+    const canonicalJson = JSON.stringify(
+      siwaPayload,
+      Object.keys(siwaPayload).sort()
+    );
+
+    // First 32 bytes of authenticatorData must equal sha256(domain) per ARC-60.
+    const authenticatorData = new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(domain))
+    );
+
+    const payload: PeraWalletArc60SignData = {
+      data: new Uint8Array(Buffer.from(canonicalJson)),
+      signer: accountAddress,
+      domain,
+      authenticatorData,
+      requestId: crypto.randomUUID(),
+      metadata: {
+        scope: ScopeType.AUTH,
+        encoding: "base64"
+      }
+    };
+
+    setIsRequestPending(true);
+
+    try {
+      const signature = await peraWallet.signArc60Data(payload, true);
+
+      handleSetLog(`ARC-60 auth signed and verified successfully`);
+      console.log({authenticatorData, data: payload.data, signature});
+    } catch (error) {
+      console.log(error);
+      handleSetLog(`${error}`);
+    } finally {
+      setIsRequestPending(false);
+    }
   }
 
   async function signArbitraryData(arbitraryData: PeraWalletArbitraryData[]) {
@@ -144,7 +208,7 @@ function SignTxn({
     setIsRequestPending(true);
 
     try {
-      const {transaction: txnsToSign, transactionTimeout} = await scenario(
+      const { transaction: txnsToSign, transactionTimeout } = await scenario(
         chain,
         accountAddress
       );
@@ -156,7 +220,7 @@ function SignTxn({
 
       const signedTransactions = await peraWallet.signTransaction([transactions]);
 
-      console.log({transactions, signedTransactions});
+      console.log({ transactions, signedTransactions });
 
       handleSetLog(`Transaction signed successfully: ${name}`);
 

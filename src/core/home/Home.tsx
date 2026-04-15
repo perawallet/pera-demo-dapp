@@ -2,8 +2,8 @@ import "./_home.scss";
 
 import {Button, Select, Switch, useToaster} from "@hipo/react-ui-toolkit";
 import {useCallback, useEffect, useState} from "react";
+import type {SignerTransaction} from "@perawallet/connect";
 import {PeraOnramp} from "@perawallet/onramp";
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";

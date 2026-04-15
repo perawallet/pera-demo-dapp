@@ -3,7 +3,7 @@ import {ReactComponent as CloseIcon} from "../../../ui/icon/close.svg";
 
 import "./_create-txn.scss";
 
-import {SignerTransaction} from "@perawallet/connect/dist/util/model/peraWalletModels";
+import type {SignerTransaction} from "@perawallet/connect";
 import algosdk from "algosdk";
 import {
   Button,
