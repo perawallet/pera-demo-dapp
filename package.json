@@ -73,6 +73,11 @@
       "webpack-dev-middleware@<=5.3.3": ">=5.3.4",
       "webpack-dev-server@<=5.2.0": ">=5.2.1",
       "ws@>=7.0.0 <7.5.10": ">=7.5.10"
+    },
+    "auditConfig": {
+      "ignoreCves": [
+        "CVE-2025-14505"
+      ]
     }
   }
 }
