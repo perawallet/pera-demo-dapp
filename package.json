@@ -5,10 +5,11 @@
   "private": true,
   "dependencies": {
     "@hipo/react-ui-toolkit": "1.1.2",
-    "@perawallet/connect": "npm:@perawallet/connect-beta@1.5.8",
+    "@perawallet/connect": "npm:@perawallet/connect-beta@1.5.10",
     "@perawallet/onramp": "^1.1.1",
     "@types/react-modal": "^3.13.1",
     "algosdk": "3.5.2",
+    "classnames": "^2.5.1",
     "notiboy-js-sdk": "^1.1.0",
     "qrcode.react": "^4.2.0",
     "react": "^18.0.0",
