@@ -106,11 +106,7 @@ const singlePayTxn: Scenario = async (
     receiver: testAccounts[0].addr,
     amount: 100000,
     note: new Uint8Array(Buffer.from("example note value")),
-
-    suggestedParams: {
-      ...suggestedParams,
-      fee: 5000000
-    }
+    suggestedParams
   });
 
   const txnsToSign = [{ txn, message: "This is a transaction message" }];
@@ -1766,10 +1762,7 @@ const assetCreateTxnMaxInfoAndRekey: Scenario = async (
     freeze: testAccounts[2].addr,
     note: new Uint8Array(Buffer.from("example note value")),
     rekeyTo: testAccounts[1].addr,
-    suggestedParams: {
-      ...suggestedParams,
-      fee: 5000000
-    }
+    suggestedParams
   });
 
   const txnsToSign = [{ txn, message: "This is a transaction message" }];
