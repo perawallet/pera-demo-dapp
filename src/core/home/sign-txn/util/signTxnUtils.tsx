@@ -1974,7 +1974,7 @@ const fiveHundredTxns: Scenario = async (
 
   const groups: Array<Array<{ txn: algosdk.Transaction }>> = [];
 
-  const numGroups = 65; // 64 / 16
+  const numGroups = 32; // 32 * 16 = 512
   for (let i = 0; i < numGroups; i++) {
     const group: Array<{ txn: algosdk.Transaction }> = [];
     for (let j = 0; j < 16; j++) {
@@ -1983,7 +1983,39 @@ const fiveHundredTxns: Scenario = async (
           sender: address,
           receiver: testAccounts[0].addr,
           amount: 0,
-          note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 64`)),
+          note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 512`)),
+          suggestedParams
+        })
+      });
+    }
+
+    algosdk.assignGroupID(group.map((toSign) => toSign.txn));
+    groups.push(group);
+  }
+
+  return {
+    transaction: groups
+  };
+};
+
+const thousandTxns: Scenario = async (
+  chain: ChainType,
+  address: string
+): Promise<ScenarioReturnType> => {
+  const suggestedParams = await apiGetTxnParams(chain);
+
+  const groups: Array<Array<{ txn: algosdk.Transaction }>> = [];
+
+  const numGroups = 64; // 64 * 16 = 1024
+  for (let i = 0; i < numGroups; i++) {
+    const group: Array<{ txn: algosdk.Transaction }> = [];
+    for (let j = 0; j < 16; j++) {
+      group.push({
+        txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+          sender: address,
+          receiver: testAccounts[0].addr,
+          amount: 0,
+          note: new Uint8Array(Buffer.from(`No ${i * 16 + j + 1} of 1024`)),
           suggestedParams
         })
       });
@@ -2982,6 +3014,10 @@ export const scenarios: Array<{ name: string; scenario: Scenario }> = [
   {
     name: "62. Sign single app call access list set (note: tx will fail to validate)",
     scenario: singleAppCallWithAccessList
+  },
+  {
+    name: "63. 1024 Transactions",
+    scenario: thousandTxns
   },
 ];
 
