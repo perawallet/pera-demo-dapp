@@ -54,7 +54,11 @@ function CreateTxnButton({
     clawback,
     assetURL,
     total,
-    decimals
+    decimals,
+
+    // afrz
+    freezeTarget,
+    frozen
   } = txnForm;
   const {runAsyncProcess} = useAsyncProcess<ListRequestResponse<Asset>>();
   const assetsRef = useRef<ListRequestResponse<Asset>>();
@@ -96,6 +100,8 @@ function CreateTxnButton({
         await createKeyregTransaction();
       } else if (type === "acfg") {
         await createAcfgTransaction();
+      } else if (type === "afrz") {
+        await createAfrzTransaction();
       }
 
       onResetForm();
@@ -147,6 +153,29 @@ function CreateTxnButton({
       onSetTransactions([{txn}]);
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  async function createAfrzTransaction() {
+    try {
+      setPendingState(true);
+      const suggestedParams = await apiGetTxnParams(chain);
+
+      const txn = algosdk.makeAssetFreezeTxnWithSuggestedParamsFromObject({
+        sender: address,
+        assetIndex: Number(assetIndex),
+        freezeTarget: freezeTarget!,
+        frozen: frozen || false,
+        note: new Uint8Array(Buffer.from(note)),
+        rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
+        suggestedParams
+      });
+
+      onSetTransactions([{txn}]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setPendingState(false);
     }
   }
 
