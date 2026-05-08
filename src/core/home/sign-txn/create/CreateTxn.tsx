@@ -66,6 +66,10 @@ export interface TxnForm {
   assetURL?: string;
   total?: number;
   decimals?: number;
+
+  // afrz
+  freezeTarget?: string;
+  frozen?: boolean;
 }
 
 const TXN_DROPDOWN_OPTIONS: {
@@ -87,6 +91,10 @@ const TXN_DROPDOWN_OPTIONS: {
     {
       id: "acfg",
       title: "acfg"
+    },
+    {
+      id: "afrz",
+      title: "afrz"
     }
   ];
 
@@ -419,6 +427,58 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
           </>
         )
 
+      case "afrz":
+        return (
+          <>
+            <FormField label={"Asset Index"}>
+              <Input
+                value={formState.assetIndex}
+                name={"assetIndex"}
+                onChange={(e) =>
+                  setFormState({...formState, assetIndex: e.currentTarget.value})
+                }
+              />
+            </FormField>
+
+            <FormField label={"Freeze Target"}>
+              <Input
+                value={formState.freezeTarget || ""}
+                name={"freezeTarget"}
+                onChange={(e) =>
+                  setFormState({...formState, freezeTarget: e.currentTarget.value})
+                }
+              />
+            </FormField>
+
+            <FormField label={formState.frozen ? "Freeze (true)" : "Unfreeze (false)"}>
+              <Switch
+                isToggledOn={formState.frozen || false}
+                onToggle={() => setFormState({...formState, frozen: !formState.frozen})}
+              />
+            </FormField>
+
+            <FormField label={"Rekey To (optional)"}>
+              <Input
+                value={formState.rekeyTo}
+                name={"rekeyto"}
+                onChange={(e) =>
+                  setFormState({...formState, rekeyTo: e.currentTarget.value})
+                }
+              />
+            </FormField>
+
+            <FormField label={"Note"}>
+              <Textarea
+                value={formState.note}
+                name={"note"}
+                onChange={(e) =>
+                  setFormState({...formState, note: e.currentTarget.value})
+                }
+              />
+            </FormField>
+          </>
+        );
+
       default:
         return null;
     }
@@ -673,7 +733,9 @@ function CreateTxn({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
       assetIndex: "",
       rekeyTo: "",
       closeTo: "",
-      transactionAmount: 1
+      transactionAmount: 1,
+      freezeTarget: "",
+      frozen: false
     });
   }
 }
