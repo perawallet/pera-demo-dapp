@@ -1,20 +1,24 @@
-import "@hipo/react-ui-toolkit/dist/main.css";
 import "./_index.scss";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {ToastContextProvider} from "@hipo/react-ui-toolkit";
+import {ThemeProvider, CssBaseline} from "@mui/material";
 
 import App from "./core/app/App";
+import theme from "./core/theme/theme";
+import {PeraToastProvider} from "./core/component/toast/PeraToast";
 import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
 
 root.render(
   <React.StrictMode>
-    <ToastContextProvider>
-      <App />
-    </ToastContextProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <PeraToastProvider>
+        <App />
+      </PeraToastProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 );
 

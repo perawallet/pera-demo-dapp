@@ -14,7 +14,7 @@ export type AlgorandNumberFormatterOptions = Omit<Intl.NumberFormatOptions, "sty
 
 export const DEFAULT_NUMBER_FORMAT_LOCALE_PREFERENCE = "en-US";
 
-function formatNumber(providedOptions: AlgorandNumberFormatterOptions = {}) {
+const formatNumber = (providedOptions: AlgorandNumberFormatterOptions = {}) => {
   const {locale = DEFAULT_NUMBER_FORMAT_LOCALE_PREFERENCE, ...otherOptions} =
     providedOptions;
   let options = otherOptions;
@@ -53,7 +53,7 @@ function formatNumber(providedOptions: AlgorandNumberFormatterOptions = {}) {
   try {
     numberFormatter = new Intl.NumberFormat(
       locale || [navigator.language, "en-GB"],
-      options
+      options as Intl.NumberFormatOptions
     );
   } catch (error) {
     numberFormatter = {
@@ -68,7 +68,7 @@ function formatNumber(providedOptions: AlgorandNumberFormatterOptions = {}) {
         options.currencyDisplay = "symbol";
         numberFormatter = new Intl.NumberFormat(
           locale || [navigator.language, "en-GB"],
-          options
+          options as Intl.NumberFormatOptions
         );
       } catch (currencyFormattingError) {
         console.error({currencyFormattingError});
@@ -104,6 +104,6 @@ function formatNumber(providedOptions: AlgorandNumberFormatterOptions = {}) {
 
     return formattedValue;
   };
-}
+};
 
 export {formatNumber};

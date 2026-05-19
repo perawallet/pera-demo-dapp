@@ -1,6 +1,6 @@
 import {useLayoutEffect} from "react";
 
-function useOnUnmount(callback?: VoidFunction) {
+const useOnUnmount = (callback?: VoidFunction) => {
   useLayoutEffect(() => {
     return () => {
       if (callback) {
@@ -9,6 +9,6 @@ function useOnUnmount(callback?: VoidFunction) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-}
+};
 
 export default useOnUnmount;

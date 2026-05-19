@@ -1,10 +1,10 @@
 import Home from "../home/Home";
 import useSetDynamicVhValue from "../hooks/useSetDynamicVh";
 
-function App() {
+const App = () => {
   useSetDynamicVhValue();
 
   return <Home />;
-}
+};
 
 export default App;

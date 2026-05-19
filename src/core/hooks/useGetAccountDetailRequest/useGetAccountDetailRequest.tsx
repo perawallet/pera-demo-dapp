@@ -1,20 +1,20 @@
-import {useToaster} from "@hipo/react-ui-toolkit";
 import {useCallback, useEffect, useState} from "react";
 
-import PeraToast from "../../component/toast/PeraToast";
+import {usePeraToast} from "../../component/toast/PeraToast";
 import {getAccountInformation} from "../../utils/account/accountUtils";
 import {ChainType} from "../../utils/algod/algod";
 import algosdk from "algosdk";
 
-function useGetAccountDetailRequest({
+const useGetAccountDetailRequest = ({
   chain,
   accountAddress
 }: {
   chain: ChainType;
   accountAddress: string | null;
-}) {
-  const [accountInformation, setAccountInformation] = useState<algosdk.modelsv2.Account | null>(null);
-  const {display: displayToast} = useToaster();
+}) => {
+  const [accountInformation, setAccountInformation] =
+    useState<algosdk.modelsv2.Account | null>(null);
+  const {display: displayToast} = usePeraToast();
 
   const refetchAccountDetail = useCallback(async () => {
     if (chain && accountAddress) {
@@ -23,9 +23,8 @@ function useGetAccountDetailRequest({
         setAccountInformation(accountInformation);
       } catch (error) {
         displayToast({
-          render() {
-            return <PeraToast message={error as unknown as string} />;
-          }
+          message: error as unknown as string,
+          severity: "error"
         });
       }
     }
@@ -41,6 +40,6 @@ function useGetAccountDetailRequest({
     accountInformation,
     refetchAccountDetail
   };
-}
+};
 
 export default useGetAccountDetailRequest;

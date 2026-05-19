@@ -59,6 +59,14 @@ module.exports = {
       rules: {
         "newline-after-var": "off"
       }
+    },
+    {
+      // Scenarios are test fixtures: asset IDs, amounts, group sizes, etc.
+      // are inherently magic numbers and shouldn't be hoisted to named consts.
+      files: ["src/scenarios/**/*.ts"],
+      rules: {
+        "no-magic-numbers": "off"
+      }
     }
   ]
 };
