@@ -3,7 +3,7 @@
  * @param obj Target object
  * @param keys Keys to omit from obj
  */
-function omitKeys<T extends {[x: string]: any}, K extends keyof T>(obj: T, ...keys: K[]) {
+const omitKeys = <T extends {[x: string]: any}, K extends keyof T>(obj: T, ...keys: K[]) => {
   const newObj: {[x: string]: any} = {};
 
   Object.keys(obj).forEach((key) => {
@@ -15,7 +15,7 @@ function omitKeys<T extends {[x: string]: any}, K extends keyof T>(obj: T, ...ke
   });
 
   return newObj as Omit<T, K>;
-}
+};
 
 /**
  * Checks the given value if the value is object and not an array or null.
@@ -41,8 +41,8 @@ function omitKeys<T extends {[x: string]: any}, K extends keyof T>(obj: T, ...ke
  * isRecord(null)
  * // => false
  */
-function isRecord(x: unknown): x is Record<string, any> {
+const isRecord = (x: unknown): x is Record<string, any> => {
   return typeof x === "object" && Boolean(x) && !Array.isArray(x);
-}
+};
 
 export {omitKeys, isRecord};

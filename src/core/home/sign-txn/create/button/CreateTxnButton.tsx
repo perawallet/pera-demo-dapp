@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Button} from "@hipo/react-ui-toolkit";
+import {Button, CircularProgress} from "@mui/material";
 import algosdk, {Transaction, isValidAddress} from "algosdk";
 import type {SignerTransaction} from "@perawallet/connect";
 
@@ -10,7 +10,7 @@ import {TxnForm} from "../CreateTxn";
 import {ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
 import {PeraTransactionType} from "../../../../transaction/transactionTypes";
 
-function CreateTxnButton({
+const CreateTxnButton = ({
   txnForm,
   type,
   chain,
@@ -22,7 +22,7 @@ function CreateTxnButton({
   chain: ChainType;
   onResetForm: VoidFunction;
   onSetTransactions: (txns: SignerTransaction[]) => void;
-}) {
+}) => {
   const {
     address,
     toAddress,
@@ -80,37 +80,28 @@ function CreateTxnButton({
     }
   }, [isOnlineKeyregTxn, voteKey, selectionKey, stateProofKey, voteFirst, voteLast, voteKeyDilution, type]);
 
-  return (
-    <Button
-      onClick={handleCreateTransaction}
-      shouldDisplaySpinner={isPending}
-      isDisabled={isDisabled}
-      customClassName={
-        "create-txn__cta"
-      }>{`Create ${type} Transaction`}</Button>
-  );
+  const fetchAssets = async (next?: string) => {
+    let assetsResponse: ListRequestResponse<Asset>;
 
-  async function handleCreateTransaction() {
-    try {
-      if (type === "pay") {
-        await createPayTransaction();
-      } else if (type === "axfer") {
-        await createAxferTransaction();
-      } else if (type === "keyreg") {
-        await createKeyregTransaction();
-      } else if (type === "acfg") {
-        await createAcfgTransaction();
-      } else if (type === "afrz") {
-        await createAfrzTransaction();
-      }
+    if (next) {
+      const nextRequestUrl = new URL(next);
 
-      onResetForm();
-    } catch {
-      console.log("Failed to create transactions.");
+      assetsResponse = await runAsyncProcess(
+        peraApi.getAssets(getSearchParams(nextRequestUrl.search))
+      );
+    } else {
+      assetsResponse = await runAsyncProcess(peraApi.getAssets());
     }
-  }
 
-  async function createAcfgTransaction() {
+    assetsRef.current = {
+      ...assetsResponse,
+      results: [...(assetsRef.current?.results || []), ...assetsResponse.results]
+    }
+
+    if ((assetsRef.current.results.length || 0) < transactionAmount && assetsResponse.next) await fetchAssets(assetsResponse.next)
+  };
+
+  const createAcfgTransaction = async () => {
     try {
       const suggestedParams = await apiGetTxnParams(chain);
       let txn: Transaction;
@@ -148,15 +139,15 @@ function CreateTxnButton({
           assetIndex: Number(assetIndex)
         })
       }
-      
+
 
       onSetTransactions([{txn}]);
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
-  async function createAfrzTransaction() {
+  const createAfrzTransaction = async () => {
     try {
       setPendingState(true);
       const suggestedParams = await apiGetTxnParams(chain);
@@ -177,9 +168,9 @@ function CreateTxnButton({
     } finally {
       setPendingState(false);
     }
-  }
+  };
 
-  async function createKeyregTransaction() {
+  const createKeyregTransaction = async () => {
     try {
       const suggestedParams = await apiGetTxnParams(chain);
       let txn: Transaction;
@@ -208,9 +199,9 @@ function CreateTxnButton({
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
-  async function createPayTransaction() {
+  const createPayTransaction = async () => {
     try {
       setPendingState(true);
       const suggestedParams = await apiGetTxnParams(chain);
@@ -231,9 +222,9 @@ function CreateTxnButton({
     } finally {
       setPendingState(false);
     }
-  }
+  };
 
-  async function createAxferTransaction() {
+  const createAxferTransaction = async () => {
     try {
       setPendingState(true);
       await fetchAssets();
@@ -264,28 +255,40 @@ function CreateTxnButton({
     } finally {
       setPendingState(false);
     }
-  }
+  };
 
-  async function fetchAssets(next?: string) {
-    let assetsResponse: ListRequestResponse<Asset>;
+  const handleCreateTransaction = async () => {
+    try {
+      if (type === "pay") {
+        await createPayTransaction();
+      } else if (type === "axfer") {
+        await createAxferTransaction();
+      } else if (type === "keyreg") {
+        await createKeyregTransaction();
+      } else if (type === "acfg") {
+        await createAcfgTransaction();
+      } else if (type === "afrz") {
+        await createAfrzTransaction();
+      }
 
-    if (next) {
-      const nextRequestUrl = new URL(next);
-
-      assetsResponse = await runAsyncProcess(
-        peraApi.getAssets(getSearchParams(nextRequestUrl.search))
-      );
-    } else {
-      assetsResponse = await runAsyncProcess(peraApi.getAssets());
+      onResetForm();
+    } catch {
+      console.log("Failed to create transactions.");
     }
+  };
 
-    assetsRef.current = {
-      ...assetsResponse,
-      results: [...(assetsRef.current?.results || []), ...assetsResponse.results]
-    }
-
-    if ((assetsRef.current.results.length || 0) < transactionAmount && assetsResponse.next) await fetchAssets(assetsResponse.next)
-  }
-}
+  return (
+    <Button
+      onClick={handleCreateTransaction}
+      disabled={isDisabled || isPending}
+      variant={"contained"}
+      fullWidth={true}
+      startIcon={
+        isPending ? <CircularProgress size={16} color={"inherit"} /> : undefined
+      }>
+      {`Create ${type} Transaction`}
+    </Button>
+  );
+};
 
 export default CreateTxnButton;

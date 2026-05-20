@@ -9,7 +9,7 @@ const DEFAULT_INITIAL_ASYNC_PROCESS_STATE: AsyncProcessState = {
   error: null
 };
 
-function useAsyncProcess<Data extends any>(options?: UseAsyncProcessOptions<Data>) {
+const useAsyncProcess = <Data extends any>(options?: UseAsyncProcessOptions<Data>) => {
   const {initialState, shouldResetDataWhenPending = true} = options || {};
   const [asyncState, setAsyncState] = useState<AsyncProcessState<Data>>(
     initialState || DEFAULT_INITIAL_ASYNC_PROCESS_STATE
@@ -66,7 +66,7 @@ function useAsyncProcess<Data extends any>(options?: UseAsyncProcessOptions<Data
     setState: asyncStateSetter,
     runAsyncProcess
   };
-}
+};
 
 export {DEFAULT_INITIAL_ASYNC_PROCESS_STATE};
 export default useAsyncProcess;

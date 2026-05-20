@@ -1,4 +1,4 @@
-function separateIntoChunks<T = any>(array: T[], chunkSize: number): T[][] {
+const separateIntoChunks = <T = any>(array: T[], chunkSize: number): T[][] => {
   const separatedArray = [];
   const arrayAmount = array.length / chunkSize;
 
@@ -7,6 +7,6 @@ function separateIntoChunks<T = any>(array: T[], chunkSize: number): T[][] {
   }
 
   return separatedArray;
-}
+};
 
 export {separateIntoChunks};

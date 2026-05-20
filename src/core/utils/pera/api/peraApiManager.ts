@@ -17,9 +17,9 @@ const PERA_API_DEFAULT_OPTIONS: Omit<FetcherConfig, "baseUrl"> = {
   bodyParser: JSON.stringify
 };
 
-function getPeraApiBaseURLForNetwork(network: ChainType) {
+const getPeraApiBaseURLForNetwork = (network: ChainType) => {
   return network === ChainType.MainNet ? PERA_API_URLS.mainnet : PERA_API_URLS.testnet;
-}
+};
 
 class PeraApiManager {
   fetcher: Fetcher;

@@ -3,11 +3,11 @@ import {
   PeraWalletDetails
 } from "./pera-wallet/peraWalletTypes";
 
-function getLocalStorage() {
+const getLocalStorage = () => {
   return typeof localStorage === "undefined" ? undefined : localStorage;
-}
+};
 
-function getWalletDetailsFromStorage(): PeraWalletDetails | null {
+const getWalletDetailsFromStorage = (): PeraWalletDetails | null => {
   const storedWalletDetails = getLocalStorage()?.getItem(
     PERA_WALLET_LOCAL_STORAGE_KEYS.WALLET
   );
@@ -17,6 +17,6 @@ function getWalletDetailsFromStorage(): PeraWalletDetails | null {
   }
 
   return null;
-}
+};
 
 export {getWalletDetailsFromStorage};

@@ -1,6 +1,6 @@
 import {useCallback, useState} from "react";
 
-function useModalVisibilityState() {
+const useModalVisibilityState = () => {
   const [isModalOpen, setModalVisibility] = useState(false);
 
   return {
@@ -13,6 +13,6 @@ function useModalVisibilityState() {
       setModalVisibility(false);
     }, [setModalVisibility])
   };
-}
+};
 
 export default useModalVisibilityState;
