@@ -1,5 +1,5 @@
-import { apiGetTxnParams } from "../../core/utils/algod/algod";
-import { AssetTransactionType, getAssetIndex } from "../asset-indexes";
+import {apiGetTxnParams} from "../../core/utils/algod/algod";
+import {AssetTransactionType, getAssetIndex} from "../asset-indexes";
 import {
   buildAssetCreate,
   buildAssetDestroy,
@@ -7,8 +7,8 @@ import {
   buildAssetReconfig,
   buildAssetTransfer
 } from "../builders/asset";
-import { testAccounts } from "../test-accounts";
-import type { Scenario } from "../types";
+import {testAccounts} from "../test-accounts";
+import type {Scenario} from "../types";
 
 const INVALID_ASSET_INDEX = 100;
 
@@ -33,14 +33,13 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-axfer-opt-in",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
     id: "single-axfer-opt-in-invalid-asset",
     title: "Sign single asset opt-in txn to invalid asset",
-    description:
-      "Opt-in attempt against a non-existent asset ID (100).",
+    description: "Opt-in attempt against a non-existent asset ID (100).",
     expected:
       "Wallet displays the asset txn and may sign it (asset id is well-formed). On submit, algod rejects with an asset-does-not-exist error.",
     category: "single-axfer",
@@ -56,7 +55,31 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-axfer-opt-in-invalid-asset",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
+    }
+  },
+  {
+    id: "single-axfer-opt-in",
+    title: "Sign single asset opt-in txn with rekey",
+    description:
+      "Opt-in to a TestNet sample asset (0-amount self-transfer of the asset). With a rekey.",
+    expected:
+      "Wallet shows an asset opt-in txn (asset id, sender = receiver, amount 0). User can sign; algod accepts and the auth address is updated.",
+    category: "single-axfer",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildAssetTransfer({
+        sender: address,
+        receiver: address,
+        amount: 0,
+        assetIndex: getAssetIndex(chain, AssetTransactionType.OptIn),
+        note: "single-axfer-opt-in",
+        rekeyTo: testAccounts[0].addr,
+        suggestedParams
+      });
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -79,7 +102,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-axfer-transfer-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -103,14 +126,13 @@ export const singleAssetScenarios: Scenario[] = [
         closeRemainderTo: testAccounts[1].addr,
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
     id: "single-axfer-transfer-invalid-asset",
     title: "Sign single invalid asset transfer txn",
-    description:
-      "Asset transfer against a non-existent asset ID (100).",
+    description: "Asset transfer against a non-existent asset ID (100).",
     expected:
       "Wallet displays the asset txn and may sign it (asset id is well-formed). On submit, algod rejects with an asset-does-not-exist error.",
     category: "single-axfer",
@@ -126,7 +148,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-axfer-transfer-invalid-asset",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -150,7 +172,7 @@ export const singleAssetScenarios: Scenario[] = [
         rekeyTo: testAccounts[1].addr,
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -180,7 +202,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-acfg-create-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -203,14 +225,13 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-acfg-create-minimal",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
     id: "single-acfg-create-with-rekey",
     title: "Sign single asset create txn with rekey",
-    description:
-      "Create an asset with full metadata and `rekeyTo` set.",
+    description: "Create an asset with full metadata and `rekeyTo` set.",
     expected:
       "Wallet shows the asset-create txn AND prominently warns that the account will be rekeyed to the rekey target. User can sign; algod accepts both the create and the rekey.",
     category: "single-acfg",
@@ -234,7 +255,7 @@ export const singleAssetScenarios: Scenario[] = [
         rekeyTo: testAccounts[1].addr,
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -260,7 +281,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-acfg-reconfig-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -282,7 +303,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-acfg-reconfig-clear-all",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -303,7 +324,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-acfg-destroy-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -326,7 +347,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-afrz-freeze-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   },
   {
@@ -349,7 +370,7 @@ export const singleAssetScenarios: Scenario[] = [
         note: "single-afrz-unfreeze-plain",
         suggestedParams
       });
-      return { transaction: [[{ txn }]] };
+      return {transaction: [[{txn}]]};
     }
   }
 ];
