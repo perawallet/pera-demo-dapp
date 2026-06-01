@@ -1,4 +1,7 @@
 // src/core/liquid-auth/arc0027.ts
+/* eslint-disable no-magic-numbers */
+// Base64/CBOR bit operations and ARC-0027 protocol error codes are inherently
+// numeric; hoisting each to a named constant would hurt rather than help.
 import { encode as cborEncode, decode as cborDecode } from "cbor-x";
 
 export interface MultisigMetadata {
