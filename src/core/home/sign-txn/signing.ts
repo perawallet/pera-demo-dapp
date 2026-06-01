@@ -1,9 +1,11 @@
-import type { PeraWalletConnect, SignerTransaction } from "@perawallet/connect";
+import type { SignerTransaction } from "@perawallet/connect";
 import algosdk, { type Algodv2 } from "algosdk";
 import { testAccounts } from "../../../scenarios/test-accounts";
 
+export type SignTransactionFn = (groups: SignerTransaction[][]) => Promise<Uint8Array[]>;
+
 export interface SignAndSubmitArgs {
-  peraWallet: PeraWalletConnect;
+  signTransaction: SignTransactionFn;
   algod: Algodv2;
   accountAddress: string;
   txnsToSign: SignerTransaction[][];
@@ -59,13 +61,13 @@ const isExternallySignedSlot = (slot: SignerTransaction): boolean => {
  * (algod would reject "incomplete group").
  */
 export const signAndSubmit = async ({
-  peraWallet,
+  signTransaction,
   algod,
   accountAddress: _accountAddress,
   txnsToSign,
   transactionTimeout
 }: SignAndSubmitArgs): Promise<SignAndSubmitResult> => {
-  const allSigned = await peraWallet.signTransaction(txnsToSign);
+  const allSigned = await signTransaction(txnsToSign);
 
   // Slice the flat response back into per-group arrays in slot order,
   // accounting for `signers: []` slots that the wallet skipped.
