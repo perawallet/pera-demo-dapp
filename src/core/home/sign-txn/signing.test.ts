@@ -1,5 +1,5 @@
 import algosdk from "algosdk";
-import { signAndSubmit } from "./signing";
+import { signAndSubmit, type SignTransactionFn } from "./signing";
 import { testAccounts } from "../../../scenarios/test-accounts";
 
 describe("signAndSubmit", () => {
@@ -37,7 +37,7 @@ describe("signAndSubmit", () => {
     ];
 
     const result = await signAndSubmit({
-      signTransaction: peraWallet.signTransaction,
+      signTransaction: (peraWallet as { signTransaction: SignTransactionFn }).signTransaction,
       algod,
       accountAddress: "ABC",
       txnsToSign
@@ -93,7 +93,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      signTransaction: peraWallet.signTransaction,
+      signTransaction: (peraWallet as { signTransaction: SignTransactionFn }).signTransaction,
       algod,
       accountAddress: testAccounts[1].addr.toString(),
       txnsToSign: [[{ txn: userTxn }, { txn: externalTxn, signers: [] }]]
@@ -122,7 +122,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      signTransaction: peraWallet.signTransaction,
+      signTransaction: (peraWallet as { signTransaction: SignTransactionFn }).signTransaction,
       algod,
       accountAddress: "ABC",
       txnsToSign: [
