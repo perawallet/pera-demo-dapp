@@ -1,0 +1,80 @@
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import peraWallet from "../utils/pera-wallet/PeraWalletManager";
+import type { CommsProtocol, WalletConnector } from "./types";
+import { PeraConnectConnector } from "./PeraConnectConnector";
+import { LiquidAuthConnector } from "../liquid-auth/LiquidAuthConnector";
+import { LiquidAuthClient, type QrInfo } from "../liquid-auth/LiquidAuthClient";
+import { getCommsProtocol, setCommsProtocol, getLiquidAuthUrl } from "./walletStorage";
+
+interface WalletContextValue {
+  protocol: CommsProtocol;
+  connector: WalletConnector;
+  isInWebview: boolean;
+  qrInfo: QrInfo | null;
+  setQrInfo: (info: QrInfo | null) => void;
+  switchProtocol: (protocol: CommsProtocol) => Promise<void>;
+}
+
+const WalletContext = createContext<WalletContextValue | null>(null);
+
+export const useWallet = (): WalletContextValue => {
+  const ctx = useContext(WalletContext);
+  if (!ctx) throw new Error("useWallet must be used within a WalletProvider");
+  return ctx;
+};
+
+interface WalletProviderProps {
+  children: ReactNode;
+  onDisconnect?: () => Promise<void>;
+}
+
+export const WalletProvider = ({ children, onDisconnect }: WalletProviderProps) => {
+  const [protocol, setProtocol] = useState<CommsProtocol>(getCommsProtocol);
+  const [qrInfo, setQrInfo] = useState<QrInfo | null>(null);
+  const handleDisconnect = onDisconnect ?? (async () => {});
+
+  const peraConnector = useRef<PeraConnectConnector>(
+    new PeraConnectConnector(peraWallet as never, handleDisconnect)
+  );
+  const liquidConnector = useRef<LiquidAuthConnector | null>(null);
+
+  const buildLiquidConnector = useCallback((): LiquidAuthConnector => {
+    const client = new LiquidAuthClient(getLiquidAuthUrl());
+    const connector = new LiquidAuthConnector(client);
+    connector.onQr((info) => setQrInfo(info));
+    return connector;
+  }, []);
+
+  const connector: WalletConnector = useMemo(() => {
+    if (protocol === "liquid-auth") {
+      if (!liquidConnector.current) liquidConnector.current = buildLiquidConnector();
+      return liquidConnector.current;
+    }
+    return peraConnector.current;
+  }, [protocol, buildLiquidConnector]);
+
+  const switchProtocol = useCallback(
+    async (next: CommsProtocol) => {
+      if (next === protocol) return;
+      try {
+        await connector.disconnect();
+      } catch {
+        /* ignore */
+      }
+      if (protocol === "liquid-auth") liquidConnector.current = null;
+      setQrInfo(null);
+      setCommsProtocol(next);
+      setProtocol(next);
+    },
+    [protocol, connector]
+  );
+
+  const isInWebview = Boolean((peraWallet as unknown as { isInWebview?: boolean }).isInWebview);
+
+  const value = useMemo(
+    () => ({ protocol, connector, isInWebview, qrInfo, setQrInfo, switchProtocol }),
+    [protocol, connector, isInWebview, qrInfo, switchProtocol]
+  );
+
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
+};
