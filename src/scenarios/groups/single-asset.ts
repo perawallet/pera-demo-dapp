@@ -59,14 +59,14 @@ export const singleAssetScenarios: Scenario[] = [
     }
   },
   {
-    id: "single-axfer-opt-in",
+    id: "single-axfer-opt-in-with-rekey",
     title: "Sign single asset opt-in txn with rekey",
     description:
       "Opt-in to a TestNet sample asset (0-amount self-transfer of the asset). With a rekey.",
     expected:
       "Wallet shows an asset opt-in txn (asset id, sender = receiver, amount 0). User can sign; algod accepts and the auth address is updated.",
     category: "single-axfer",
-    modifiers: [],
+    modifiers: ["rekey"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -75,7 +75,7 @@ export const singleAssetScenarios: Scenario[] = [
         receiver: address,
         amount: 0,
         assetIndex: getAssetIndex(chain, AssetTransactionType.OptIn),
-        note: "single-axfer-opt-in",
+        note: "single-axfer-opt-in-with-rekey",
         rekeyTo: testAccounts[0].addr,
         suggestedParams
       });
