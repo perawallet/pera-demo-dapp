@@ -18,10 +18,16 @@ export class LiquidAuthConnector implements WalletConnector {
   private connected = false;
   private qrCallback: ((info: QrInfo) => void) | null = null;
 
-  constructor(private readonly client: LiquidAuthClient) {
+  constructor(
+    private readonly client: LiquidAuthClient,
+    private readonly onDisconnect?: () => void
+  ) {
     this.client.onClose(() => {
       this.connected = false;
       this.accounts = [];
+      // Surface a dropped/closed data channel to consumers (Home clears its
+      // connected-account state), mirroring the WalletConnect disconnect event.
+      this.onDisconnect?.();
     });
   }
 

@@ -49,7 +49,7 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
 
   const buildLiquidConnector = useCallback((): LiquidAuthConnector => {
     const client = new LiquidAuthClient(getLiquidAuthUrl());
-    const connector = new LiquidAuthConnector(client);
+    const connector = new LiquidAuthConnector(client, () => disconnectListener.current());
     connector.onQr((info) => setQrInfo(info));
     return connector;
   }, []);
