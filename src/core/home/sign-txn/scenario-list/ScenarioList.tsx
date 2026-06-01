@@ -5,6 +5,7 @@ import ScenarioCard from "../scenario-card/ScenarioCard";
 import CategoryFilter from "./CategoryFilter";
 import type {ScenarioCategory} from "../../../../scenarios/types";
 import type {NumberedScenario} from "../../../../scenarios/registry";
+import {useWallet} from "../../../wallet/WalletProvider";
 
 interface ScenarioListProps {
   scenarios: NumberedScenario[];
@@ -13,6 +14,7 @@ interface ScenarioListProps {
 }
 
 const ScenarioList = ({scenarios, onInvoke, invokingId}: ScenarioListProps) => {
+  const {connector} = useWallet();
   const [selectedCategories, setSelectedCategories] = useState<
     Set<ScenarioCategory>
   >(new Set());
@@ -42,6 +44,7 @@ const ScenarioList = ({scenarios, onInvoke, invokingId}: ScenarioListProps) => {
             scenario={s}
             onInvoke={onInvoke}
             isInvoking={invokingId === s.id}
+            unsupported={!connector.supports(s.kind || "txn")}
           />
         ))}
       </Box>

@@ -17,9 +17,11 @@ interface ScenarioCardProps {
   scenario: NumberedScenario;
   onInvoke: (scenario: NumberedScenario) => void;
   isInvoking: boolean;
+  /** True when the active comms protocol can't sign this scenario's kind. */
+  unsupported?: boolean;
 }
 
-const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
+const ScenarioCard = ({scenario, onInvoke, isInvoking, unsupported}: ScenarioCardProps) => {
   const handleInvokeClick = (e: MouseEvent<HTMLButtonElement>) => {
     // Prevent the click from toggling the surrounding AccordionSummary
     e.stopPropagation();
@@ -43,7 +45,7 @@ const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
             <Button
               variant={"contained"}
               size={"small"}
-              disabled={isInvoking}
+              disabled={isInvoking || unsupported}
               onClick={handleInvokeClick}
               startIcon={
                 isInvoking ? (
@@ -78,6 +80,18 @@ const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
                 }}
               />
             ))}
+            {unsupported && (
+              <Chip
+                size={"small"}
+                label={"Not supported by Liquid Auth"}
+                sx={{
+                  backgroundColor: "#fee2e2",
+                  color: "#991b1b",
+                  fontWeight: 500,
+                  border: "none"
+                }}
+              />
+            )}
           </Box>
         </Box>
       </AccordionSummary>
