@@ -44,6 +44,12 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\](?!\\.pnpm[/\\\\](@algorandfoundation\\+(liquid-client|algokit-utils|xhd-wallet-api)|@noble\\+(hashes|curves|ciphers|ed25519)|@socket\\.io\\+component-emitter|uuid|nanoid|qr-code-styling|socket\\.io-client|engine\\.io-client|engine\\.io-parser|eventemitter3|algosdk|idb)@)(?!(@algorandfoundation[/\\\\](liquid-client|algokit-utils|xhd-wallet-api)|@noble[/\\\\](hashes|curves|ciphers|ed25519)|uuid|nanoid|qr-code-styling|socket\\.io-client|engine\\.io-client|engine\\.io-parser|eventemitter3|algosdk|idb)[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ]
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
