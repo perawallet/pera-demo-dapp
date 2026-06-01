@@ -7,6 +7,7 @@ import {ThemeProvider, CssBaseline} from "@mui/material";
 import App from "./core/app/App";
 import theme from "./core/theme/theme";
 import {PeraToastProvider} from "./core/component/toast/PeraToast";
+import {WalletProvider} from "./core/wallet/WalletProvider";
 import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
@@ -16,7 +17,9 @@ root.render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <PeraToastProvider>
-        <App />
+        <WalletProvider>
+          <App />
+        </WalletProvider>
       </PeraToastProvider>
     </ThemeProvider>
   </React.StrictMode>,

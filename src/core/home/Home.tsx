@@ -26,7 +26,8 @@ import {
   Container,
   Drawer,
   List,
-  ListItem
+  ListItem,
+  TextField
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import BuildIcon from "@mui/icons-material/Build";
@@ -36,6 +37,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
@@ -48,6 +50,9 @@ import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 import UriGenerator from "./sign-txn/uri-generator/UriGenerator";
 import peraWallet, {PeraWalletManager} from "../utils/pera-wallet/PeraWalletManager";
+import {useWallet} from "../wallet/WalletProvider";
+import QrConnectModal from "../liquid-auth/QrConnectModal";
+import {getLiquidAuthUrl, setLiquidAuthUrl} from "../wallet/walletStorage";
 
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
@@ -57,6 +62,7 @@ const Home = () => {
   const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
+  const {protocol, connector, isInWebview, qrInfo, setQrInfo, switchProtocol, setOnDisconnect} = useWallet();
   const {display: displayToast, history, clearHistory} = usePeraToast();
   const {accountInformation, refetchAccountDetail} = useGetAccountDetailRequest({
     chain: chainType,
@@ -88,6 +94,14 @@ const Home = () => {
   );
 
   useEffect(() => {
+    setOnDisconnect(() => setAccountAddress(null));
+  }, [setOnDisconnect]);
+
+  useEffect(() => {
+    setAccountAddress(null);
+  }, [protocol]);
+
+  useEffect(() => {
     peraWallet.updateConfig({
       compactMode: isConnectCompactMode,
       chainId: PeraWalletManager.getChainId(chainType)
@@ -95,12 +109,8 @@ const Home = () => {
   }, [isConnectCompactMode, chainType]);
 
   useEffect(() => {
-    peraWallet
-      .reconnectSessionAndSetupEventHandlers({
-        onDisconnect: async () => {
-          setAccountAddress(null);
-        }
-      })
+    connector
+      .reconnect()
       .then((accounts) => {
         if (accounts && accounts[0]) {
           setAccountAddress(accounts[0]);
@@ -231,23 +241,24 @@ const Home = () => {
 
   const handleConnectWalletClick = async () => {
     try {
-      const newAccounts = await peraWallet.connectAndSetupEventHandlers({
-        onDisconnect: async () => {
-          setAccountAddress(null);
-        }
-      });
-
-      handleSetLog("Connected to Pera Wallet");
-
-      setAccountAddress(newAccounts[0]);
+      const newAccounts = await connector.connect();
+      if (newAccounts && newAccounts[0]) {
+        setAccountAddress(newAccounts[0]);
+        refetchAccountDetail();
+        handleSetLog(
+          protocol === "liquid-auth" ? "Connected via Liquid Auth" : "Connected to Pera Wallet"
+        );
+      }
+      setQrInfo(null);
     } catch (e) {
+      setQrInfo(null);
       console.error(e);
       handleSetLog(`${e}`);
     }
   };
 
-  const handleDisconnectWalletClick = () => {
-    peraWallet.disconnect();
+  const handleDisconnectWalletClick = async () => {
+    await connector.disconnect();
     setAccountAddress(null);
   };
 
@@ -324,7 +335,7 @@ const Home = () => {
                 {"Pera Deeplink Generator"}
               </MenuItem>
               <MenuItem
-                disabled={!accountAddress}
+                disabled={!accountAddress || protocol === "liquid-auth"}
                 onClick={() => {
                   setCreateTxnOpen(true);
                   setGeneratorsAnchor(null);
@@ -353,32 +364,68 @@ const Home = () => {
                 </ListItemIcon>
                 <ListItemText>{"Activity log"}</ListItemText>
               </MenuItem>
-              <MenuItem
-                onClick={(e) => e.stopPropagation()}
-                disableRipple={true}>
-                <ListItemIcon>
-                  <SettingsIcon fontSize={"small"} />
-                </ListItemIcon>
-                <ListItemText>{"Compact connect mode"}</ListItemText>
-                <Switch
-                  checked={isConnectCompactMode}
-                  onChange={handleCompactModeSwitch}
-                  size={"small"}
+              {protocol === "walletconnect" && (
+                <MenuItem
                   onClick={(e) => e.stopPropagation()}
-                />
-              </MenuItem>
+                  disableRipple={true}>
+                  <ListItemIcon>
+                    <SettingsIcon fontSize={"small"} />
+                  </ListItemIcon>
+                  <ListItemText>{"Compact connect mode"}</ListItemText>
+                  <Switch
+                    checked={isConnectCompactMode}
+                    onChange={handleCompactModeSwitch}
+                    size={"small"}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </MenuItem>
+              )}
+              {!isInWebview && (
+                <MenuItem onClick={(e) => e.stopPropagation()} disableRipple={true}>
+                  <ListItemIcon>
+                    <SwapHorizIcon fontSize={"small"} />
+                  </ListItemIcon>
+                  <ListItemText>{"Liquid Auth mode"}</ListItemText>
+                  <Switch
+                    checked={protocol === "liquid-auth"}
+                    onChange={(e) =>
+                      switchProtocol(e.target.checked ? "liquid-auth" : "walletconnect")
+                    }
+                    size={"small"}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </MenuItem>
+              )}
               <Divider />
-              <Box sx={{px: 2, py: 1}}>
-                <Typography
-                  variant={"caption"}
-                  sx={{color: "text.secondary", display: "block"}}>
-                  {"WC server"}
-                </Typography>
-                <Typography variant={"body2"} sx={{wordBreak: "break-all"}}>
-                  {peraWallet.isConnected && wcServer ? wcServer : "Not connected"}
-                </Typography>
-              </Box>
-              {isConnectedToPeraWallet && [
+              {protocol === "liquid-auth" ? (
+                <Box sx={{px: 2, py: 1}} onClick={(e) => e.stopPropagation()}>
+                  <Typography
+                    variant={"caption"}
+                    sx={{color: "text.secondary", display: "block"}}>
+                    {"Liquid Auth server"}
+                  </Typography>
+                  <TextField
+                    fullWidth={true}
+                    size={"small"}
+                    defaultValue={getLiquidAuthUrl()}
+                    onBlur={(e) => setLiquidAuthUrl(e.target.value.trim())}
+                    disabled={isConnectedToPeraWallet}
+                    sx={{mt: 0.5}}
+                  />
+                </Box>
+              ) : (
+                <Box sx={{px: 2, py: 1}}>
+                  <Typography
+                    variant={"caption"}
+                    sx={{color: "text.secondary", display: "block"}}>
+                    {"WC server"}
+                  </Typography>
+                  <Typography variant={"body2"} sx={{wordBreak: "break-all"}}>
+                    {peraWallet.isConnected && wcServer ? wcServer : "Not connected"}
+                  </Typography>
+                </Box>
+              )}
+              {isConnectedToPeraWallet && protocol === "walletconnect" && [
                 <Divider key={"add-funds-divider"} />,
                 <MenuItem
                   key={"add-funds-item"}
@@ -471,7 +518,6 @@ const Home = () => {
 
         <SignTxn
           accountAddress={accountAddress}
-          peraWallet={peraWallet}
           handleSetLog={handleSetLog}
           chain={chainType}
           refecthAccountDetail={refetchAccountDetail}
@@ -584,6 +630,8 @@ const Home = () => {
           )}
         </Box>
       </Drawer>
+
+      <QrConnectModal qrInfo={qrInfo} onClose={() => setQrInfo(null)} />
     </Box>
   );
 };

@@ -13,6 +13,8 @@ interface WalletContextValue {
   qrInfo: QrInfo | null;
   setQrInfo: (info: QrInfo | null) => void;
   switchProtocol: (protocol: CommsProtocol) => Promise<void>;
+  /** Register a callback invoked when the wallet ends the session. */
+  setOnDisconnect: (cb: () => void) => void;
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -25,16 +27,23 @@ export const useWallet = (): WalletContextValue => {
 
 interface WalletProviderProps {
   children: ReactNode;
-  onDisconnect?: () => Promise<void>;
 }
 
-export const WalletProvider = ({ children, onDisconnect }: WalletProviderProps) => {
+export const WalletProvider = ({ children }: WalletProviderProps) => {
   const [protocol, setProtocol] = useState<CommsProtocol>(getCommsProtocol);
   const [qrInfo, setQrInfo] = useState<QrInfo | null>(null);
-  const handleDisconnect = onDisconnect ?? (async () => {});
+
+  // Wallet-initiated disconnects route through this listener so consumers
+  // (Home) can clear their connected-account state.
+  const disconnectListener = useRef<() => void>(() => {});
+  const setOnDisconnect = useCallback((cb: () => void) => {
+    disconnectListener.current = cb;
+  }, []);
 
   const peraConnector = useRef<PeraConnectConnector>(
-    new PeraConnectConnector(peraWallet as never, handleDisconnect)
+    new PeraConnectConnector(peraWallet as never, async () => {
+      disconnectListener.current();
+    })
   );
   const liquidConnector = useRef<LiquidAuthConnector | null>(null);
 
@@ -72,8 +81,8 @@ export const WalletProvider = ({ children, onDisconnect }: WalletProviderProps) 
   const isInWebview = Boolean((peraWallet as unknown as { isInWebview?: boolean }).isInWebview);
 
   const value = useMemo(
-    () => ({ protocol, connector, isInWebview, qrInfo, setQrInfo, switchProtocol }),
-    [protocol, connector, isInWebview, qrInfo, switchProtocol]
+    () => ({ protocol, connector, isInWebview, qrInfo, setQrInfo, switchProtocol, setOnDisconnect }),
+    [protocol, connector, isInWebview, qrInfo, switchProtocol, setOnDisconnect]
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
