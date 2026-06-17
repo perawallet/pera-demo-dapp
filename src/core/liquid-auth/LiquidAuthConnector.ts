@@ -10,7 +10,25 @@ import {
   toBase64URL,
   type IARC0001Transaction
 } from "./arc0027";
+import { offerProtocolsForMode, type NegotiationConfig } from "./negotiate";
 import { LIQUID_AUTH_PROVIDER_ID } from "./constants";
+import { getLiquidAuthOffer } from "../wallet/walletStorage";
+
+/** Builds the negotiation config from the stored offer mode + this dApp's
+ *  self-asserted identity. Read at connect() time so the UI selector takes
+ *  effect without rebuilding the connector. */
+const defaultNegotiation = (): NegotiationConfig => {
+  const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+  return {
+    protocols: offerProtocolsForMode(getLiquidAuthOffer()),
+    peer: {
+      name: "Pera Demo dApp",
+      url: origin,
+      origin,
+      description: "Pera Wallet developer demo dApp"
+    }
+  };
+};
 
 export class LiquidAuthConnector implements WalletConnector {
   readonly protocol: CommsProtocol = "liquid-auth";
@@ -20,7 +38,8 @@ export class LiquidAuthConnector implements WalletConnector {
 
   constructor(
     private readonly client: LiquidAuthClient,
-    private readonly onDisconnect?: () => void
+    private readonly onDisconnect?: () => void,
+    private readonly negotiationProvider: () => NegotiationConfig = defaultNegotiation
   ) {
     this.client.onClose(() => {
       this.connected = false;
@@ -41,7 +60,10 @@ export class LiquidAuthConnector implements WalletConnector {
   }
 
   async connect(): Promise<string[]> {
-    const accounts = await this.client.connect((info) => this.qrCallback?.(info));
+    const accounts = await this.client.connect(
+      (info) => this.qrCallback?.(info),
+      this.negotiationProvider()
+    );
     this.accounts = accounts;
     this.connected = accounts.length > 0;
     return accounts;

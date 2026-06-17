@@ -27,7 +27,8 @@ import {
   Drawer,
   List,
   ListItem,
-  TextField
+  TextField,
+  Select
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import BuildIcon from "@mui/icons-material/Build";
@@ -52,7 +53,13 @@ import UriGenerator from "./sign-txn/uri-generator/UriGenerator";
 import peraWallet, {PeraWalletManager} from "../utils/pera-wallet/PeraWalletManager";
 import {useWallet} from "../wallet/WalletProvider";
 import QrConnectModal from "../liquid-auth/QrConnectModal";
-import {getLiquidAuthUrl, setLiquidAuthUrl} from "../wallet/walletStorage";
+import {
+  getLiquidAuthUrl,
+  setLiquidAuthUrl,
+  getLiquidAuthOffer,
+  setLiquidAuthOffer
+} from "../wallet/walletStorage";
+import type {LiquidAuthOfferMode} from "../liquid-auth/negotiate";
 
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
@@ -76,6 +83,9 @@ const Home = () => {
   const [generatorsAnchor, setGeneratorsAnchor] = useState<HTMLElement | null>(null);
   const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null);
   const [accountMenuAnchor, setAccountMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const [liquidOfferMode, setLiquidOfferMode] =
+    useState<LiquidAuthOfferMode>(getLiquidAuthOffer);
 
   // Modals controlled at Home level
   const [showDeeplink, setShowDeeplink] = useState(false);
@@ -412,6 +422,30 @@ const Home = () => {
                     disabled={isConnectedToPeraWallet}
                     sx={{mt: 0.5}}
                   />
+                  <Typography
+                    variant={"caption"}
+                    sx={{color: "text.secondary", display: "block", mt: 1.5}}>
+                    {"Negotiation offer"}
+                  </Typography>
+                  <Select
+                    fullWidth={true}
+                    size={"small"}
+                    value={liquidOfferMode}
+                    onChange={(e) => {
+                      const mode = e.target.value as LiquidAuthOfferMode;
+                      setLiquidOfferMode(mode);
+                      setLiquidAuthOffer(mode);
+                    }}
+                    disabled={isConnectedToPeraWallet}
+                    sx={{mt: 0.5}}>
+                    <MenuItem value={"arc0027"}>{"ARC-0027"}</MenuItem>
+                    <MenuItem value={"arc0027-walletconnect"}>
+                      {"ARC-0027 + WalletConnect"}
+                    </MenuItem>
+                    <MenuItem value={"walletconnect"}>
+                      {"WalletConnect only (expect rejection)"}
+                    </MenuItem>
+                  </Select>
                 </Box>
               ) : (
                 <Box sx={{px: 2, py: 1}}>

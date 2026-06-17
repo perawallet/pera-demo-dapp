@@ -48,7 +48,9 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
   const liquidConnector = useRef<LiquidAuthConnector | null>(null);
 
   const buildLiquidConnector = useCallback((): LiquidAuthConnector => {
-    const client = new LiquidAuthClient(getLiquidAuthUrl());
+    // Pass the getter, not the value: the URL is read at connect() time so a
+    // server change in the settings field applies without rebuilding here.
+    const client = new LiquidAuthClient(getLiquidAuthUrl);
     const connector = new LiquidAuthConnector(client, () => disconnectListener.current());
     connector.onQr((info) => setQrInfo(info));
     return connector;

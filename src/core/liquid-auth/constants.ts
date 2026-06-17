@@ -31,3 +31,6 @@ export const LIQUID_AUTH_PROVIDER_ID = "pera-demo-dapp";
 export const LIQUID_CONNECT_TIMEOUT_MS = 30_000;
 /** How long to wait for a sign request's response over the data channel. */
 export const LIQUID_REQUEST_TIMEOUT_MS = 60_000;
+/** How long to wait for the wallet's `negotiate:select` after sending the offer.
+ *  The wallet replies as soon as it classifies the offer, so this is short. */
+export const LIQUID_NEGOTIATE_TIMEOUT_MS = 15_000;

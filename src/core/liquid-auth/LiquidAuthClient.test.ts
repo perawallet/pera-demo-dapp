@@ -70,4 +70,57 @@ describe("LiquidAuthClient", () => {
     await p;
     expect(() => fake.inbound("")).not.toThrow();
   });
+
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  it("sends a negotiation offer and resolves after the wallet selects arc0027", async () => {
+    const { fake, client } = makeClient();
+    const negotiation = {
+      protocols: [{ id: "arc0027" as const, versions: ["1.0"] }],
+      peer: { name: "Demo", origin: "https://demo.test" }
+    };
+    const p = client.connect(jest.fn(), negotiation);
+    fake.emitLink("ADDR");
+    await flush();
+
+    const offer = JSON.parse(fake.sent[0]);
+    expect(offer.reference).toBe("liquidauth:negotiate:offer");
+    expect(offer.params.protocols).toEqual([{ id: "arc0027", versions: ["1.0"] }]);
+
+    fake.inbound(
+      JSON.stringify({
+        id: "sel-1",
+        reference: "liquidauth:negotiate:select",
+        requestId: offer.id,
+        result: { handshakeVersion: 1, protocol: { id: "arc0027", version: "1.0" } }
+      })
+    );
+
+    const accounts = await p;
+    expect(accounts).toEqual(["ADDR"]);
+    expect(client.protocol).toBe("arc0027");
+  });
+
+  it("rejects connect when the wallet returns a no-common-protocol error", async () => {
+    const { fake, client } = makeClient();
+    const negotiation = {
+      protocols: [{ id: "walletconnect" as const, versions: ["2.0"] }],
+      peer: { name: "Demo" }
+    };
+    const p = client.connect(jest.fn(), negotiation);
+    fake.emitLink("ADDR");
+    await flush();
+
+    const offer = JSON.parse(fake.sent[0]);
+    fake.inbound(
+      JSON.stringify({
+        id: "sel-2",
+        reference: "liquidauth:negotiate:select",
+        requestId: offer.id,
+        error: { code: 5000, message: "No mutually supported protocol" }
+      })
+    );
+
+    await expect(p).rejects.toMatchObject({ code: 5000 });
+  });
 });
