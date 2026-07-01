@@ -176,11 +176,13 @@ const CreateTxnButton = ({
       let txn: Transaction;
 
       if (isOnlineKeyregTxn) {
+        // algosdk v3 requires participation keys as raw bytes; the form
+        // provides them as base64 strings, so decode at the boundary.
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
           sender: address,
-          voteKey: voteKey!,
-          selectionKey: selectionKey!,
-          stateProofKey: stateProofKey!,
+          voteKey: algosdk.base64ToBytes(voteKey!),
+          selectionKey: algosdk.base64ToBytes(selectionKey!),
+          stateProofKey: algosdk.base64ToBytes(stateProofKey!),
           voteFirst: suggestedParams.firstValid,
           voteLast: suggestedParams.lastValid,
           voteKeyDilution: voteKeyDilution!,

@@ -45,7 +45,7 @@ export const singleKeyregScenarios: Scenario[] = [
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
       const voteFirst = Number(suggestedParams.firstValid);
-      const txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+      const txn = buildOnlineKeyreg({
         sender: address,
         voteKey: "G/lqTV6MKspW6J8wH2d8ZliZ5XZVZsruqSBJMwLwlmo=",
         selectionKey: "LrpLhvzr+QpN/bivh6IPpOaKGbGzTTB5lJtVfixmmgg=",
@@ -53,7 +53,7 @@ export const singleKeyregScenarios: Scenario[] = [
         voteFirst,
         voteLast: voteFirst + 1000,
         voteKeyDilution: 100,
-        note: new Uint8Array(Buffer.from("single-keyreg-online-with-rekey")),
+        note: "single-keyreg-online-with-rekey",
         rekeyTo: testAccounts[1].addr,
         suggestedParams
       });
