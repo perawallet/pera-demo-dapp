@@ -180,9 +180,9 @@ const CreateTxnButton = ({
         // provides them as base64 strings, so decode at the boundary.
         txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
           sender: address,
-          voteKey: new Uint8Array(Buffer.from(voteKey!, "base64")),
-          selectionKey: new Uint8Array(Buffer.from(selectionKey!, "base64")),
-          stateProofKey: new Uint8Array(Buffer.from(stateProofKey!, "base64")),
+          voteKey: algosdk.base64ToBytes(voteKey!),
+          selectionKey: algosdk.base64ToBytes(selectionKey!),
+          stateProofKey: algosdk.base64ToBytes(stateProofKey!),
           voteFirst: suggestedParams.firstValid,
           voteLast: suggestedParams.lastValid,
           voteKeyDilution: voteKeyDilution!,

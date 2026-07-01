@@ -1,10 +1,5 @@
 import algosdk, { type Address, type SuggestedParams } from "algosdk";
 
-// algosdk v3 requires participation keys as raw bytes (v2 accepted base64
-// strings). Decode at the boundary so scenarios can keep using base64 literals.
-const base64ToBytes = (value: string): Uint8Array =>
-  new Uint8Array(Buffer.from(value, "base64"));
-
 export interface BuildOnlineKeyregArgs {
   sender: string | Address;
   voteKey: string;
@@ -21,9 +16,11 @@ export interface BuildOnlineKeyregArgs {
 export const buildOnlineKeyreg = (args: BuildOnlineKeyregArgs): algosdk.Transaction => {
   return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
     sender: args.sender,
-    voteKey: base64ToBytes(args.voteKey),
-    selectionKey: base64ToBytes(args.selectionKey),
-    stateProofKey: base64ToBytes(args.stateProofKey),
+    // algosdk v3 requires participation keys as raw bytes (v2 accepted base64
+    // strings), so decode the base64 literals at the boundary.
+    voteKey: algosdk.base64ToBytes(args.voteKey),
+    selectionKey: algosdk.base64ToBytes(args.selectionKey),
+    stateProofKey: algosdk.base64ToBytes(args.stateProofKey),
     voteFirst: args.voteFirst,
     voteLast: args.voteLast,
     voteKeyDilution: args.voteKeyDilution,
