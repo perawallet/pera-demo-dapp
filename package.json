@@ -8,7 +8,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
-    "@perawallet/connect": "npm:@perawallet/connect-beta@1.5.10",
+    "@perawallet/connect": "1.6.0-beta.0",
     "@perawallet/onramp": "^1.1.1",
     "algosdk": "3.5.2",
     "qrcode.react": "^4.2.0",
