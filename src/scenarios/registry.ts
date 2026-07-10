@@ -6,6 +6,7 @@ import { singleKeyregScenarios } from "./groups/single-keyreg";
 import { atomicGroupScenarios } from "./groups/atomic-group";
 import { nonAtomicMultiScenarios } from "./groups/non-atomic-multi";
 import { multiGroupMixedScenarios } from "./groups/multi-group-mixed";
+import { multiAccountScenarios } from "./groups/multi-account";
 import { arbitraryDataScenarios } from "./groups/arbitrary-data";
 import { arc60Scenarios } from "./groups/arc60";
 import { edgeCaseScenarios } from "./groups/edge-case";
@@ -19,6 +20,7 @@ const allScenarios: Scenario[] = [
   ...atomicGroupScenarios,
   ...nonAtomicMultiScenarios,
   ...multiGroupMixedScenarios,
+  ...multiAccountScenarios,
   ...arbitraryDataScenarios,
   ...arc60Scenarios,
   ...edgeCaseScenarios,

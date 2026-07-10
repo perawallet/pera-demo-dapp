@@ -11,6 +11,7 @@ export type ScenarioCategory =
   | "atomic-group"
   | "non-atomic-multi"
   | "multi-group-mixed"
+  | "multi-account"
   | "arbitrary-data"
   | "arc60"
   | "edge-case"
@@ -55,5 +56,23 @@ export interface Scenario {
   networks: Network[];
   /** Defaults to "txn" if omitted. */
   kind?: "txn" | "arbitrary-data" | "arc60";
-  build: (chain: ChainType, address: string) => Promise<ScenarioBuildResult>;
+  /**
+   * Minimum number of connected (session-approved) accounts required to run
+   * this scenario. Used by multi-signer scenarios that need ≥2 real accounts.
+   * When set, the UI disables the scenario until enough accounts are approved,
+   * and `accounts` is guaranteed to hold at least this many entries in `build`.
+   */
+  minAccounts?: number;
+  /**
+   * @param address The active/selected account (first approved account by
+   *   default). Single-signer scenarios use only this.
+   * @param accounts All session-approved accounts, in wallet order. Multi-signer
+   *   scenarios (see `minAccounts`) read `accounts[0]`, `accounts[1]`, … as
+   *   distinct real signers.
+   */
+  build: (
+    chain: ChainType,
+    address: string,
+    accounts: string[]
+  ) => Promise<ScenarioBuildResult>;
 }

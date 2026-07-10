@@ -10,9 +10,15 @@ interface ScenarioListProps {
   scenarios: NumberedScenario[];
   onInvoke: (scenario: NumberedScenario) => void;
   invokingId: string | null;
+  connectedAccountCount: number;
 }
 
-const ScenarioList = ({scenarios, onInvoke, invokingId}: ScenarioListProps) => {
+const ScenarioList = ({
+  scenarios,
+  onInvoke,
+  invokingId,
+  connectedAccountCount
+}: ScenarioListProps) => {
   const [selectedCategories, setSelectedCategories] = useState<
     Set<ScenarioCategory>
   >(new Set());
@@ -42,6 +48,11 @@ const ScenarioList = ({scenarios, onInvoke, invokingId}: ScenarioListProps) => {
             scenario={s}
             onInvoke={onInvoke}
             isInvoking={invokingId === s.id}
+            disabledReason={
+              s.minAccounts && connectedAccountCount < s.minAccounts
+                ? `Connect ${s.minAccounts}+ accounts to run this`
+                : undefined
+            }
           />
         ))}
       </Box>

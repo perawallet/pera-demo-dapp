@@ -17,9 +17,16 @@ interface ScenarioCardProps {
   scenario: NumberedScenario;
   onInvoke: (scenario: NumberedScenario) => void;
   isInvoking: boolean;
+  /** When set, the Invoke button is disabled and this reason is shown. */
+  disabledReason?: string;
 }
 
-const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
+const ScenarioCard = ({
+  scenario,
+  onInvoke,
+  isInvoking,
+  disabledReason
+}: ScenarioCardProps) => {
   const handleInvokeClick = (e: MouseEvent<HTMLButtonElement>) => {
     // Prevent the click from toggling the surrounding AccordionSummary
     e.stopPropagation();
@@ -43,7 +50,8 @@ const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
             <Button
               variant={"contained"}
               size={"small"}
-              disabled={isInvoking}
+              disabled={isInvoking || Boolean(disabledReason)}
+              title={disabledReason}
               onClick={handleInvokeClick}
               startIcon={
                 isInvoking ? (
@@ -78,6 +86,18 @@ const ScenarioCard = ({scenario, onInvoke, isInvoking}: ScenarioCardProps) => {
                 }}
               />
             ))}
+            {disabledReason && (
+              <Chip
+                size={"small"}
+                label={disabledReason}
+                sx={{
+                  backgroundColor: "#fee2e2",
+                  color: "#991b1b",
+                  fontWeight: 500,
+                  border: "none"
+                }}
+              />
+            )}
           </Box>
         </Box>
       </AccordionSummary>

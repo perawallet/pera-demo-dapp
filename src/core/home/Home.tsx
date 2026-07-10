@@ -36,6 +36,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
@@ -55,6 +56,9 @@ const peraOnRamp = new PeraOnramp({
 
 const Home = () => {
   const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
+  // All session-approved accounts (in wallet order). `accountAddress` is the
+  // active one that drives the balance panel and single-signer scenarios.
+  const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
   const {display: displayToast, history, clearHistory} = usePeraToast();
@@ -98,14 +102,20 @@ const Home = () => {
     peraWallet
       .reconnectSessionAndSetupEventHandlers({
         onDisconnect: async () => {
+          setConnectedAccounts([]);
           setAccountAddress(null);
         }
       })
       .then((accounts) => {
         if (accounts && accounts[0]) {
+          setConnectedAccounts(accounts);
           setAccountAddress(accounts[0]);
           refetchAccountDetail();
-          handleSetLog("Connected to Pera Wallet");
+          handleSetLog(
+            accounts.length > 1
+              ? `Connected to Pera Wallet (${accounts.length} accounts)`
+              : "Connected to Pera Wallet"
+          );
         }
       })
       .catch((e) => console.error(e));
@@ -114,11 +124,9 @@ const Home = () => {
 
   const ADDRESS_PREFIX_LEN = 4;
   const ADDRESS_SUFFIX_LEN = 4;
-  const shortAddress = accountAddress
-    ? `${accountAddress.slice(0, ADDRESS_PREFIX_LEN)}…${accountAddress.slice(
-        -ADDRESS_SUFFIX_LEN
-      )}`
-    : "";
+  const shorten = (address: string) =>
+    `${address.slice(0, ADDRESS_PREFIX_LEN)}…${address.slice(-ADDRESS_SUFFIX_LEN)}`;
+  const shortAddress = accountAddress ? shorten(accountAddress) : "";
   const avatarInitial = accountAddress ? accountAddress.charAt(0).toUpperCase() : "";
   const wcServer = peraWallet.connector?.bridge;
 
@@ -233,12 +241,18 @@ const Home = () => {
     try {
       const newAccounts = await peraWallet.connectAndSetupEventHandlers({
         onDisconnect: async () => {
+          setConnectedAccounts([]);
           setAccountAddress(null);
         }
       });
 
-      handleSetLog("Connected to Pera Wallet");
+      handleSetLog(
+        newAccounts.length > 1
+          ? `Connected to Pera Wallet (${newAccounts.length} accounts)`
+          : "Connected to Pera Wallet"
+      );
 
+      setConnectedAccounts(newAccounts);
       setAccountAddress(newAccounts[0]);
     } catch (e) {
       console.error(e);
@@ -248,7 +262,14 @@ const Home = () => {
 
   const handleDisconnectWalletClick = () => {
     peraWallet.disconnect();
+    setConnectedAccounts([]);
     setAccountAddress(null);
+  };
+
+  const handleSelectAccount = (address: string) => {
+    setAccountAddress(address);
+    setAccountMenuAnchor(null);
+    refetchAccountDetail();
   };
 
   return (
@@ -425,6 +446,29 @@ const Home = () => {
                   anchorEl={accountMenuAnchor}
                   open={Boolean(accountMenuAnchor)}
                   onClose={() => setAccountMenuAnchor(null)}>
+                  {connectedAccounts.length > 1 && [
+                    <Box key={"accounts-label"} sx={{px: 2, py: 0.5}}>
+                      <Typography
+                        variant={"caption"}
+                        sx={{color: "text.secondary"}}>
+                        {`Connected accounts (${connectedAccounts.length})`}
+                      </Typography>
+                    </Box>,
+                    ...connectedAccounts.map((address) => (
+                      <MenuItem
+                        key={address}
+                        selected={address === accountAddress}
+                        onClick={() => handleSelectAccount(address)}>
+                        <ListItemIcon>
+                          {address === accountAddress ? (
+                            <CheckIcon fontSize={"small"} />
+                          ) : null}
+                        </ListItemIcon>
+                        <ListItemText>{shorten(address)}</ListItemText>
+                      </MenuItem>
+                    )),
+                    <Divider key={"accounts-divider"} />
+                  ]}
                   <MenuItem onClick={handleCopyAddress}>{"Copy address"}</MenuItem>
                   <MenuItem
                     onClick={() => {
@@ -471,6 +515,7 @@ const Home = () => {
 
         <SignTxn
           accountAddress={accountAddress}
+          connectedAccounts={connectedAccounts}
           peraWallet={peraWallet}
           handleSetLog={handleSetLog}
           chain={chainType}

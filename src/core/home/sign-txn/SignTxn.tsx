@@ -8,6 +8,7 @@ import {getScenarios, type NumberedScenario} from "../../../scenarios/registry";
 
 interface SignTxnProps {
   accountAddress: string | null;
+  connectedAccounts: string[];
   peraWallet: PeraWalletConnect;
   handleSetLog: (log: string) => void;
   chain: ChainType;
@@ -16,6 +17,7 @@ interface SignTxnProps {
 
 const SignTxn = ({
   accountAddress,
+  connectedAccounts,
   peraWallet,
   handleSetLog,
   chain,
@@ -31,10 +33,16 @@ const SignTxn = ({
       handleSetLog("Connect a wallet first to invoke scenarios.");
       return;
     }
+    if (scenario.minAccounts && connectedAccounts.length < scenario.minAccounts) {
+      handleSetLog(
+        `This scenario needs at least ${scenario.minAccounts} connected accounts (currently ${connectedAccounts.length}). Reconnect and approve more accounts.`
+      );
+      return;
+    }
     setInvokingId(scenario.id);
     try {
       if (!scenario.kind || scenario.kind === "txn") {
-        const result = await scenario.build(chain, accountAddress);
+        const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if (!("transaction" in result)) throw new Error("kind mismatch: expected transaction");
         const {submittedGroups, partialSignGroups} = await signAndSubmit({
           peraWallet,
@@ -57,13 +65,13 @@ const SignTxn = ({
           handleSetLog(`Signed: ${scenario.title} (nothing to submit).`);
         }
       } else if (scenario.kind === "arbitrary-data") {
-        const result = await scenario.build(chain, accountAddress);
+        const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if (!("data" in result)) throw new Error("kind mismatch: expected data");
         const signedData = await peraWallet.signData(result.data, accountAddress, true);
         handleSetLog(`Arbitrary data signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signedData});
       } else if (scenario.kind === "arc60") {
-        const result = await scenario.build(chain, accountAddress);
+        const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if (!("payload" in result)) throw new Error("kind mismatch: expected payload");
         const signature = await peraWallet.signArc60Data(result.payload, true);
         handleSetLog(`ARC-60 auth signed: ${scenario.title}`);
@@ -79,7 +87,12 @@ const SignTxn = ({
   };
 
   return (
-    <ScenarioList scenarios={scenarios} onInvoke={invoke} invokingId={invokingId} />
+    <ScenarioList
+      scenarios={scenarios}
+      onInvoke={invoke}
+      invokingId={invokingId}
+      connectedAccountCount={connectedAccounts.length}
+    />
   );
 };
 

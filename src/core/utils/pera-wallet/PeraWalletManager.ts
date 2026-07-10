@@ -31,7 +31,9 @@ class PeraWalletManager extends PeraWalletConnect {
       const config: PeraWalletConfig = {
         compactMode: isCompactMode,
         chainId: TESTNET_CHAIN_ID, // Default to TestNet
-        singleAccount: true
+        // Allow selecting more than one account at connect time so the demo can
+        // exercise multi-account approval and multi-signer requests.
+        singleAccount: false
       };
       PeraWalletManager.instance = new PeraWalletManager(config);
     }
