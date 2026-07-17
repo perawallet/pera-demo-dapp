@@ -36,8 +36,8 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@perawallet/connect':
-        specifier: 1.6.0-beta.0
-        version: 1.6.0-beta.0(algosdk@3.5.2)
+        specifier: 1.6.0-beta.2
+        version: 1.6.0-beta.2(algosdk@3.5.2)
       '@perawallet/onramp':
         specifier: ^1.1.1
         version: 1.1.1
@@ -1344,8 +1344,8 @@ packages:
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
 
-  '@perawallet/connect@1.6.0-beta.0':
-    resolution: {integrity: sha512-JzdjmrxoWedQQI/1o7qf43O/FjU6Yoxefh3MHob01TpjXxOqwsC4y2prpOXpP5rToQ6gkxqyqXuDqpnsfPBjkw==}
+  '@perawallet/connect@1.6.0-beta.2':
+    resolution: {integrity: sha512-k8+sUsFIBxw23cnvtS53VozAi76prAPF3TCtNZbqAdVus6WyBHLZziDeJDotVjb+3yKDmPeXlXzmZt9ZEwSdNw==}
     peerDependencies:
       algosdk: ^3.5.2
 
@@ -7998,7 +7998,7 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
 
-  '@perawallet/connect@1.6.0-beta.0(algosdk@3.5.2)':
+  '@perawallet/connect@1.6.0-beta.2(algosdk@3.5.2)':
     dependencies:
       '@evanhahn/lottie-web-light': 5.8.1
       '@perawallet/walletconnect': 1.0.0

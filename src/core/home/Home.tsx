@@ -33,6 +33,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import CloseIcon from "@mui/icons-material/Close";
 import HistoryIcon from "@mui/icons-material/History";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ScienceIcon from "@mui/icons-material/Science";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -68,6 +69,9 @@ const Home = () => {
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(
     peraWallet.compactMode || false
+  );
+  const [isExperimentalMode, setExperimentalMode] = useState(
+    localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true"
   );
 
   // Menus / popovers
@@ -163,6 +167,20 @@ const Home = () => {
 
     peraWallet.updateConfig({
       compactMode: newCompactMode
+    });
+  };
+
+  const handleExperimentalModeSwitch = () => {
+    const newExperimentalMode = !isExperimentalMode;
+    setExperimentalMode(newExperimentalMode);
+
+    localStorage.setItem(
+      PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE,
+      newExperimentalMode ? "true" : "false"
+    );
+
+    peraWallet.updateConfig({
+      experimental: newExperimentalMode
     });
   };
 
@@ -384,6 +402,20 @@ const Home = () => {
                 <Switch
                   checked={isConnectCompactMode}
                   onChange={handleCompactModeSwitch}
+                  size={"small"}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => e.stopPropagation()}
+                disableRipple={true}>
+                <ListItemIcon>
+                  <ScienceIcon fontSize={"small"} />
+                </ListItemIcon>
+                <ListItemText>{"Experimental features"}</ListItemText>
+                <Switch
+                  checked={isExperimentalMode}
+                  onChange={handleExperimentalModeSwitch}
                   size={"small"}
                   onClick={(e) => e.stopPropagation()}
                 />

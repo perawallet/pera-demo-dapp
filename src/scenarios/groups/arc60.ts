@@ -1,7 +1,7 @@
-import { ScopeType } from "@perawallet/connect";
 import type { Siwa, PeraWalletArc60SignData } from "@perawallet/connect";
 import type { Scenario } from "../types";
 import { testAccounts } from "../test-accounts";
+import algosdk from "algosdk";
 
 export const buildArc60Payload = async (opts: {
   signerAddress: string;
@@ -45,14 +45,10 @@ export const buildArc60Payload = async (opts: {
 
   return {
     data: new Uint8Array(Buffer.from(canonicalJson)),
-    signer: opts.signerAddress,
+    signer: algosdk.decodeAddress(opts.signerAddress).publicKey,
     domain,
     authenticatorData,
-    requestId: crypto.randomUUID(),
-    metadata: {
-      scope: ScopeType.AUTH,
-      encoding: "base64"
-    }
+    requestId: crypto.randomUUID()
   };
 };
 

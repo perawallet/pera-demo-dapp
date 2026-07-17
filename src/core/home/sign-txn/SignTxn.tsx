@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {PeraWalletConnect} from "@perawallet/connect";
+import {PeraWalletConnect, ScopeType} from "@perawallet/connect";
 
 import {ChainType, clientForChain} from "../../utils/algod/algod";
 import {signAndSubmit} from "./signing";
@@ -97,7 +97,7 @@ const SignTxn = ({
         const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if ("notice" in result) throw new Error("kind mismatch: unexpected notice");
         if (!("payload" in result)) throw new Error("kind mismatch: expected payload");
-        const signature = await peraWallet.signArc60Data(result.payload, true);
+        const signature = await peraWallet.signArc60Data(result.payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
         handleSetLog(`ARC-60 auth signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signature});
       }
