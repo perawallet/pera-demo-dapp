@@ -41,7 +41,16 @@ export interface Arc60ReturnType {
   payload: PeraWalletArc60SignData;
 }
 
-export type ScenarioBuildResult = ScenarioReturnType | ArbitraryDataReturnType | Arc60ReturnType;
+export interface NoticeReturnType {
+  /** Scenario completed without any wallet request; show this in the log. */
+  notice: string;
+}
+
+export type ScenarioBuildResult =
+  | ScenarioReturnType
+  | ArbitraryDataReturnType
+  | Arc60ReturnType
+  | NoticeReturnType;
 
 export interface Scenario {
   /** Stable kebab-case slug. Never changes once shipped. */
@@ -63,6 +72,14 @@ export interface Scenario {
    * and `accounts` is guaranteed to hold at least this many entries in `build`.
    */
   minAccounts?: number;
+  /** Requires the owned test asset (see owned-asset.ts). UI disables the
+   *  scenario with a hint until the setup scenario has stored one. */
+  requiresOwnedAsset?: boolean;
+  /** After submit, wait for confirmation and store the created asset ID as
+   *  the owned test asset. Used only by the setup scenario. */
+  captureCreatedAsset?: boolean;
+  /** After a successful submit, clear the stored owned asset (destroy). */
+  clearsOwnedAssetOnSuccess?: boolean;
   /**
    * @param address The active/selected account (first approved account by
    *   default). Single-signer scenarios use only this.

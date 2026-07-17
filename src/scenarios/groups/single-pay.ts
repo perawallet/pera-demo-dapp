@@ -168,5 +168,95 @@ export const singlePayScenarios: Scenario[] = [
       });
       return { transaction: [[{ txn }]] };
     }
+  },
+  {
+    id: "single-pay-high-fee",
+    title: "Sign single pay txn with very high fee",
+    description:
+      "0.1 ALGO payment whose flat fee is set to 0.5 ALGO (500× the minimum) — models a fee-drain / mistake case the wallet should call out.",
+    expected:
+      "Wallet shows the payment AND prominently warns about the unusually high fee before allowing the user to sign. User can sign; algod accepts (high fees are valid).",
+    category: "single-pay",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "single-pay-high-fee",
+        suggestedParams
+      });
+      txn.fee = 500000n;
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-pay-rekey-to-self",
+    title: "Sign single pay txn with rekey back to self",
+    description:
+      "Payment with `rekeyTo` set to the SENDER's own address — the un-rekey operation that clears an account's auth address.",
+    expected:
+      "Wallet shows the payment and the rekey-to-self, ideally explaining it restores the account's own key as signer (clears authAddr) rather than warning as if handing control to a third party. User signs; algod accepts.",
+    category: "single-pay",
+    modifiers: ["rekey"],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "single-pay-rekey-to-self",
+        rekeyTo: address,
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-pay-unicode-note",
+    title: "Sign single pay txn with unicode note",
+    description:
+      "Payment whose note mixes emoji, CJK, and RTL text ('🚀 你好 مرحبا שלום') to exercise note rendering.",
+    expected:
+      "Wallet renders the note's unicode content correctly (no mojibake, sensible RTL handling) or shows a clean byte representation. User signs; algod accepts.",
+    category: "single-pay",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "single-pay-unicode-note 🚀 你好 مرحبا שלום",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-pay-insufficient-balance",
+    title: "Sign single pay txn exceeding the account balance",
+    description:
+      "Payment of 10,000,000 ALGO — far beyond any TestNet balance. Well-formed, so the wallet may sign it; algod must reject it.",
+    expected:
+      "Wallet shows the huge amount with correct formatting (ideally warning about insufficient funds). If signed, algod rejects with an overspend error, surfaced in the activity log.",
+    category: "single-pay",
+    modifiers: ["invalid"],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 10_000_000_000_000, // 10M ALGO in microAlgos
+        note: "single-pay-insufficient-balance",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
   }
 ];

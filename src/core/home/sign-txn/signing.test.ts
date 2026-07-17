@@ -137,4 +137,99 @@ describe("signAndSubmit", () => {
     expect(result.partialSignGroups).toBe(1);
     expect(result.submittedGroups).toBe(0);
   });
+
+  it("captures the created asset index when captureAssetIndex is set", async () => {
+    const suggestedParams = {
+      fee: 1000n,
+      firstValid: 1n,
+      lastValid: 1000n,
+      genesisID: "testnet-v1.0",
+      genesisHash: new Uint8Array(32),
+      flatFee: true,
+      minFee: 1000n
+    } as unknown as algosdk.SuggestedParams;
+    const createTxn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
+      sender: testAccounts[0].addr,
+      total: 1,
+      decimals: 0,
+      defaultFrozen: false,
+      suggestedParams
+    });
+
+    const peraWallet = {
+      signTransaction: async (_groups: unknown[][]) => [new Uint8Array([1])]
+    } as never;
+    const algod = {
+      sendRawTransaction: (_bytes: Uint8Array[]) => ({
+        do: async () => ({ txid: createTxn.txID() })
+      }),
+      pendingTransactionInformation: (txid: string) => ({
+        do: async () => {
+          expect(txid).toBe(createTxn.txID());
+          return { confirmedRound: 5n, assetIndex: 777n };
+        }
+      })
+    } as never;
+
+    const result = await signAndSubmit({
+      peraWallet,
+      algod,
+      accountAddress: testAccounts[0].addr.toString(),
+      txnsToSign: [[{ txn: createTxn }]],
+      captureAssetIndex: true
+    });
+
+    expect(result.submittedGroups).toBe(1);
+    expect(result.createdAssetIndex).toBe(777);
+  });
+
+  it("tolerates transient pending-info errors when polling for asset index", async () => {
+    const suggestedParams = {
+      fee: 1000n,
+      firstValid: 1n,
+      lastValid: 1000n,
+      genesisID: "testnet-v1.0",
+      genesisHash: new Uint8Array(32),
+      flatFee: true,
+      minFee: 1000n
+    } as unknown as algosdk.SuggestedParams;
+    const createTxn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
+      sender: testAccounts[0].addr,
+      total: 1,
+      decimals: 0,
+      defaultFrozen: false,
+      suggestedParams
+    });
+
+    let callCount = 0;
+    const peraWallet = {
+      signTransaction: async (_groups: unknown[][]) => [new Uint8Array([1])]
+    } as never;
+    const algod = {
+      sendRawTransaction: (_bytes: Uint8Array[]) => ({
+        do: async () => ({ txid: createTxn.txID() })
+      }),
+      pendingTransactionInformation: (txid: string) => ({
+        do: async () => {
+          expect(txid).toBe(createTxn.txID());
+          callCount += 1;
+          if (callCount === 1) {
+            throw new Error("404 Not Found");
+          }
+          return { confirmedRound: 5n, assetIndex: 777n };
+        }
+      })
+    } as never;
+
+    const result = await signAndSubmit({
+      peraWallet,
+      algod,
+      accountAddress: testAccounts[0].addr.toString(),
+      txnsToSign: [[{ txn: createTxn }]],
+      captureAssetIndex: true
+    });
+
+    expect(result.submittedGroups).toBe(1);
+    expect(result.createdAssetIndex).toBe(777);
+  });
 });

@@ -183,9 +183,9 @@ export const edgeCaseScenarios: Scenario[] = [
     description:
       "Payment whose SignerTransaction wrapper carries a well-formed `authAddr` pointing at another test account (testAccounts[1]). Models a rekeyed-sender flow where the signing key differs from the sender.",
     expected:
-      "Wallet shows the payment and indicates the txn must be signed by the auth address (rekeyed-sender flow). Signing succeeds only if the wallet holds the auth-address key; otherwise the wallet returns a no-such-signer error. // TODO: verify expected behavior in the wallet",
+      "Wallet shows the payment and indicates the txn must be signed by the auth address (rekeyed-sender flow). Signing succeeds only if the wallet holds the auth-address key; otherwise the wallet returns a no-such-signer error.",
     category: "edge-case",
-    modifiers: [],
+    modifiers: ["rekeyed-sender"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -265,6 +265,113 @@ export const edgeCaseScenarios: Scenario[] = [
           ]
         ]
       };
+    }
+  },
+  {
+    id: "edge-lease",
+    title: "Sign pay txn with a lease",
+    description:
+      "Payment with a 32-byte `lease` set. While this txn's validity window is open, any other txn with the same (sender, lease) pair is rejected by algod.",
+    expected:
+      "Wallet shows the payment including the lease field (base64/hex). User signs; algod accepts the first submission. Re-running this scenario inside the same validity window gets an algod lease-conflict rejection.",
+    category: "edge-case",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "edge-lease",
+        lease: new Uint8Array(32).fill(1),
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "edge-expired-window",
+    title: "Sign expired transaction (validity window in the past)",
+    description:
+      "Payment whose firstValid/lastValid window ended ~1000 rounds ago. Well-formed, so the wallet may sign it; algod must reject it as dead.",
+    expected:
+      "Wallet shows the payment (ideally flagging the expired validity window). If signed, algod rejects with a 'txn dead' error naming the round window, surfaced in the activity log.",
+    category: "edge-case",
+    modifiers: ["invalid"],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const current = Number(suggestedParams.firstValid);
+      const firstValid = Math.max(1, current - 2000);
+      const expiredParams: SuggestedParams = {
+        fee: suggestedParams.fee,
+        firstValid,
+        lastValid: Math.max(2, current - 1000),
+        genesisHash: suggestedParams.genesisHash,
+        genesisID: suggestedParams.genesisID,
+        minFee: suggestedParams.minFee
+      };
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "edge-expired-window",
+        suggestedParams: expiredParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "edge-network-mismatch",
+    title: "Sign txn built for MainNet while connected to TestNet",
+    description:
+      "Payment whose genesisHash/genesisID are MainNet's, requested over a TestNet session. Per ARC-1 the wallet must refuse to sign txns for a different network than the session's.",
+    expected:
+      "Wallet detects the network mismatch and rejects the request before signing, surfacing a wrong-network error. No signature is produced. (If it were signed, TestNet algod would also reject the genesis mismatch.)",
+    category: "edge-case",
+    modifiers: ["invalid"],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const mainnetParams: SuggestedParams = {
+        fee: suggestedParams.fee,
+        firstValid: suggestedParams.firstValid,
+        lastValid: suggestedParams.lastValid,
+        genesisHash: algosdk.base64ToBytes("wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8="),
+        genesisID: "mainnet-v1.0",
+        minFee: suggestedParams.minFee
+      };
+      const txn = buildPayment({
+        sender: address,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "edge-network-mismatch",
+        suggestedParams: mainnetParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "edge-unconnected-sender",
+    title: "Sign txn from an unconnected sender (no signers marker)",
+    description:
+      "Single payment whose sender is testAccounts[2] — a valid address the wallet does not hold — WITHOUT the `signers: []` marker that would declare it externally-signed. Complements atomic-no-sign-txn, where slots are marked correctly.",
+    expected:
+      "Wallet rejects the request with a no-such-signer / unknown-sender error since it's asked to sign for an account it doesn't have. No signature is produced.",
+    category: "edge-case",
+    modifiers: ["invalid"],
+    networks: ["testnet"],
+    async build(chain, _address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildPayment({
+        sender: testAccounts[2].addr,
+        receiver: testAccounts[0].addr,
+        amount: 100000,
+        note: "edge-unconnected-sender",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
     }
   }
 ];

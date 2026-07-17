@@ -1,4 +1,3 @@
-import algosdk from "algosdk";
 import { apiGetTxnParams } from "../../core/utils/algod/algod";
 import { buildOnlineKeyreg, buildOfflineKeyreg } from "../builders/keyreg";
 import { testAccounts } from "../test-accounts";
@@ -61,12 +60,53 @@ export const singleKeyregScenarios: Scenario[] = [
     }
   },
   {
-    id: "single-keyreg-offline-plain",
-    title: "Sign single offline keyreg txn",
+    id: "single-keyreg-goes-offline",
+    title: "Sign single offline keyreg txn (reversible)",
     description:
-      "Offline keyreg with `nonParticipation: true` — marks the account as offline / non-participating.",
+      "Plain offline keyreg: no participation keys and NO nonParticipation flag. Takes the account offline reversibly — it can register online again later.",
     expected:
-      "Wallet shows a keyreg txn flagged offline / non-participating, with no vote keys. User signs; algod accepts and the account is taken offline.",
+      "Wallet shows a keyreg txn marked offline with no vote keys and no permanent-nonparticipation warning. User signs; algod accepts and the account is offline (reversible).",
+    category: "single-keyreg",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildOfflineKeyreg({
+        sender: address,
+        note: "single-keyreg-goes-offline",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-keyreg-goes-offline-with-rekey",
+    title: "Sign single offline keyreg txn (reversible) with rekey",
+    description:
+      "Plain offline keyreg (no keys, no nonParticipation flag) with `rekeyTo: testAccounts[1]` set.",
+    expected:
+      "Wallet shows the offline keyreg AND prominently warns about the rekey to testAccounts[1]. User can sign; algod accepts both atomically.",
+    category: "single-keyreg",
+    modifiers: ["rekey"],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildOfflineKeyreg({
+        sender: address,
+        note: "single-keyreg-goes-offline-with-rekey",
+        rekeyTo: testAccounts[1].addr,
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-keyreg-nonpart",
+    title: "Sign single nonparticipation keyreg txn (PERMANENT)",
+    description:
+      "Keyreg with `nonParticipation: true` — PERMANENTLY marks the account non-participating. Unlike plain offline, this can never be undone; the account can never register online again.",
+    expected:
+      "Wallet shows the keyreg flagged as permanent nonparticipation and displays a severe, irreversible-action warning (distinct from plain offline). User signs; algod accepts and the account is permanently non-participating.",
     category: "single-keyreg",
     modifiers: [],
     networks: ["testnet"],
@@ -75,28 +115,28 @@ export const singleKeyregScenarios: Scenario[] = [
       const txn = buildOfflineKeyreg({
         sender: address,
         nonParticipation: true,
-        note: "single-keyreg-offline-plain",
+        note: "single-keyreg-nonpart",
         suggestedParams
       });
       return { transaction: [[{ txn }]] };
     }
   },
   {
-    id: "single-keyreg-offline-with-rekey",
-    title: "Sign single offline keyreg txn with rekey",
+    id: "single-keyreg-nonpart-with-rekey",
+    title: "Sign single nonparticipation keyreg txn (PERMANENT) with rekey",
     description:
-      "Offline keyreg (`nonParticipation: true`) with `rekeyTo: testAccounts[1]` set.",
+      "Permanent nonparticipation keyreg (`nonParticipation: true`) with `rekeyTo: testAccounts[1]` set — two irreversible/high-risk actions in one txn.",
     expected:
-      "Wallet shows the offline keyreg AND prominently warns that the account will be rekeyed to testAccounts[1]. User can sign; algod accepts the offline keyreg and the rekey atomically.",
+      "Wallet warns about BOTH the permanent nonparticipation and the rekey. User can sign; algod accepts both atomically.",
     category: "single-keyreg",
     modifiers: ["rekey"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
-      const txn = algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+      const txn = buildOfflineKeyreg({
         sender: address,
         nonParticipation: true,
-        note: new Uint8Array(Buffer.from("single-keyreg-offline-with-rekey")),
+        note: "single-keyreg-nonpart-with-rekey",
         rekeyTo: testAccounts[1].addr,
         suggestedParams
       });

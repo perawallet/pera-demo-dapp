@@ -9,6 +9,8 @@ export interface BuildAssetTransferArgs {
   suggestedParams: SuggestedParams;
   closeRemainderTo?: string | Address;
   rekeyTo?: string | Address;
+  /** Clawback: the account whose holding is revoked; `sender` must be the asset's clawback address. */
+  assetSender?: string | Address;
 }
 
 export const buildAssetTransfer = (args: BuildAssetTransferArgs): algosdk.Transaction => {
@@ -20,7 +22,8 @@ export const buildAssetTransfer = (args: BuildAssetTransferArgs): algosdk.Transa
     note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
     suggestedParams: args.suggestedParams,
     closeRemainderTo: args.closeRemainderTo,
-    rekeyTo: args.rekeyTo
+    rekeyTo: args.rekeyTo,
+    assetSender: args.assetSender
   });
 };
 
@@ -39,6 +42,7 @@ export interface BuildAssetCreateArgs {
   note?: string;
   suggestedParams: SuggestedParams;
   rekeyTo?: string | Address;
+  assetMetadataHash?: Uint8Array;
 }
 
 export const buildAssetCreate = (args: BuildAssetCreateArgs): algosdk.Transaction => {
@@ -56,7 +60,8 @@ export const buildAssetCreate = (args: BuildAssetCreateArgs): algosdk.Transactio
     clawback: args.clawback,
     note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
     suggestedParams: args.suggestedParams,
-    rekeyTo: args.rekeyTo
+    rekeyTo: args.rekeyTo,
+    assetMetadataHash: args.assetMetadataHash
   });
 };
 
