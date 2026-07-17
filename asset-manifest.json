@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/pera-demo-dapp/static/css/main.332392e7.css",
-    "main.js": "/pera-demo-dapp/static/js/main.1e6cae1b.js",
+    "main.js": "/pera-demo-dapp/static/js/main.501464ec.js",
     "static/js/215.681f6bf7.chunk.js": "/pera-demo-dapp/static/js/215.681f6bf7.chunk.js",
     "static/js/347.0a833fe4.chunk.js": "/pera-demo-dapp/static/js/347.0a833fe4.chunk.js",
     "index.html": "/pera-demo-dapp/index.html",
     "main.332392e7.css.map": "/pera-demo-dapp/static/css/main.332392e7.css.map",
-    "main.1e6cae1b.js.map": "/pera-demo-dapp/static/js/main.1e6cae1b.js.map",
+    "main.501464ec.js.map": "/pera-demo-dapp/static/js/main.501464ec.js.map",
     "215.681f6bf7.chunk.js.map": "/pera-demo-dapp/static/js/215.681f6bf7.chunk.js.map",
     "347.0a833fe4.chunk.js.map": "/pera-demo-dapp/static/js/347.0a833fe4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.332392e7.css",
-    "static/js/main.1e6cae1b.js"
+    "static/js/main.501464ec.js"
   ]
 }
