@@ -67,6 +67,15 @@ module.exports = {
       rules: {
         "no-magic-numbers": "off"
       }
+    },
+    {
+      // Unit test files: byte values, counts, and asset indices used as
+      // fixtures/assertions are inherently magic numbers and shouldn't be
+      // hoisted to named consts.
+      files: ["src/core/home/sign-txn/**/*.test.ts"],
+      rules: {
+        "no-magic-numbers": "off"
+      }
     }
   ]
 };

@@ -34,6 +34,7 @@ export interface BuildOfflineKeyregArgs {
   sender: string | Address;
   nonParticipation?: boolean;
   note?: string;
+  rekeyTo?: string | Address;
   suggestedParams: SuggestedParams;
 }
 
@@ -42,6 +43,7 @@ export const buildOfflineKeyreg = (args: BuildOfflineKeyregArgs): algosdk.Transa
     sender: args.sender,
     nonParticipation: args.nonParticipation,
     note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+    ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
     suggestedParams: args.suggestedParams
   });
 };

@@ -1,28 +1,41 @@
 import { ScopeType } from "@perawallet/connect";
 import type { Siwa, PeraWalletArc60SignData } from "@perawallet/connect";
 import type { Scenario } from "../types";
+import { testAccounts } from "../test-accounts";
 
-const buildArc60Payload = async (opts: {
+export const buildArc60Payload = async (opts: {
   signerAddress: string;
   domain?: string;
   authenticatorDataDomain?: string;
   includeNonce?: boolean;
+  chainId?: string;
+  /** Sets the SIWA payload's account_address independently of the top-level
+   *  signer, to model rekeyed/mismatched-signer requests. */
+  accountAddressOverride?: string;
+  version?: string;
+  issuedAt?: string;
+  /** SIWA fields to delete before canonicalization (schema-violation cases). */
+  omitFields?: string[];
 }): Promise<PeraWalletArc60SignData> => {
   const domain = opts.domain ?? window.location.host;
   const authDomain = opts.authenticatorDataDomain ?? domain;
 
   const siwa: Siwa = {
-    account_address: opts.signerAddress,
-    chain_id: "283",
+    account_address: opts.accountAddressOverride ?? opts.signerAddress,
+    chain_id: opts.chainId ?? "283",
     domain,
-    "issued-at": new Date().toISOString(),
+    "issued-at": opts.issuedAt ?? new Date().toISOString(),
     ...(opts.includeNonce !== false ? { nonce: crypto.randomUUID() } : {}),
     "request-id": crypto.randomUUID(),
     statement: "Sign in to Pera Demo dApp with your Algorand account.",
     type: "ed25519",
     uri: window.location.origin,
-    version: "1"
+    version: opts.version ?? "1"
   } as Siwa;
+
+  for (const field of opts.omitFields ?? []) {
+    delete (siwa as unknown as Record<string, unknown>)[field];
+  }
 
   const canonicalJson = JSON.stringify(siwa, Object.keys(siwa).sort());
 
@@ -95,6 +108,94 @@ export const arc60Scenarios: Scenario[] = [
       const payload = await buildArc60Payload({
         signerAddress: address,
         includeNonce: false
+      });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-wrong-chain-id",
+    title: "ARC-60 auth — wrong chain id (expected reject)",
+    description:
+      "SIWA payload with `chain_id: '999'` instead of Algorand's registered 283.",
+    expected:
+      "Wallet rejects the request per ARC-60 (unsupported/unknown chain id) before signing. No signature is produced.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({ signerAddress: address, chainId: "999" });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-signer-mismatch",
+    title: "ARC-60 auth — account_address differs from signer (expected reject)",
+    description:
+      "SIWA payload whose `account_address` is testAccounts[0] while the top-level `signer` is the connected account — models a rekeyed / mismatched-signer request.",
+    expected:
+      "Wallet detects that the payload's account_address doesn't match the requested signer and rejects before signing (unless it explicitly supports rekeyed signing with the auth key it holds). No signature for the mismatched account is produced.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({
+        signerAddress: address,
+        accountAddressOverride: testAccounts[0].addr.toString()
+      });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-invalid-schema",
+    title: "ARC-60 auth — invalid SIWA schema (expected reject)",
+    description:
+      "SIWA payload with required fields `domain` and `type` removed, violating the ARC-60 schema.",
+    expected:
+      "Wallet fails schema validation and rejects the request before signing, naming the missing field(s). No signature is produced.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({
+        signerAddress: address,
+        omitFields: ["domain", "type"]
+      });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-wrong-version",
+    title: "ARC-60 auth — unsupported version (expected reject)",
+    description: "SIWA payload declaring `version: '2'` (only '1' exists).",
+    expected:
+      "Wallet rejects the request as an unsupported ARC-60/SIWA version before signing. No signature is produced.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({ signerAddress: address, version: "2" });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-future-issued-at",
+    title: "ARC-60 auth — issued-at in the future (expected reject)",
+    description:
+      "SIWA payload whose `issued-at` timestamp is one hour in the future.",
+    expected:
+      "Wallet rejects the request (or at minimum warns) because the sign-in claims to have been issued in the future. No signature is produced on strict validation.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({
+        signerAddress: address,
+        issuedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
       });
       return { payload };
     }

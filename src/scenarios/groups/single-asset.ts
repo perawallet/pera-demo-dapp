@@ -1,4 +1,4 @@
-import {apiGetTxnParams} from "../../core/utils/algod/algod";
+import {apiGetTxnParams, ChainType, clientForChain} from "../../core/utils/algod/algod";
 import {AssetTransactionType, getAssetIndex} from "../asset-indexes";
 import {
   buildAssetCreate,
@@ -7,12 +7,79 @@ import {
   buildAssetReconfig,
   buildAssetTransfer
 } from "../builders/asset";
+import {getOwnedAsset, networkForChain, setOwnedAsset} from "../owned-asset";
 import {testAccounts} from "../test-accounts";
 import type {Scenario} from "../types";
 
 const INVALID_ASSET_INDEX = 100;
 
+const requireOwnedAsset = (chain: ChainType, address: string): number => {
+  const assetId = getOwnedAsset(networkForChain(chain), address);
+  if (assetId === null) {
+    throw new Error("Run 'Create test asset (setup)' first.");
+  }
+  return assetId;
+};
+
 export const singleAssetScenarios: Scenario[] = [
+  {
+    id: "single-acfg-create-owned",
+    title: "Create test asset (setup)",
+    description:
+      "Creates an asset owned entirely by the connected account (manager/reserve/freeze/clawback all set to it) and remembers its ID locally, unlocking the asset reconfig/freeze/destroy/clawback scenarios. Prompts for an existing asset ID first — enter one you created earlier to reuse it (avoids piling up min-balance from repeated creates), or leave blank to create a new one.",
+    expected:
+      "Reuse path: no wallet interaction; the dApp validates the asset's manager/freeze/clawback are the connected account and stores the ID. Create path: wallet shows an asset-create txn with all four role addresses set to the connected account. User signs; algod accepts; the dApp stores the new asset ID.",
+    category: "single-acfg",
+    modifiers: [],
+    networks: ["testnet"],
+    captureCreatedAsset: true,
+    async build(chain, address) {
+      const network = networkForChain(chain);
+      const existing = prompt(
+        "Asset ID to reuse as the test asset (leave blank to create a new one):"
+      );
+      if (existing && existing.trim() !== "") {
+        const assetId = Number(existing.trim());
+        if (!Number.isInteger(assetId) || assetId <= 0) {
+          throw new Error(`"${existing}" is not a valid asset ID.`);
+        }
+        const assetInfo = await clientForChain(chain).getAssetByID(assetId).do();
+        const roles = {
+          manager: String(assetInfo.params.manager ?? ""),
+          freeze: String(assetInfo.params.freeze ?? ""),
+          clawback: String(assetInfo.params.clawback ?? "")
+        };
+        const wrongRoles = Object.entries(roles)
+          .filter(([, holder]) => holder !== address)
+          .map(([role]) => role);
+        if (wrongRoles.length > 0) {
+          throw new Error(
+            `Asset ${assetId} can't be used: its ${wrongRoles.join(", ")} ` +
+              `role(s) aren't held by the connected account.`
+          );
+        }
+        setOwnedAsset(network, address, assetId);
+        return { notice: `Reusing asset ${assetId} as the owned test asset.` };
+      }
+
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildAssetCreate({
+        sender: address,
+        total: 1000000n,
+        decimals: 2,
+        defaultFrozen: false,
+        unitName: "PDT",
+        assetName: "Pera Demo Test Asset",
+        manager: address,
+        reserve: address,
+        freeze: address,
+        clawback: address,
+        note: "single-acfg-create-owned",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
   {
     id: "single-axfer-opt-in",
     title: "Sign single asset opt-in txn",
@@ -59,14 +126,14 @@ export const singleAssetScenarios: Scenario[] = [
     }
   },
   {
-    id: "single-axfer-opt-in",
+    id: "single-axfer-opt-in-with-rekey",
     title: "Sign single asset opt-in txn with rekey",
     description:
       "Opt-in to a TestNet sample asset (0-amount self-transfer of the asset). With a rekey.",
     expected:
       "Wallet shows an asset opt-in txn (asset id, sender = receiver, amount 0). User can sign; algod accepts and the auth address is updated.",
     category: "single-axfer",
-    modifiers: [],
+    modifiers: ["rekey"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -75,7 +142,7 @@ export const singleAssetScenarios: Scenario[] = [
         receiver: address,
         amount: 0,
         assetIndex: getAssetIndex(chain, AssetTransactionType.OptIn),
-        note: "single-axfer-opt-in",
+        note: "single-axfer-opt-in-with-rekey",
         rekeyTo: testAccounts[0].addr,
         suggestedParams
       });
@@ -176,6 +243,32 @@ export const singleAssetScenarios: Scenario[] = [
     }
   },
   {
+    id: "single-axfer-clawback",
+    title: "Sign single asset clawback transfer txn",
+    description:
+      "Clawback transfer of the owned test asset: the connected account (the asset's clawback address) revokes 1 unit from its own holding back to itself (`assetSender` set). Self-to-self keeps it submittable without extra opt-ins.",
+    expected:
+      "Wallet displays the txn distinctly as a CLAWBACK (revoking from the target account), not a normal transfer. User signs; algod accepts because the sender holds the asset's clawback role.",
+    category: "single-axfer",
+    modifiers: [],
+    networks: ["testnet"],
+    requiresOwnedAsset: true,
+    async build(chain, address) {
+      const assetIndex = requireOwnedAsset(chain, address);
+      const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildAssetTransfer({
+        sender: address,
+        receiver: address,
+        assetSender: address,
+        amount: 1,
+        assetIndex,
+        note: "single-axfer-clawback",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
     id: "single-acfg-create-plain",
     title: "Sign single asset create txn (full metadata)",
     description:
@@ -259,23 +352,52 @@ export const singleAssetScenarios: Scenario[] = [
     }
   },
   {
-    id: "single-acfg-reconfig-plain",
-    title: "Sign single asset reconfig txn (change manager)",
+    id: "single-acfg-create-metadata-hash",
+    title: "Sign single asset create txn (metadata hash + unicode name)",
     description:
-      "Reconfigure the TestNet sample asset's manager/reserve/freeze/clawback addresses, with `strictEmptyAddressChecking: true`. Sender must currently be the asset's manager.",
+      "Create an asset with a 32-byte `assetMetadataHash` and a long unicode asset name ('Tëst 🚀 Ässet — ünïcödé nàmé'), exercising metadata display formatting.",
     expected:
-      "Wallet displays an asset-config txn with the new manager/reserve/freeze/clawback addresses. User signs. On submit, algod accepts only if the sender is the current manager; otherwise rejects with an authorization error.",
+      "Wallet shows the asset-create txn, renders the unicode name correctly, and displays the metadata hash (base64 or hex). User signs; algod accepts.",
     category: "single-acfg",
     modifiers: [],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
+      const txn = buildAssetCreate({
+        sender: address,
+        total: 1000n,
+        decimals: 0,
+        defaultFrozen: false,
+        unitName: "TÜST",
+        assetName: "Tëst 🚀 Ässet — ünïcödé nàmé",
+        assetMetadataHash: new Uint8Array(32).fill(7),
+        manager: address,
+        note: "single-acfg-create-metadata-hash",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-acfg-reconfig-plain",
+    title: "Sign single asset reconfig txn (rotate reserve)",
+    description:
+      "Reconfigure the owned test asset's reserve address, with `strictEmptyAddressChecking: true`. The connected account is the asset's manager (created via setup), so manager/freeze/clawback stay pointed at it and only the reserve rotates to a test account.",
+    expected:
+      "Wallet displays an asset-config txn with reserve set to a test account and manager/freeze/clawback unchanged (the connected account). User signs; algod ACCEPTS because the sender is the current manager. The freeze/clawback/destroy scenarios keep working afterward since those roles are untouched.",
+    category: "single-acfg",
+    modifiers: [],
+    networks: ["testnet"],
+    requiresOwnedAsset: true,
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const assetIndex = requireOwnedAsset(chain, address);
       const txn = buildAssetReconfig({
         sender: address,
-        assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
-        manager: testAccounts[1].addr,
-        reserve: testAccounts[2].addr,
-        freeze: testAccounts[0].addr,
+        assetIndex,
+        manager: address,
+        reserve: testAccounts[0].addr,
+        freeze: address,
         clawback: address,
         strictEmptyAddressChecking: true,
         note: "single-acfg-reconfig-plain",
@@ -288,17 +410,19 @@ export const singleAssetScenarios: Scenario[] = [
     id: "single-acfg-reconfig-clear-all",
     title: "Sign single asset reconfig txn (clear all addresses)",
     description:
-      "Reconfigure the TestNet sample asset, clearing manager/reserve/freeze/clawback (all omitted) with `strictEmptyAddressChecking: false`. Sender must currently be the asset's manager.",
+      "Reconfigure the owned test asset, clearing manager/reserve/freeze/clawback (all omitted) with `strictEmptyAddressChecking: false`. The connected account is currently the asset's manager (created via setup).",
     expected:
-      "Wallet displays an asset-config txn with all four manager addresses cleared, and prominently warns that the asset's configuration will be permanently locked. User can sign. On submit, algod accepts only if the sender is the current manager.",
+      "Wallet displays an asset-config txn with all four manager addresses cleared, and prominently warns that the asset's configuration will be permanently locked. User can sign; algod ACCEPTS because the sender is the current manager. Clearing all roles permanently locks the owned asset, so the other role scenarios will fail until a new test asset is created via setup.",
     category: "single-acfg",
     modifiers: [],
     networks: ["testnet"],
+    requiresOwnedAsset: true,
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
+      const assetIndex = requireOwnedAsset(chain, address);
       const txn = buildAssetReconfig({
         sender: address,
-        assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
+        assetIndex,
         strictEmptyAddressChecking: false,
         note: "single-acfg-reconfig-clear-all",
         suggestedParams
@@ -310,17 +434,20 @@ export const singleAssetScenarios: Scenario[] = [
     id: "single-acfg-destroy-plain",
     title: "Sign single asset destroy txn",
     description:
-      "Destroy the TestNet sample asset. Sender must currently be the asset's manager and hold the entire supply.",
+      "Destroy the owned test asset. The connected account is currently the asset's manager and holds the entire supply (created via setup).",
     expected:
-      "Wallet displays an asset-destroy txn and prominently warns that the asset will be permanently destroyed. User can sign. On submit, algod accepts only if the sender is the manager and holds the full supply; otherwise rejects.",
+      "Wallet displays an asset-destroy txn and prominently warns that the asset will be permanently destroyed. User can sign; algod ACCEPTS because the sender is the manager and holds the full supply. On success, the dApp forgets the stored asset ID (run setup again to re-unlock the role scenarios).",
     category: "single-acfg",
     modifiers: [],
     networks: ["testnet"],
+    requiresOwnedAsset: true,
+    clearsOwnedAssetOnSuccess: true,
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
+      const assetIndex = requireOwnedAsset(chain, address);
       const txn = buildAssetDestroy({
         sender: address,
-        assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
+        assetIndex,
         note: "single-acfg-destroy-plain",
         suggestedParams
       });
@@ -331,18 +458,20 @@ export const singleAssetScenarios: Scenario[] = [
     id: "single-afrz-freeze-plain",
     title: "Sign single asset freeze txn",
     description:
-      "Freeze a target account's holding of the TestNet sample asset (`frozen: true`). Sender must currently be the asset's freeze address.",
+      "Freeze the connected account's own holding of the owned test asset (`frozen: true`). The connected account is currently the asset's freeze address (created via setup) and is opted in (it holds the full supply), so it can be the freeze target.",
     expected:
-      "Wallet shows an asset-freeze txn naming the target account and the asset. User signs. On submit, algod accepts only if the sender holds the asset's freeze role; otherwise rejects.",
+      "Wallet shows an asset-freeze txn naming the connected account as the target and the owned asset. User signs; algod ACCEPTS because the sender holds the asset's freeze role.",
     category: "single-afrz",
     modifiers: [],
     networks: ["testnet"],
+    requiresOwnedAsset: true,
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
+      const assetIndex = requireOwnedAsset(chain, address);
       const txn = buildAssetFreeze({
         sender: address,
-        assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
-        freezeTarget: testAccounts[0].addr,
+        assetIndex,
+        freezeTarget: address,
         frozen: true,
         note: "single-afrz-freeze-plain",
         suggestedParams
@@ -354,18 +483,20 @@ export const singleAssetScenarios: Scenario[] = [
     id: "single-afrz-unfreeze-plain",
     title: "Sign single asset unfreeze txn",
     description:
-      "Unfreeze a target account's holding of the TestNet sample asset (`frozen: false`). Sender must currently be the asset's freeze address.",
+      "Unfreeze the connected account's own holding of the owned test asset (`frozen: false`). The connected account is currently the asset's freeze address (created via setup) and is opted in (it holds the full supply), so it can be the freeze target.",
     expected:
-      "Wallet shows an asset-unfreeze txn naming the target account and the asset. User signs. On submit, algod accepts only if the sender holds the asset's freeze role; otherwise rejects.",
+      "Wallet shows an asset-unfreeze txn naming the connected account as the target and the owned asset. User signs; algod ACCEPTS because the sender holds the asset's freeze role.",
     category: "single-afrz",
     modifiers: [],
     networks: ["testnet"],
+    requiresOwnedAsset: true,
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
+      const assetIndex = requireOwnedAsset(chain, address);
       const txn = buildAssetFreeze({
         sender: address,
-        assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
-        freezeTarget: testAccounts[0].addr,
+        assetIndex,
+        freezeTarget: address,
         frozen: false,
         note: "single-afrz-unfreeze-plain",
         suggestedParams

@@ -3,6 +3,7 @@ import { apiGetTxnParams, ChainType } from "../../core/utils/algod/algod";
 import { buildAppCall, buildAppCreate } from "../builders/application";
 import { testAccounts } from "../test-accounts";
 import type { Scenario } from "../types";
+import { getAssetIndex, AssetTransactionType } from "../asset-indexes";
 
 // App IDs copied verbatim from the old signTxnUtils.tsx getAppIndex().
 const TESTNET_APP_INDEX = 22314999;
@@ -387,6 +388,33 @@ export const singleAppScenarios: Scenario[] = [
         appArgs: [],
         boxes: [{ appIndex, name: Uint8Array.from([0]) }],
         note: "single-appl-noop-with-boxes",
+        suggestedParams
+      });
+      return { transaction: [[{ txn }]] };
+    }
+  },
+  {
+    id: "single-appl-noop-with-foreign-refs",
+    title: "Sign single app noop call with foreign references",
+    description:
+      "Noop app call whose access arrays are all populated: one foreign account (testAccounts[0]), one foreign app (the demo app itself), and one foreign asset (the TestNet sample asset).",
+    expected:
+      "Wallet shows the app call including the referenced foreign account, app ID, and asset ID. User signs; algod accepts (references are valid; the app ignores them).",
+    category: "single-appl",
+    modifiers: [],
+    networks: ["testnet"],
+    async build(chain, address) {
+      const suggestedParams = await apiGetTxnParams(chain);
+      const appIndex = getAppIndex(chain);
+      const txn = buildAppCall({
+        sender: address,
+        appIndex,
+        onComplete: algosdk.OnApplicationComplete.NoOpOC,
+        appArgs: DEFAULT_APP_ARGS,
+        accounts: [testAccounts[0].addr],
+        foreignApps: [appIndex],
+        foreignAssets: [getAssetIndex(chain, AssetTransactionType.Transfer)],
+        note: "single-appl-noop-with-foreign-refs",
         suggestedParams
       });
       return { transaction: [[{ txn }]] };

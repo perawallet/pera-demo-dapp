@@ -9,6 +9,9 @@ export interface SignAndSubmitArgs {
   txnsToSign: SignerTransaction[][];
   /** Optional delay before submitting (used by the future-transaction scenario). */
   transactionTimeout?: number;
+  /** After submitting, poll submitted groups' first txn until one yields a
+   *  created asset index and return it (setup scenario only). */
+  captureAssetIndex?: boolean;
 }
 
 export interface SignAndSubmitResult {
@@ -18,6 +21,8 @@ export interface SignAndSubmitResult {
    *  account was available to fill the gap. These can't be submitted; algod
    *  would reject with "incomplete group". */
   partialSignGroups: number;
+  /** Asset ID created by the confirmed txn, when captureAssetIndex was set. */
+  createdAssetIndex?: number;
 }
 
 /**
@@ -35,6 +40,27 @@ const signSlotLocally = (slot: SignerTransaction): Uint8Array | null => {
 
 const isExternallySignedSlot = (slot: SignerTransaction): boolean => {
   return slot.signers !== undefined && slot.signers.length === 0;
+};
+
+const pollForCreatedAssetIndex = async (
+  algod: Algodv2,
+  txid: string
+): Promise<number | undefined> => {
+  const MAX_POLLS = 10;
+  const POLL_DELAY_MS = 1500;
+  for (let i = 0; i < MAX_POLLS; i++) {
+    try {
+      const info = await algod.pendingTransactionInformation(txid).do();
+      if (info.confirmedRound && Number(info.confirmedRound) > 0) {
+        return info.assetIndex ? Number(info.assetIndex) : undefined;
+      }
+    } catch {
+      // Pending-info errors can be transient behind load balancers; ignore them
+      // and retry (mirrors algosdk.waitForConfirmation behavior).
+    }
+    await new Promise((resolve) => setTimeout(resolve, POLL_DELAY_MS));
+  }
+  return undefined;
 };
 
 /**
@@ -63,7 +89,8 @@ export const signAndSubmit = async ({
   algod,
   accountAddress: _accountAddress,
   txnsToSign,
-  transactionTimeout
+  transactionTimeout,
+  captureAssetIndex
 }: SignAndSubmitArgs): Promise<SignAndSubmitResult> => {
   const allSigned = await peraWallet.signTransaction(txnsToSign);
 
@@ -107,6 +134,7 @@ export const signAndSubmit = async ({
 
   let submittedGroups = 0;
   let partialSignGroups = 0;
+  let createdAssetIndex: number | undefined;
 
   if (transactionTimeout) {
     await new Promise<void>((resolve, reject) => {
@@ -132,7 +160,7 @@ export const signAndSubmit = async ({
           .catch(reject);
       }, transactionTimeout);
     });
-    return { submittedGroups, partialSignGroups };
+    return { submittedGroups, partialSignGroups, createdAssetIndex };
   }
 
   for (let i = 0; i < signedByGroup.length; i++) {
@@ -144,7 +172,10 @@ export const signAndSubmit = async ({
     }
     await algod.sendRawTransaction(assembled).do();
     submittedGroups += 1;
+    if (captureAssetIndex && createdAssetIndex === undefined) {
+      createdAssetIndex = await pollForCreatedAssetIndex(algod, txnsToSign[i][0].txn.txID());
+    }
   }
 
-  return { submittedGroups, partialSignGroups };
+  return { submittedGroups, partialSignGroups, createdAssetIndex };
 };

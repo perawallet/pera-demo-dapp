@@ -11,13 +11,15 @@ interface ScenarioListProps {
   onInvoke: (scenario: NumberedScenario) => void;
   invokingId: string | null;
   connectedAccountCount: number;
+  ownedAssetId: number | null;
 }
 
 const ScenarioList = ({
   scenarios,
   onInvoke,
   invokingId,
-  connectedAccountCount
+  connectedAccountCount,
+  ownedAssetId
 }: ScenarioListProps) => {
   const [selectedCategories, setSelectedCategories] = useState<
     Set<ScenarioCategory>
@@ -51,7 +53,9 @@ const ScenarioList = ({
             disabledReason={
               s.minAccounts && connectedAccountCount < s.minAccounts
                 ? `Connect ${s.minAccounts}+ accounts to run this`
-                : undefined
+                : s.requiresOwnedAsset && ownedAssetId === null
+                  ? "Run 'Create test asset (setup)' first"
+                  : undefined
             }
           />
         ))}
