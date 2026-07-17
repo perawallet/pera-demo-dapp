@@ -14,6 +14,9 @@ interface PeraWalletConfig {
   compactMode?: boolean;
   chainId: typeof MAINNET_CHAIN_ID | typeof TESTNET_CHAIN_ID;
   singleAccount?: boolean;
+  /** Enables experimental wallet features (e.g. the browser extension
+   *  connection option). Passed through to the PeraWalletConnect constructor. */
+  experimental?: boolean;
 }
 
 class PeraWalletManager extends PeraWalletConnect {
@@ -28,12 +31,15 @@ class PeraWalletManager extends PeraWalletConnect {
   static getInstance(): PeraWalletManager {
     if (!PeraWalletManager.instance) {
       const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE) === "true";
+      const isExperimentalMode =
+        localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true";
       const config: PeraWalletConfig = {
         compactMode: isCompactMode,
         chainId: TESTNET_CHAIN_ID, // Default to TestNet
         // Allow selecting more than one account at connect time so the demo can
         // exercise multi-account approval and multi-signer requests.
-        singleAccount: false
+        singleAccount: false,
+        experimental: isExperimentalMode
       };
       PeraWalletManager.instance = new PeraWalletManager(config);
     }
@@ -44,10 +50,15 @@ class PeraWalletManager extends PeraWalletConnect {
     return chainType === ChainType.MainNet ? MAINNET_CHAIN_ID : TESTNET_CHAIN_ID;
   }
 
-  updateConfig(options: {compactMode?: boolean; chainId?: PeraWalletConfig["chainId"]}): void {
-    const hasChanges = 
+  updateConfig(options: {
+    compactMode?: boolean;
+    chainId?: PeraWalletConfig["chainId"];
+    experimental?: boolean;
+  }): void {
+    const hasChanges =
       (options.compactMode !== undefined && options.compactMode !== this.config.compactMode) ||
-      (options.chainId !== undefined && options.chainId !== this.config.chainId);
+      (options.chainId !== undefined && options.chainId !== this.config.chainId) ||
+      (options.experimental !== undefined && options.experimental !== this.config.experimental);
 
     if (!hasChanges) {
       return;
@@ -67,6 +78,9 @@ class PeraWalletManager extends PeraWalletConnect {
     }
     if (options.chainId !== undefined) {
       this.config.chainId = options.chainId;
+    }
+    if (options.experimental !== undefined) {
+      this.config.experimental = options.experimental;
     }
 
     // Create new instance with updated config and replace the singleton
