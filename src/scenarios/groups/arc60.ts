@@ -14,6 +14,8 @@ export const buildArc60Payload = async (opts: {
   accountAddressOverride?: string;
   version?: string;
   issuedAt?: string;
+  expiredTime?: string;
+  notBefore?: string;
   /** SIWA fields to delete before canonicalization (schema-violation cases). */
   omitFields?: string[];
 }): Promise<PeraWalletArc60SignData> => {
@@ -30,7 +32,9 @@ export const buildArc60Payload = async (opts: {
     statement: "Sign in to Pera Demo dApp with your Algorand account.",
     type: "ed25519",
     uri: window.location.origin,
-    version: opts.version ?? "1"
+    version: opts.version ?? "1",
+    "expiration-time": opts.expiredTime,
+    "not-before": opts.notBefore,
   } as Siwa;
 
   for (const field of opts.omitFields ?? []) {
@@ -44,7 +48,7 @@ export const buildArc60Payload = async (opts: {
   );
 
   return {
-    data: new Uint8Array(Buffer.from(canonicalJson)),
+    data: Buffer.from(canonicalJson).toString("base64"),
     signer: algosdk.decodeAddress(opts.signerAddress).publicKey,
     domain,
     authenticatorData,
@@ -55,7 +59,7 @@ export const buildArc60Payload = async (opts: {
 export const arc60Scenarios: Scenario[] = [
   {
     id: "arc60-auth-plain",
-    title: "ARC-60 auth (preview)",
+    title: "ARC-60 auth",
     description:
       "Sign-in-with-Algorand via ARC-60. Builds a canonical SIWA payload (domain, nonce, request-id, statement, etc.) with `authenticatorData = sha256(domain)`.",
     expected:
@@ -91,11 +95,11 @@ export const arc60Scenarios: Scenario[] = [
   },
   {
     id: "arc60-missing-nonce",
-    title: "ARC-60 auth — missing nonce (expected reject)",
+    title: "ARC-60 auth — missing nonce (expected pass)",
     description:
-      "Builds an ARC-60 SIWA payload with the `nonce` field omitted (which the spec requires).",
+      "Builds an ARC-60 SIWA payload with the `nonce` field omitted (which is allowed by the spec).",
     expected:
-      "Wallet rejects the request per ARC-60 spec (missing required `nonce`) before signing. No signature is produced.",
+      "Wallet signs the request per ARC-60 spec.",
     category: "arc60",
     modifiers: ["invalid"],
     networks: ["testnet", "mainnet"],
@@ -109,12 +113,12 @@ export const arc60Scenarios: Scenario[] = [
     }
   },
   {
-    id: "arc60-wrong-chain-id",
-    title: "ARC-60 auth — wrong chain id (expected reject)",
+    id: "arc60-alternate-chain-id",
+    title: "ARC-60 auth — different chain id",
     description:
-      "SIWA payload with `chain_id: '999'` instead of Algorand's registered 283.",
+      "SIWA payload with `chain_id: 'algorand:mainnet'`.",
     expected:
-      "Wallet rejects the request per ARC-60 (unsupported/unknown chain id) before signing. No signature is produced.",
+      "Wallet signs the request per ARC-60.",
     category: "arc60",
     modifiers: ["invalid"],
     networks: ["testnet", "mainnet"],
@@ -163,21 +167,6 @@ export const arc60Scenarios: Scenario[] = [
     }
   },
   {
-    id: "arc60-wrong-version",
-    title: "ARC-60 auth — unsupported version (expected reject)",
-    description: "SIWA payload declaring `version: '2'` (only '1' exists).",
-    expected:
-      "Wallet rejects the request as an unsupported ARC-60/SIWA version before signing. No signature is produced.",
-    category: "arc60",
-    modifiers: ["invalid"],
-    networks: ["testnet", "mainnet"],
-    kind: "arc60",
-    async build(_chain, address) {
-      const payload = await buildArc60Payload({ signerAddress: address, version: "2" });
-      return { payload };
-    }
-  },
-  {
     id: "arc60-future-issued-at",
     title: "ARC-60 auth — issued-at in the future (expected reject)",
     description:
@@ -192,6 +181,44 @@ export const arc60Scenarios: Scenario[] = [
       const payload = await buildArc60Payload({
         signerAddress: address,
         issuedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-future-not-before",
+    title: "ARC-60 auth — not-before in the future (expected reject)",
+    description:
+      "SIWA payload whose `not-before` timestamp is one hour in the future.",
+    expected:
+      "Wallet rejects the request (or at minimum warns) because the sign-in claims to not be usable before a time in the future. No signature is produced on strict validation.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({
+        signerAddress: address,
+        notBefore: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      });
+      return { payload };
+    }
+  },
+  {
+    id: "arc60-past-expired-time",
+    title: "ARC-60 auth — expiration-time in the past (expected reject)",
+    description:
+      "SIWA payload whose `expiration-time` timestamp is one hour in the past.",
+    expected:
+      "Wallet rejects the request (or at minimum warns) because the sign-in has expired. No signature is produced on strict validation.",
+    category: "arc60",
+    modifiers: ["invalid"],
+    networks: ["testnet", "mainnet"],
+    kind: "arc60",
+    async build(_chain, address) {
+      const payload = await buildArc60Payload({
+        signerAddress: address,
+        expiredTime: new Date(Date.now() - 60 * 60 * 1000).toISOString()
       });
       return { payload };
     }

@@ -19,8 +19,8 @@ import { buildArc60Payload } from "./arc60";
 
 const SIGNER = "SIGNERADDRESS";
 
-const decodeSiwa = (payload: { data: Uint8Array }) =>
-  JSON.parse(new TextDecoder().decode(payload.data));
+const decodeSiwa = (payload: { data: string }) =>
+  JSON.parse(Buffer.from(payload.data, "base64").toString());
 
 describe("buildArc60Payload overrides", () => {
   it("defaults: chain 283, version 1, signer == account_address", async () => {
