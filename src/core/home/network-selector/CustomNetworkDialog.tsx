@@ -17,6 +17,10 @@ import {
   type CustomNetworkSettings
 } from "../../utils/algod/networks";
 
+/** algod's genesis ID for Algorand MainNet. Used to surface a real-ALGO
+ *  warning when Test connection resolves to it. */
+const MAINNET_GENESIS_ID = "mainnet-v1.0";
+
 interface CustomNetworkDialogProps {
   isOpen: boolean;
   onClose: VoidFunction;
@@ -31,14 +35,15 @@ const CustomNetworkDialog = ({isOpen, onClose, onSave}: CustomNetworkDialogProps
   const [port, setPort] = useState(String(stored.port ?? LOCALNET_DEFAULTS.port));
   const [token, setToken] = useState(stored.token || LOCALNET_DEFAULTS.token);
   const [testResult, setTestResult] = useState<
-    {severity: "success" | "error"; message: string} | null
+    {severity: "success" | "warning" | "error"; message: string} | null
   >(null);
   const [isTesting, setTestingState] = useState(false);
 
   const isBaseServerValid = (() => {
     try {
-      new URL(baseServer);
-      return true;
+      const url = new URL(baseServer);
+
+      return url.protocol === "http:" || url.protocol === "https:";
     } catch {
       return false;
     }
@@ -63,10 +68,17 @@ const CustomNetworkDialog = ({isOpen, onClose, onSave}: CustomNetworkDialogProps
         .getTransactionParams()
         .do();
 
-      setTestResult({
-        severity: "success",
-        message: `Connected. Genesis ID: ${params.genesisID}`
-      });
+      if (params.genesisID === MAINNET_GENESIS_ID) {
+        setTestResult({
+          severity: "warning",
+          message: `Connected, but this is MAINNET (genesis ${params.genesisID}). Transactions here spend real ALGO.`
+        });
+      } else {
+        setTestResult({
+          severity: "success",
+          message: `Connected. Genesis ID: ${params.genesisID}`
+        });
+      }
     } catch (error) {
       setTestResult({
         severity: "error",

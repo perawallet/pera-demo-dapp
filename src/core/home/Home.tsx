@@ -65,13 +65,17 @@ const Home = () => {
   // active one that drives the balance panel and single-signer scenarios.
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
+  // Bumped on every explicit network-change action so a Custom→Custom save
+  // (a same-value `chainType` write React 18 bails out of re-rendering on)
+  // still invalidates the stale balance from the previous endpoint.
+  const [endpointNonce, setEndpointNonce] = useState(0);
   const isConnectedToPeraWallet = !!accountAddress;
   const {display: displayToast, history, clearHistory} = usePeraToast();
   // Keys the balance refetch on the resolved endpoint rather than the network
   // enum, so saving a new Custom endpoint (which leaves `chainType` at
   // `ChainType.Custom`) still invalidates the stale balance from the old node.
   const {algod} = getNetworkConfig(chainType);
-  const endpointKey = `${algod.baseServer}:${algod.port}`;
+  const endpointKey = `${algod.baseServer}:${algod.port}:${endpointNonce}`;
   const {accountInformation, refetchAccountDetail} = useGetAccountDetailRequest({
     chain: chainType,
     accountAddress,
@@ -110,6 +114,7 @@ const Home = () => {
       compactMode: isConnectCompactMode,
       chainId: PeraWalletManager.getChainId(chainType)
     });
+    peraApiManager.updateFetcher(chainType);
   }, [isConnectCompactMode, chainType]);
 
   useEffect(() => {
@@ -146,6 +151,7 @@ const Home = () => {
 
   const handleNetworkChange = (newChainType: ChainType) => {
     setChainType(newChainType);
+    setEndpointNonce((n) => n + 1);
     persistNetwork(newChainType);
     peraApiManager.updateFetcher(newChainType);
     peraWallet.updateConfig({

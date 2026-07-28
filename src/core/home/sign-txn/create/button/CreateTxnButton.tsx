@@ -148,6 +148,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (e) {
       console.log(e);
+      throw e;
     }
   };
 
@@ -169,6 +170,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       setPendingState(false);
     }
@@ -204,6 +206,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     }
   };
 
@@ -225,6 +228,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       setPendingState(false);
     }

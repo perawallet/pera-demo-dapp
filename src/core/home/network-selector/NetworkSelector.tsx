@@ -4,6 +4,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 import {ChainType} from "../../utils/algod/algod";
 import {
+  getCustomNetworkSettings,
   getNetworkConfig,
   NETWORK_ORDER,
   setCustomNetworkSettings,
@@ -35,12 +36,24 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
   };
 
   const handleSave = (settings: CustomNetworkSettings) => {
+    const previous = getCustomNetworkSettings();
+    const endpointChanged =
+      previous.baseServer !== settings.baseServer ||
+      String(previous.port) !== String(settings.port) ||
+      previous.token !== settings.token;
+
     // A different node means any asset created on the previous one is gone.
-    clearCustomNetworkOwnedAssets();
+    if (endpointChanged) {
+      clearCustomNetworkOwnedAssets();
+    }
     setCustomNetworkSettings(settings);
     setDialogOpenState(false);
     onChange(ChainType.Custom);
   };
+
+  const hostCaption = config.algod.port
+    ? `${config.algod.baseServer}:${config.algod.port}`
+    : config.algod.baseServer;
 
   return (
     <>
@@ -49,6 +62,7 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
         onClick={(e) => setAnchor(e.currentTarget)}
         endIcon={<ArrowDropDownIcon />}
         aria-label={`Select network, currently ${config.label}`}
+        title={hostCaption}
         sx={{px: {xs: 1, sm: 1.5}, textTransform: "none"}}>
         <Box sx={{display: "flex", flexDirection: "column", alignItems: "flex-start"}}>
           <Typography variant={"body2"} sx={{fontWeight: 600, lineHeight: 1.2}}>
@@ -57,7 +71,6 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
           <Typography
             variant={"caption"}
             sx={{
-              display: {xs: "none", md: "block"},
               opacity: 0.7,
               lineHeight: 1.2,
               maxWidth: 220,
@@ -65,9 +78,7 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
               textOverflow: "ellipsis",
               whiteSpace: "nowrap"
             }}>
-            {config.algod.port
-              ? `${config.algod.baseServer}:${config.algod.port}`
-              : config.algod.baseServer}
+            {hostCaption}
           </Typography>
         </Box>
       </Button>
@@ -86,11 +97,13 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
         </MenuItem>
       </Menu>
 
-      <CustomNetworkDialog
-        isOpen={isDialogOpen}
-        onClose={() => setDialogOpenState(false)}
-        onSave={handleSave}
-      />
+      {isDialogOpen && (
+        <CustomNetworkDialog
+          isOpen={isDialogOpen}
+          onClose={() => setDialogOpenState(false)}
+          onSave={handleSave}
+        />
+      )}
     </>
   );
 };
