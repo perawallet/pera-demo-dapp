@@ -2,13 +2,14 @@ import {useState} from "react";
 import {PeraWalletConnect, ScopeType} from "@perawallet/connect";
 
 import {ChainType, clientForChain} from "../../utils/algod/algod";
+import {getNetworkConfig} from "../../utils/algod/networks";
 import {signAndSubmit} from "./signing";
 import ScenarioList from "./scenario-list/ScenarioList";
 import {getScenarios, type NumberedScenario} from "../../../scenarios/registry";
 import {
   clearOwnedAsset,
   getOwnedAsset,
-  networkForChain,
+  scenarioNetworkForChain,
   setOwnedAsset
 } from "../../../scenarios/owned-asset";
 
@@ -31,8 +32,11 @@ const SignTxn = ({
 }: SignTxnProps) => {
   const [invokingId, setInvokingId] = useState<string | null>(null);
 
-  const network = networkForChain(chain);
+  const network = scenarioNetworkForChain(chain);
   const scenarios = getScenarios(network);
+
+  const {label: networkLabel, appIndex, assetIds} = getNetworkConfig(chain);
+  const availableFixtures = {app: appIndex !== undefined, asset: assetIds !== undefined};
 
   const invoke = async (scenario: NumberedScenario) => {
     if (!accountAddress) {
@@ -63,7 +67,7 @@ const SignTxn = ({
           captureAssetIndex: scenario.captureCreatedAsset
         });
         if (createdAssetIndex !== undefined) {
-          setOwnedAsset(network, accountAddress, createdAssetIndex);
+          setOwnedAsset(chain, accountAddress, createdAssetIndex);
           handleSetLog(`Created test asset ${createdAssetIndex} and stored it for role scenarios.`);
         } else if (scenario.captureCreatedAsset && submittedGroups > 0) {
           handleSetLog(
@@ -71,7 +75,7 @@ const SignTxn = ({
           );
         }
         if (scenario.clearsOwnedAssetOnSuccess && submittedGroups > 0) {
-          clearOwnedAsset(network, accountAddress);
+          clearOwnedAsset(chain, accountAddress);
         }
         if (submittedGroups > 0 && partialSignGroups === 0) {
           handleSetLog(`Signed and sent: ${scenario.title}`);
@@ -111,7 +115,7 @@ const SignTxn = ({
   };
 
   const ownedAssetId = accountAddress
-    ? getOwnedAsset(network, accountAddress)
+    ? getOwnedAsset(chain, accountAddress)
     : null;
 
   return (
@@ -121,6 +125,8 @@ const SignTxn = ({
       invokingId={invokingId}
       connectedAccountCount={connectedAccounts.length}
       ownedAssetId={ownedAssetId}
+      availableFixtures={availableFixtures}
+      networkLabel={networkLabel}
     />
   );
 };

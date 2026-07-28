@@ -44,6 +44,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       "Wallet shows three sequential popups (one per group): opt-in, transfer, transfer. All three sign and submit successfully on TestNet.",
     category: "non-atomic-multi",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -89,6 +90,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       "Wallet shows three sequential popups, each rendering the correct type-specific UI (payment, opt-in, transfer). All three sign and submit successfully on TestNet.",
     category: "non-atomic-multi",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);

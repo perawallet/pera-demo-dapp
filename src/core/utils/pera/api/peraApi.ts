@@ -10,6 +10,12 @@ export interface Asset {
 
 const peraApi = {
   getAssets(params?: ListRequestParams, options?: {signal: AbortSignal}) {
+    if (!peraApiManager.fetcher) {
+      throw new Error(
+        "Asset search is unavailable on this network — the Pera API only covers MainNet and TestNet."
+      );
+    }
+
     return peraApiManager.fetcher.run<ListRequestResponse<Asset>>(
       {method: "GET", params, signal: options?.signal},
       "assets/"

@@ -17,6 +17,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing both txns and marks the second slot as external / not-signed-here. User signs the opt-in only; the second slot returns null/unsigned. Group is incomplete until the external party co-signs.",
     category: "atomic-group",
     modifiers: ["partial-sign"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -56,6 +57,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing all 3 txns and marks slot 2 as external. User signs slots 1 and 3; slot 2 returns null/unsigned. Group remains incomplete until the external party co-signs.",
     category: "atomic-group",
     modifiers: ["partial-sign"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -108,6 +110,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing all 3 txns with type-specific UI per slot. User signs the group. Algod accepts all 3 atomically.",
     category: "atomic-group",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -191,6 +194,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing both txns and prominently warns that slot 2 will close out the sender's asset holding (sender will be opted-out of the asset). User can sign; algod accepts both txns.",
     category: "atomic-group",
     modifiers: ["close"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -227,6 +231,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing both asset transfers and prominently warns that slot 2 will rekey the account. User can sign; algod accepts both txns.",
     category: "atomic-group",
     modifiers: ["rekey"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -271,6 +276,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing all 4 txns and prominently warns about every irreversible action across the affected slots (asset close on slot 2, rekey on slot 3, both on slot 4). User can sign; algod accepts the group atomically.",
     category: "atomic-group",
     modifiers: ["close", "rekey"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -337,6 +343,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing all 7 txns with type-specific UI per slot and warnings on every close/rekey slot. User can sign; algod accepts all 7 atomically.",
     category: "atomic-group",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -426,6 +433,7 @@ export const atomicGroupScenarios: Scenario[] = [
       "Wallet shows one popup containing all 16 txns (8 opt-ins, 8 close-outs with close warnings). User can sign; algod accepts the full-capacity group atomically.",
     category: "atomic-group",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);

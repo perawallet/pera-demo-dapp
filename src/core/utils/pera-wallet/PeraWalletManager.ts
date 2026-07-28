@@ -1,18 +1,29 @@
 import {PeraWalletConnect} from "@perawallet/connect";
 import {ChainType} from "../algod/algod";
+import {getNetworkConfig, type AlgorandChainId} from "../algod/networks";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../storage/pera-wallet/peraWalletTypes";
 
 interface PeraConnectEventHandlers {
   onDisconnect: () => Promise<void>;
 }
 
-// Chain ID constants
-const MAINNET_CHAIN_ID = 416001;
-const TESTNET_CHAIN_ID = 416002;
+/** The network the user last selected. Falls back to TestNet when absent or
+ *  unrecognised, so a stale or hand-edited value cannot wedge the app. */
+const getPersistedNetwork = (): ChainType => {
+  const stored = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.SELECTED_NETWORK);
+
+  return Object.values(ChainType).includes(stored as ChainType)
+    ? (stored as ChainType)
+    : ChainType.TestNet;
+};
+
+const persistNetwork = (chain: ChainType): void => {
+  localStorage.setItem(PERA_WALLET_LOCAL_STORAGE_KEYS.SELECTED_NETWORK, chain);
+};
 
 interface PeraWalletConfig {
   compactMode?: boolean;
-  chainId: typeof MAINNET_CHAIN_ID | typeof TESTNET_CHAIN_ID;
+  chainId: AlgorandChainId;
   singleAccount?: boolean;
   /** Enables experimental wallet features (e.g. the browser extension
    *  connection option). Passed through to the PeraWalletConnect constructor. */
@@ -35,7 +46,7 @@ class PeraWalletManager extends PeraWalletConnect {
         localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true";
       const config: PeraWalletConfig = {
         compactMode: isCompactMode,
-        chainId: TESTNET_CHAIN_ID, // Default to TestNet
+        chainId: getNetworkConfig(getPersistedNetwork()).chainId,
         // Allow selecting more than one account at connect time so the demo can
         // exercise multi-account approval and multi-signer requests.
         singleAccount: false,
@@ -46,8 +57,8 @@ class PeraWalletManager extends PeraWalletConnect {
     return PeraWalletManager.instance;
   }
 
-  static getChainId(chainType: ChainType): typeof MAINNET_CHAIN_ID | typeof TESTNET_CHAIN_ID {
-    return chainType === ChainType.MainNet ? MAINNET_CHAIN_ID : TESTNET_CHAIN_ID;
+  static getChainId(chainType: ChainType): AlgorandChainId {
+    return getNetworkConfig(chainType).chainId;
   }
 
   updateConfig(options: {
@@ -147,5 +158,5 @@ class PeraWalletManager extends PeraWalletConnect {
 
 const peraWallet = PeraWalletManager.getInstance();
 
-export {PeraWalletManager};
+export {PeraWalletManager, getPersistedNetwork, persistNetwork};
 export default peraWallet;

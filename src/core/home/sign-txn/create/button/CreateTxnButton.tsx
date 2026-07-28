@@ -5,10 +5,13 @@ import type {SignerTransaction} from "@perawallet/connect";
 
 import useAsyncProcess from "../../../../hooks/useAsyncProcess/useAsyncProcess";
 import peraApi, {Asset} from "../../../../utils/pera/api/peraApi";
+import peraApiManager from "../../../../utils/pera/api/peraApiManager";
 import {getSearchParams} from "../../../../utils/url/urlUtils";
 import {TxnForm} from "../CreateTxn";
 import {ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
+import {getNetworkConfig} from "../../../../utils/algod/networks";
 import {PeraTransactionType} from "../../../../transaction/transactionTypes";
+import {usePeraToast} from "../../../../component/toast/PeraToast";
 
 const CreateTxnButton = ({
   txnForm,
@@ -61,6 +64,7 @@ const CreateTxnButton = ({
     frozen
   } = txnForm;
   const {runAsyncProcess} = useAsyncProcess<ListRequestResponse<Asset>>();
+  const {display: displayToast} = usePeraToast();
   const assetsRef = useRef<ListRequestResponse<Asset>>();
   const [isPending, setPendingState] = useState(false);
   const [isDisabled, setDisablingState] = useState(false);
@@ -144,6 +148,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (e) {
       console.log(e);
+      throw e;
     }
   };
 
@@ -165,6 +170,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       setPendingState(false);
     }
@@ -200,6 +206,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     }
   };
 
@@ -221,6 +228,7 @@ const CreateTxnButton = ({
       onSetTransactions([{txn}]);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       setPendingState(false);
     }
@@ -229,19 +237,30 @@ const CreateTxnButton = ({
   const createAxferTransaction = async () => {
     try {
       setPendingState(true);
-      await fetchAssets();
+
+      if (transactionAmount > 1) {
+        if (!peraApiManager.isAvailable) {
+          throw new Error(
+            `Bulk asset transfers need the Pera API, which is unavailable on ${getNetworkConfig(chain).label}. Set the transaction amount to 1 and enter an asset ID manually.`
+          );
+        }
+
+        await fetchAssets();
+      }
 
       const suggestedParams = await apiGetTxnParams(chain);
       const txns: SignerTransaction[] = [];
 
       for (let i = 0; i < transactionAmount; i++) {
-        const assetId = assetsRef.current!.results[i].asset_id;
+        const assetId = transactionAmount === 1
+          ? Number(assetIndex)
+          : assetsRef.current!.results[i].asset_id;
 
         const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
           sender: address,
           receiver: toAddress,
           amount: 0,
-          assetIndex: transactionAmount === 1 ? Number(assetIndex) : assetId,
+          assetIndex: assetId,
           note: new Uint8Array(Buffer.from(`Transaction no: ${i + 1}`)),
           rekeyTo: isValidAddress(rekeyTo) ? rekeyTo : undefined,
           closeRemainderTo: isValidAddress(closeTo) ? closeTo : undefined,
@@ -254,6 +273,7 @@ const CreateTxnButton = ({
       onSetTransactions(txns);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       setPendingState(false);
     }
@@ -274,8 +294,12 @@ const CreateTxnButton = ({
       }
 
       onResetForm();
-    } catch {
-      console.log("Failed to create transactions.");
+    } catch (error) {
+      console.log(error);
+      displayToast({
+        message: `${error instanceof Error ? error.message : error}`,
+        severity: "error"
+      });
     }
   };
 

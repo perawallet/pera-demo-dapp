@@ -1,41 +1,36 @@
 import Fetcher from "../../../network/fetcher/Fetcher";
 import {FetcherConfig} from "../../../network/fetcher/fetcherTypes";
 import {ChainType} from "../../algod/algod";
-
-const PERA_API_URLS = {
-  mainnet: "https://mainnet.api.perawallet.app/v1/",
-  testnet: "https://testnet.api.perawallet.app/v1/"
-};
+import {getNetworkConfig} from "../../algod/networks";
 
 const PERA_API_DEFAULT_OPTIONS: Omit<FetcherConfig, "baseUrl"> = {
   initOptions: {
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     }
   },
   bodyParser: JSON.stringify
 };
 
-const getPeraApiBaseURLForNetwork = (network: ChainType) => {
-  return network === ChainType.MainNet ? PERA_API_URLS.mainnet : PERA_API_URLS.testnet;
-};
-
 class PeraApiManager {
-  fetcher: Fetcher;
+  /** Null on networks with no Pera API (BetaNet, LocalNet, Custom). */
+  fetcher: Fetcher | null = null;
 
   constructor(network: ChainType) {
-    this.fetcher = new Fetcher({
-      baseUrl: getPeraApiBaseURLForNetwork(network),
-      ...PERA_API_DEFAULT_OPTIONS
-    });
+    this.updateFetcher(network);
+  }
+
+  get isAvailable(): boolean {
+    return this.fetcher !== null;
   }
 
   updateFetcher(network: ChainType) {
-    this.fetcher = new Fetcher({
-      baseUrl: getPeraApiBaseURLForNetwork(network),
-      ...PERA_API_DEFAULT_OPTIONS
-    });
+    const {peraApiBaseUrl} = getNetworkConfig(network);
+
+    this.fetcher = peraApiBaseUrl
+      ? new Fetcher({baseUrl: peraApiBaseUrl, ...PERA_API_DEFAULT_OPTIONS})
+      : null;
   }
 }
 

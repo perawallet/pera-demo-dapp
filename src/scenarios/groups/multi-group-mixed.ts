@@ -73,6 +73,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       "Wallet shows 3 sequential popups. Group 1 (atomic pay + opt-in) signs fully; group 2 returns unsigned (external sender); group 3 (payment) signs. Submitted txns land successfully.",
     category: "multi-group-mixed",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -177,6 +178,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       "Wallet shows 2 sequential popups, each marking slot 2 as external. User partial-signs 1-of-2 per group (2 signatures total). The external party must co-sign before submission can succeed.",
     category: "multi-group-mixed",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -285,6 +287,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       "Wallet shows 2 sequential popups. Group 1 is partial-signed (1-of-2, slot 2 external); group 2 is fully signed (2-of-2). Group 2 lands on submit; group 1 needs the external co-signer.",
     category: "multi-group-mixed",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -342,6 +345,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       "Wallet shows 2 sequential popups. Group 1 is fully signed (2-of-2); group 2 is partial-signed (1-of-2, slot 1 external). Group 1 lands on submit; group 2 needs the external co-signer.",
     category: "multi-group-mixed",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);

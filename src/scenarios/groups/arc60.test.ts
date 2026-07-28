@@ -15,9 +15,17 @@ jest.mock(
   { virtual: true }
 );
 
-import { buildArc60Payload } from "./arc60";
+import algosdk from "algosdk";
 
-const SIGNER = "SIGNERADDRESS";
+import { buildArc60Payload } from "./arc60";
+import { testAccounts } from "../test-accounts";
+
+// Must be a real address: buildArc60Payload runs it through
+// algosdk.decodeAddress, which rejects anything failing the checksum.
+const SIGNER = testAccounts[0].addr.toString();
+// `signer` in the returned payload is the decoded 32-byte public key, not the
+// address string.
+const SIGNER_PUBLIC_KEY = algosdk.decodeAddress(SIGNER).publicKey;
 
 const decodeSiwa = (payload: { data: string }) =>
   JSON.parse(Buffer.from(payload.data, "base64").toString());
@@ -29,7 +37,7 @@ describe("buildArc60Payload overrides", () => {
     expect(siwa.chain_id).toBe("283");
     expect(siwa.version).toBe("1");
     expect(siwa.account_address).toBe(SIGNER);
-    expect(payload.signer).toBe(SIGNER);
+    expect(payload.signer).toEqual(SIGNER_PUBLIC_KEY);
     expect(siwa.nonce).toBeTruthy();
   });
 
@@ -46,7 +54,7 @@ describe("buildArc60Payload overrides", () => {
       accountAddressOverride: "OTHERADDRESS"
     });
     expect(decodeSiwa(payload).account_address).toBe("OTHERADDRESS");
-    expect(payload.signer).toBe(SIGNER);
+    expect(payload.signer).toEqual(SIGNER_PUBLIC_KEY);
   });
 
   it("overrides version and issued-at", async () => {

@@ -7,14 +7,14 @@ import {
   buildAssetReconfig,
   buildAssetTransfer
 } from "../builders/asset";
-import {getOwnedAsset, networkForChain, setOwnedAsset} from "../owned-asset";
+import {getOwnedAsset, setOwnedAsset} from "../owned-asset";
 import {testAccounts} from "../test-accounts";
 import type {Scenario} from "../types";
 
 const INVALID_ASSET_INDEX = 100;
 
 const requireOwnedAsset = (chain: ChainType, address: string): number => {
-  const assetId = getOwnedAsset(networkForChain(chain), address);
+  const assetId = getOwnedAsset(chain, address);
   if (assetId === null) {
     throw new Error("Run 'Create test asset (setup)' first.");
   }
@@ -34,7 +34,6 @@ export const singleAssetScenarios: Scenario[] = [
     networks: ["testnet"],
     captureCreatedAsset: true,
     async build(chain, address) {
-      const network = networkForChain(chain);
       const existing = prompt(
         "Asset ID to reuse as the test asset (leave blank to create a new one):"
       );
@@ -58,7 +57,7 @@ export const singleAssetScenarios: Scenario[] = [
               `role(s) aren't held by the connected account.`
           );
         }
-        setOwnedAsset(network, address, assetId);
+        setOwnedAsset(chain, address, assetId);
         return { notice: `Reusing asset ${assetId} as the owned test asset.` };
       }
 
@@ -89,6 +88,7 @@ export const singleAssetScenarios: Scenario[] = [
       "Wallet shows an asset opt-in txn (asset id, sender = receiver, amount 0). User signs; algod accepts and the account is now opted-in to the asset.",
     category: "single-axfer",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -134,6 +134,7 @@ export const singleAssetScenarios: Scenario[] = [
       "Wallet shows an asset opt-in txn (asset id, sender = receiver, amount 0). User can sign; algod accepts and the auth address is updated.",
     category: "single-axfer",
     modifiers: ["rekey"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -158,6 +159,7 @@ export const singleAssetScenarios: Scenario[] = [
       "Wallet shows an asset transfer txn (asset id, sender, receiver, amount, fee). User signs; algod accepts and the txn lands.",
     category: "single-axfer",
     modifiers: [],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -181,6 +183,7 @@ export const singleAssetScenarios: Scenario[] = [
       "Wallet displays the asset transfer AND prominently warns that the sender's full asset holding will be closed to the close-to address (the sender will be opted-out of the asset). User can sign; algod accepts.",
     category: "single-axfer",
     modifiers: ["close"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -227,6 +230,7 @@ export const singleAssetScenarios: Scenario[] = [
       "Wallet displays the asset transfer AND prominently warns that the account will be rekeyed to the rekey target (irreversible). User can sign; algod accepts and the auth address is updated.",
     category: "single-axfer",
     modifiers: ["rekey"],
+    requiresFixtures: ["asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);

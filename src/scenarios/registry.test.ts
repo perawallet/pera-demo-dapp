@@ -6,7 +6,7 @@ jest.mock(
   {virtual: true}
 );
 
-import {getAllScenarios} from "./registry";
+import {getAllScenarios, getScenarios} from "./registry";
 
 describe("scenario registry", () => {
   it("has a unique id for every scenario", () => {
@@ -14,5 +14,12 @@ describe("scenario registry", () => {
     const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
 
     expect(duplicates).toEqual([]);
+  });
+
+  it("gives the testnet scenario set to every testnet-class network", () => {
+    const testNetIds = getScenarios("testnet").map((s) => s.id);
+
+    expect(testNetIds.length).toBeGreaterThan(0);
+    expect(getScenarios("mainnet").map((s) => s.id)).not.toEqual(testNetIds);
   });
 });

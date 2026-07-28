@@ -12,6 +12,8 @@ interface ScenarioListProps {
   invokingId: string | null;
   connectedAccountCount: number;
   ownedAssetId: number | null;
+  availableFixtures: {app: boolean; asset: boolean};
+  networkLabel: string;
 }
 
 const ScenarioList = ({
@@ -19,7 +21,9 @@ const ScenarioList = ({
   onInvoke,
   invokingId,
   connectedAccountCount,
-  ownedAssetId
+  ownedAssetId,
+  availableFixtures,
+  networkLabel
 }: ScenarioListProps) => {
   const [selectedCategories, setSelectedCategories] = useState<
     Set<ScenarioCategory>
@@ -35,6 +39,16 @@ const ScenarioList = ({
     selectedCategories.size === 0
       ? scenarios
       : scenarios.filter((s) => selectedCategories.has(s.category));
+
+  const missingFixtureReason = (scenario: NumberedScenario): string | undefined => {
+    const missing = (scenario.requiresFixtures ?? []).find(
+      (fixture) => !availableFixtures[fixture]
+    );
+
+    return missing
+      ? `Not available on ${networkLabel} (no sample ${missing} configured)`
+      : undefined;
+  };
 
   return (
     <Box>
@@ -55,7 +69,7 @@ const ScenarioList = ({
                 ? `Connect ${s.minAccounts}+ accounts to run this`
                 : s.requiresOwnedAsset && ownedAssetId === null
                   ? "Run 'Create test asset (setup)' first"
-                  : undefined
+                  : missingFixtureReason(s)
             }
           />
         ))}
