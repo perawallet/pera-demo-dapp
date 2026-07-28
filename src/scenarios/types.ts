@@ -75,6 +75,10 @@ export interface Scenario {
   /** Requires the owned test asset (see owned-asset.ts). UI disables the
    *  scenario with a hint until the setup scenario has stored one. */
   requiresOwnedAsset?: boolean;
+  /** On-chain fixtures this scenario needs from the selected network's config
+   *  (a sample app, or the sample assets). Networks that do not supply them
+   *  disable the scenario with a reason instead of letting it fail on invoke. */
+  requiresFixtures?: ("app" | "asset")[];
   /** After submit, wait for confirmation and store the created asset ID as
    *  the owned test asset. Used only by the setup scenario. */
   captureCreatedAsset?: boolean;

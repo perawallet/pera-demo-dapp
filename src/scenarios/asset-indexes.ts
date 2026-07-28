@@ -1,4 +1,6 @@
 import {ChainType} from "../core/utils/algod/algod";
+import {getNetworkConfig} from "../core/utils/algod/networks";
+import {MissingNetworkFixtureError} from "./network-fixtures";
 
 export enum AssetTransactionType {
   Transfer = "asset-transfer",
@@ -6,22 +8,18 @@ export enum AssetTransactionType {
   Close = "asset-close"
 }
 
+const FIELD_FOR_TYPE: Record<AssetTransactionType, "transfer" | "optIn" | "close"> = {
+  [AssetTransactionType.Transfer]: "transfer",
+  [AssetTransactionType.OptIn]: "optIn",
+  [AssetTransactionType.Close]: "close"
+};
+
 export const getAssetIndex = (chain: ChainType, type: AssetTransactionType): number => {
-  if (chain === ChainType.MainNet) {
-    if (type === AssetTransactionType.Transfer) {
-      return 604; // IanCoin
-    } else if (type === AssetTransactionType.Close) {
-      return 672; // RotemCoin
-    } else {
-      return 312769; // Tether USDt
-    }
+  const {assetIds, label} = getNetworkConfig(chain);
+
+  if (!assetIds) {
+    throw new MissingNetworkFixtureError("asset", label);
   }
 
-  if (type === AssetTransactionType.Transfer) {
-    return 11711; // HipoCoin
-  } else if (type === AssetTransactionType.Close) {
-    return 180132; // testasset2
-  } else {
-    return 135270; // Turkish Lira
-  }
+  return assetIds[FIELD_FOR_TYPE[type]];
 };

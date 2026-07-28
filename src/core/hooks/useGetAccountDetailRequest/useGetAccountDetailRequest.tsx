@@ -7,10 +7,16 @@ import algosdk from "algosdk";
 
 const useGetAccountDetailRequest = ({
   chain,
-  accountAddress
+  accountAddress,
+  endpointKey
 }: {
   chain: ChainType;
   accountAddress: string | null;
+  /** Identifies the resolved algod endpoint (baseServer + port), not just the
+   *  network enum. Custom's endpoint can change while `chain` stays
+   *  `ChainType.Custom`, which would otherwise leave this callback's identity
+   *  (and therefore the refetch effect) unchanged and the balance stale. */
+  endpointKey: string;
 }) => {
   const [accountInformation, setAccountInformation] =
     useState<algosdk.modelsv2.Account | null>(null);
@@ -28,7 +34,7 @@ const useGetAccountDetailRequest = ({
         });
       }
     }
-  }, [accountAddress, chain, displayToast]);
+  }, [accountAddress, chain, displayToast, endpointKey]);
 
   useEffect(() => {
     if (accountAddress) {

@@ -1,22 +1,25 @@
 import algosdk from "algosdk";
 
-export enum ChainType {
-  MainNet = "mainnet",
-  TestNet = "testnet"
-}
+import {ChainType, getNetworkConfig} from "./networks";
 
-const mainNetClient = new algosdk.Algodv2("", "https://mainnet-api.algonode.cloud", "");
-const testNetClient = new algosdk.Algodv2("", "https://testnet-api.algonode.cloud", "");
+/** Cached by credentials rather than by ChainType, so editing the custom
+ *  endpoint produces a new client instead of reusing a stale one. */
+const clientCache = new Map<string, algosdk.Algodv2>();
 
 const clientForChain = (chain: ChainType): algosdk.Algodv2 => {
-  switch (chain) {
-    case ChainType.MainNet:
-      return mainNetClient;
-    case ChainType.TestNet:
-      return testNetClient;
-    default:
-      throw new Error(`Unknown chain type: ${chain}`);
+  const {algod} = getNetworkConfig(chain);
+  const cacheKey = `${algod.token}|${algod.baseServer}|${algod.port}`;
+  const cached = clientCache.get(cacheKey);
+
+  if (cached) {
+    return cached;
   }
+
+  const client = new algosdk.Algodv2(algod.token, algod.baseServer, algod.port);
+
+  clientCache.set(cacheKey, client);
+
+  return client;
 };
 
 const apiGetTxnParams = async (chain: ChainType): Promise<algosdk.SuggestedParams> => {
@@ -25,4 +28,4 @@ const apiGetTxnParams = async (chain: ChainType): Promise<algosdk.SuggestedParam
   return params;
 };
 
-export {clientForChain, apiGetTxnParams};
+export {ChainType, clientForChain, apiGetTxnParams};

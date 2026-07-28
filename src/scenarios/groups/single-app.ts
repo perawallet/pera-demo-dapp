@@ -1,23 +1,10 @@
 import algosdk from "algosdk";
-import { apiGetTxnParams, ChainType } from "../../core/utils/algod/algod";
+import { apiGetTxnParams } from "../../core/utils/algod/algod";
 import { buildAppCall, buildAppCreate } from "../builders/application";
 import { testAccounts } from "../test-accounts";
 import type { Scenario } from "../types";
 import { getAssetIndex, AssetTransactionType } from "../asset-indexes";
-
-// App IDs copied verbatim from the old signTxnUtils.tsx getAppIndex().
-const TESTNET_APP_INDEX = 22314999;
-const MAINNET_APP_INDEX = 305162725;
-
-const getAppIndex = (chain: ChainType): number => {
-  if (chain === ChainType.MainNet) {
-    return MAINNET_APP_INDEX;
-  }
-  if (chain === ChainType.TestNet) {
-    return TESTNET_APP_INDEX;
-  }
-  throw new Error(`App not defined for chain ${chain}`);
-};
+import { getAppIndex } from "../network-fixtures";
 
 // Approval/clear bytecode copied verbatim from the old singleAppCreate scenario.
 const APPROVAL_PROGRAM = Uint8Array.from([4, 129, 1, 67]);
@@ -39,6 +26,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an application opt-in txn (app id, app args, on-complete=OptIn). User signs; algod accepts and the sender is now opted-in to the app.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -62,6 +50,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows the app opt-in txn AND prominently warns that the account will be rekeyed to the rekey target. User can sign; algod accepts both the opt-in and the rekey.",
     category: "single-appl",
     modifiers: ["rekey"],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -86,6 +75,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet refuses to sign because the connected account is not the txn sender (no matching private key). Unless the user has imported testAccounts[1], the wallet returns a no-such-signer error and no signature is produced.",
     category: "single-appl",
     modifiers: ["rekey", "invalid"],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -110,6 +100,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an application NoOp call (app id, app args, on-complete=NoOp). User signs; algod accepts and the app's approval program runs.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -133,6 +124,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an application NoOp call with no app-args section (or an empty list). User signs; algod accepts.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -156,6 +148,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows the NoOp app call AND prominently warns that the account will be rekeyed to the rekey target. User can sign; algod accepts both the app call and the rekey.",
     category: "single-appl",
     modifiers: ["rekey"],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -180,6 +173,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet displays the NoOp app call with the access list (or signs through it if the wallet does not yet render the field). On submit, algod rejects because the configured app does not declare resource access. // TODO: verify expected behavior in the wallet",
     category: "single-appl",
     modifiers: ["invalid"],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -205,6 +199,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an app close-out call with the provided transaction message. User signs. On submit, algod accepts only if the sender is currently opted-in; otherwise rejects.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -228,6 +223,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows the app close-out call AND prominently warns that the account will be rekeyed. User can sign; algod accepts both the close-out and the rekey if the sender is opted-in.",
     category: "single-appl",
     modifiers: ["rekey"],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -252,6 +248,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an app clear-state call (on-complete=ClearState). User signs; algod accepts and the sender's local state for the app is removed.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -330,6 +327,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an app-update txn (on-complete=UpdateApplication) with the new program bytes. User signs. On submit, algod accepts only if the sender is the app's creator; otherwise rejects with an authorization error.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -354,6 +352,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows an app-delete txn (on-complete=DeleteApplication) and prominently warns that the app will be permanently destroyed. User can sign. On submit, algod accepts only if the sender is the app's creator; otherwise rejects.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -377,6 +376,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows a NoOp app call including the box reference (app id + name bytes). User signs; algod accepts the box reference and runs the approval program.",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);
@@ -402,6 +402,7 @@ export const singleAppScenarios: Scenario[] = [
       "Wallet shows the app call including the referenced foreign account, app ID, and asset ID. User signs; algod accepts (references are valid; the app ignores them).",
     category: "single-appl",
     modifiers: [],
+    requiresFixtures: ["app", "asset"],
     networks: ["testnet"],
     async build(chain, address) {
       const suggestedParams = await apiGetTxnParams(chain);

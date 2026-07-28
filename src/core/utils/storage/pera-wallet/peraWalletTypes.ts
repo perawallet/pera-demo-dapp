@@ -9,7 +9,9 @@ export interface PeraWalletDetails {
 const PERA_WALLET_LOCAL_STORAGE_KEYS = {
   WALLET: "PeraWallet.Wallet",
   COMPACT_MODE: "CompactMode",
-  EXPERIMENTAL_MODE: "ExperimentalMode"
+  EXPERIMENTAL_MODE: "ExperimentalMode",
+  SELECTED_NETWORK: "SelectedNetwork",
+  CUSTOM_NETWORK: "CustomNetwork"
 };
 
 export {PERA_WALLET_LOCAL_STORAGE_KEYS};

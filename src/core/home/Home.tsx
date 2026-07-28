@@ -9,8 +9,6 @@ import {
   Typography,
   Box,
   Button,
-  ToggleButton,
-  ToggleButtonGroup,
   IconButton,
   Menu,
   MenuItem,
@@ -44,28 +42,40 @@ import SignTxn from "./sign-txn/SignTxn";
 import CreateTxn from "./sign-txn/create/CreateTxn";
 import {usePeraToast} from "../component/toast/PeraToast";
 import {apiGetTxnParams, ChainType, clientForChain} from "../utils/algod/algod";
+import {getNetworkConfig} from "../utils/algod/networks";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
 import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 import UriGenerator from "./sign-txn/uri-generator/UriGenerator";
-import peraWallet, {PeraWalletManager} from "../utils/pera-wallet/PeraWalletManager";
+import peraWallet, {
+  PeraWalletManager,
+  getPersistedNetwork,
+  persistNetwork
+} from "../utils/pera-wallet/PeraWalletManager";
+import NetworkSelector from "./network-selector/NetworkSelector";
 
 const peraOnRamp = new PeraOnramp({
   optInEnabled: true
 });
 
 const Home = () => {
-  const [chainType, setChainType] = useState<ChainType>(ChainType.TestNet);
+  const [chainType, setChainType] = useState<ChainType>(getPersistedNetwork);
   // All session-approved accounts (in wallet order). `accountAddress` is the
   // active one that drives the balance panel and single-signer scenarios.
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const isConnectedToPeraWallet = !!accountAddress;
   const {display: displayToast, history, clearHistory} = usePeraToast();
+  // Keys the balance refetch on the resolved endpoint rather than the network
+  // enum, so saving a new Custom endpoint (which leaves `chainType` at
+  // `ChainType.Custom`) still invalidates the stale balance from the old node.
+  const {algod} = getNetworkConfig(chainType);
+  const endpointKey = `${algod.baseServer}:${algod.port}`;
   const {accountInformation, refetchAccountDetail} = useGetAccountDetailRequest({
     chain: chainType,
-    accountAddress
+    accountAddress,
+    endpointKey
   });
   const [isConnectCompactMode, setConnectCompactMode] = useState(
     peraWallet.compactMode || false
@@ -134,26 +144,13 @@ const Home = () => {
   const avatarInitial = accountAddress ? accountAddress.charAt(0).toUpperCase() : "";
   const wcServer = peraWallet.connector?.bridge;
 
-  const handleChainToggle = (
-    _e: MouseEvent<HTMLElement>,
-    value: "testnet" | "mainnet" | null
-  ) => {
-    if (!value) return;
-    if (value === "testnet") {
-      const newChainType = ChainType.TestNet;
-      setChainType(newChainType);
-      peraApiManager.updateFetcher(newChainType);
-      peraWallet.updateConfig({
-        chainId: PeraWalletManager.getChainId(newChainType)
-      });
-    } else {
-      const newChainType = ChainType.MainNet;
-      setChainType(newChainType);
-      peraApiManager.updateFetcher(newChainType);
-      peraWallet.updateConfig({
-        chainId: PeraWalletManager.getChainId(newChainType)
-      });
-    }
+  const handleNetworkChange = (newChainType: ChainType) => {
+    setChainType(newChainType);
+    persistNetwork(newChainType);
+    peraApiManager.updateFetcher(newChainType);
+    peraWallet.updateConfig({
+      chainId: PeraWalletManager.getChainId(newChainType)
+    });
   };
 
   const handleCompactModeSwitch = () => {
@@ -316,22 +313,7 @@ const Home = () => {
               alignItems: "center",
               gap: {xs: 0.25, sm: 1.5}
             }}>
-            <ToggleButtonGroup
-              size={"small"}
-              exclusive={true}
-              value={chainType === ChainType.MainNet ? "mainnet" : "testnet"}
-              onChange={handleChainToggle}
-              aria-label={"network selection"}
-              sx={{"& .MuiToggleButton-root": {px: {xs: 1, sm: 1.5}}}}>
-              <ToggleButton value={"testnet"} aria-label={"TestNet"}>
-                <Box sx={{display: {xs: "none", sm: "inline"}}}>{"TestNet"}</Box>
-                <Box sx={{display: {xs: "inline", sm: "none"}}}>{"Test"}</Box>
-              </ToggleButton>
-              <ToggleButton value={"mainnet"} aria-label={"MainNet"}>
-                <Box sx={{display: {xs: "none", sm: "inline"}}}>{"MainNet"}</Box>
-                <Box sx={{display: {xs: "inline", sm: "none"}}}>{"Main"}</Box>
-              </ToggleButton>
-            </ToggleButtonGroup>
+            <NetworkSelector chain={chainType} onChange={handleNetworkChange} />
 
             <Button
               color={"inherit"}
