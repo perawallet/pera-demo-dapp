@@ -71,6 +71,7 @@ const NetworkSelector = ({chain, onChange}: NetworkSelectorProps) => {
           <Typography
             variant={"caption"}
             sx={{
+              display: {xs: "none", sm: "block"},
               opacity: 0.7,
               lineHeight: 1.2,
               maxWidth: 220,
