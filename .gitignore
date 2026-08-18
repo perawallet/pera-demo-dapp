@@ -23,3 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 docs/superpowers/specs/2026-05-19-dapp-redesign-design.md
 /docs/superpowers
+
+# local Claude Code config
+.claude/
