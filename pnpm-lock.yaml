@@ -5,7 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@perawallet/walletconnect': 1.0.2-beta.0
   '@tootallnate/once@<3.0.1': '>=3.0.1'
   bn.js@<4.12.3: '>=4.12.3'
   braces@<3.0.3: '>=3.0.3'
@@ -37,8 +36,8 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@perawallet/connect':
-        specifier: 1.6.1-beta.0
-        version: 1.6.1-beta.0(algosdk@3.5.2)
+        specifier: 1.6.1
+        version: 1.6.1(algosdk@3.5.2)
       '@perawallet/onramp':
         specifier: ^1.1.1
         version: 1.1.1
@@ -1345,8 +1344,8 @@ packages:
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
 
-  '@perawallet/connect@1.6.1-beta.0':
-    resolution: {integrity: sha512-PaCCYJ1BG7ZM1ba34ZknlufnYtJrIn2kxr5Jq1NABfSgfZ8sjxgnoLfjUeMNuYWJNPSCTL7l67I9Al71B5GgGg==}
+  '@perawallet/connect@1.6.1':
+    resolution: {integrity: sha512-i+jMigz1CI0HflpkfMOlGakG4CUJkn6FY5kPu/iJnGM+SlGsxsK1sYDjy21V/TeVmfiMTzMSh3tT4Doy08C00g==}
     peerDependencies:
       algosdk: ^3.5.2
 
@@ -1354,8 +1353,8 @@ packages:
     resolution: {integrity: sha512-GbxLhVj1m9RXk0QJQNKvsVVWJDjLhMVILjhtQ8ksKZ4rrHUChDaJhsvWZUizVN6ZiGQdw9VebAHjebvwfPeUog==}
     deprecated: This package is being shut down and will soon be unreachable. The onramp widget is no longer supported. Please use the Pera Wallet mobile app for onramp functionality.
 
-  '@perawallet/walletconnect@1.0.2-beta.0':
-    resolution: {integrity: sha512-k2PXOfpChKMotLItkz+Ry2w06JjRlQMTgn9LBEVqZ+TkE9dalFEawG9MdKgx66fuE7oyu+TUi5zVio2jL/2qOg==}
+  '@perawallet/walletconnect@1.0.2':
+    resolution: {integrity: sha512-HJoN0XvnAhAXYNu0UV0FVDmYxzPEB4YWvwQ0o/JIdZFqFOdM7rZ+zlZq/+wdTICkxrLe35i1Zol59ycN3LKcvg==}
     engines: {node: '>=22'}
 
   '@pmmmwh/react-refresh-webpack-plugin@0.5.17':
@@ -7999,10 +7998,10 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.6
     optional: true
 
-  '@perawallet/connect@1.6.1-beta.0(algosdk@3.5.2)':
+  '@perawallet/connect@1.6.1(algosdk@3.5.2)':
     dependencies:
       '@evanhahn/lottie-web-light': 5.8.1
-      '@perawallet/walletconnect': 1.0.2-beta.0
+      '@perawallet/walletconnect': 1.0.2
       algosdk: 3.5.2
       bowser: 2.11.0
       buffer: 6.0.3
@@ -8012,7 +8011,7 @@ snapshots:
 
   '@perawallet/onramp@1.1.1': {}
 
-  '@perawallet/walletconnect@1.0.2-beta.0':
+  '@perawallet/walletconnect@1.0.2':
     dependencies:
       '@noble/ciphers': 2.2.0
       '@noble/hashes': 2.2.0
