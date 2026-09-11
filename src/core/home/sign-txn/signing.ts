@@ -1,9 +1,10 @@
-import type { PeraWalletConnect, SignerTransaction } from "@perawallet/connect";
+import type { SignerTransaction } from "@perawallet/connect";
 import algosdk, { type Algodv2 } from "algosdk";
 import { testAccounts } from "../../../scenarios/test-accounts";
+import type { WalletSigner } from "../../utils/pera-wallet/transport/WalletTransport";
 
 export interface SignAndSubmitArgs {
-  peraWallet: PeraWalletConnect;
+  wallet: Pick<WalletSigner, "signTransaction">;
   algod: Algodv2;
   accountAddress: string;
   txnsToSign: SignerTransaction[][];
@@ -66,7 +67,7 @@ const pollForCreatedAssetIndex = async (
 /**
  * Sign and submit txns from a scenario.
  *
- * One `peraWallet.signTransaction` call carries every group (atomic groups
+ * One `wallet.signTransaction` call carries every group (atomic groups
  * have their grp pre-assigned by the scenario's `build` function via
  * `algosdk.assignGroupID`; non-grouped txns have no grp). The wallet
  * partitions the flat batch by each txn's grp field and shows one popup
@@ -85,14 +86,14 @@ const pollForCreatedAssetIndex = async (
  * (algod would reject "incomplete group").
  */
 export const signAndSubmit = async ({
-  peraWallet,
+  wallet,
   algod,
   accountAddress: _accountAddress,
   txnsToSign,
   transactionTimeout,
   captureAssetIndex
 }: SignAndSubmitArgs): Promise<SignAndSubmitResult> => {
-  const allSigned = await peraWallet.signTransaction(txnsToSign);
+  const allSigned = await wallet.signTransaction(txnsToSign);
 
   // Slice the flat response back into per-group arrays in slot order,
   // accounting for `signers: []` slots that the wallet skipped.

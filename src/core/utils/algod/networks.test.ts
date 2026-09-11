@@ -1,5 +1,6 @@
 import {ChainType} from "./algod";
 import {
+  caip2ChainId,
   getNetworkConfig,
   getCustomNetworkSettings,
   setCustomNetworkSettings,
@@ -75,5 +76,16 @@ describe("network config registry", () => {
     localStorage.setItem("CustomNetwork", "not-json");
 
     expect(getCustomNetworkSettings()).toEqual(LOCALNET_DEFAULTS);
+  });
+
+  it("derives the CAIP-2 chain id the mobile app expects for each public network", () => {
+    expect(caip2ChainId(ChainType.MainNet)).toBe("algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k");
+    expect(caip2ChainId(ChainType.TestNet)).toBe("algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe");
+    expect(caip2ChainId(ChainType.BetaNet)).toBe("algorand:mFgazF-2uRS1tMiL9dsj01hJGySEmPN2");
+  });
+
+  it("gives LocalNet and Custom no CAIP-2 chain id", () => {
+    expect(caip2ChainId(ChainType.LocalNet)).toBeNull();
+    expect(caip2ChainId(ChainType.Custom)).toBeNull();
   });
 });

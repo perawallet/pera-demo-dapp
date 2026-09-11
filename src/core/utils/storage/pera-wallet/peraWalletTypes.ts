@@ -11,7 +11,8 @@ const PERA_WALLET_LOCAL_STORAGE_KEYS = {
   COMPACT_MODE: "CompactMode",
   EXPERIMENTAL_MODE: "ExperimentalMode",
   SELECTED_NETWORK: "SelectedNetwork",
-  CUSTOM_NETWORK: "CustomNetwork"
+  CUSTOM_NETWORK: "CustomNetwork",
+  WALLET_CONNECT_VERSION: "WalletConnectVersion"
 };
 
 export {PERA_WALLET_LOCAL_STORAGE_KEYS};

@@ -35,6 +35,8 @@ jobs:
         run: pnpm audit --ignore-unfixable
       - name: Build
         run: pnpm run build --if-present
+        env:
+          REACT_APP_REOWN_PROJECT_ID: ${{ secrets.REOWN_PROJECT_ID }}
       - name: deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:

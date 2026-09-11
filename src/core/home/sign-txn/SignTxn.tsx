@@ -1,6 +1,7 @@
 import {useState} from "react";
-import {PeraWalletConnect, ScopeType} from "@perawallet/connect";
+import {ScopeType} from "@perawallet/connect";
 
+import type {WalletSigner} from "../../utils/pera-wallet/transport/WalletTransport";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
 import {getNetworkConfig} from "../../utils/algod/networks";
 import {signAndSubmit} from "./signing";
@@ -16,7 +17,7 @@ import {
 interface SignTxnProps {
   accountAddress: string | null;
   connectedAccounts: string[];
-  peraWallet: PeraWalletConnect;
+  wallet: WalletSigner;
   handleSetLog: (log: string) => void;
   chain: ChainType;
   refecthAccountDetail: () => void;
@@ -25,7 +26,7 @@ interface SignTxnProps {
 const SignTxn = ({
   accountAddress,
   connectedAccounts,
-  peraWallet,
+  wallet,
   handleSetLog,
   chain,
   refecthAccountDetail
@@ -59,7 +60,7 @@ const SignTxn = ({
         }
         if (!("transaction" in result)) throw new Error("kind mismatch: expected transaction");
         const {submittedGroups, partialSignGroups, createdAssetIndex} = await signAndSubmit({
-          peraWallet,
+          wallet,
           algod: clientForChain(chain),
           accountAddress,
           txnsToSign: result.transaction,
@@ -94,14 +95,14 @@ const SignTxn = ({
         const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if ("notice" in result) throw new Error("kind mismatch: unexpected notice");
         if (!("data" in result)) throw new Error("kind mismatch: expected data");
-        const signedData = await peraWallet.signData(result.data, accountAddress, true);
+        const signedData = await wallet.signData(result.data, accountAddress, true);
         handleSetLog(`Arbitrary data signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signedData});
       } else if (scenario.kind === "arc60") {
         const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if ("notice" in result) throw new Error("kind mismatch: unexpected notice");
         if (!("payload" in result)) throw new Error("kind mismatch: expected payload");
-        const signature = await peraWallet.signArc60Data(result.payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
+        const signature = await wallet.signArc60Data(result.payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
         handleSetLog(`ARC-60 auth signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signature});
       }
