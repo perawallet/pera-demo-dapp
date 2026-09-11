@@ -24,7 +24,9 @@ import {
   Container,
   Drawer,
   List,
-  ListItem
+  ListItem,
+  Select,
+  FormControl
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import BuildIcon from "@mui/icons-material/Build";
@@ -36,6 +38,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
+import LinkIcon from "@mui/icons-material/Link";
 
 import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
@@ -49,10 +52,18 @@ import peraApiManager from "../utils/pera/api/peraApiManager";
 import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 import UriGenerator from "./sign-txn/uri-generator/UriGenerator";
 import peraWallet, {
-  PeraWalletManager,
   getPersistedNetwork,
   persistNetwork
 } from "../utils/pera-wallet/PeraWalletManager";
+import wallet from "../utils/pera-wallet/walletInstance";
+import {
+  WALLET_CONNECT_VERSIONS,
+  type WalletConnectVersion
+} from "../utils/pera-wallet/wcVersion";
+import {isWcV2Error} from "../utils/pera-wallet/transport/v2/WcV2Error";
+import {useWcPairingUi} from "./wc-v2/useWcPairingUi";
+import WcV2PairingDialog from "./wc-v2/WcV2PairingDialog";
+import WcV2SignPrompt from "./wc-v2/WcV2SignPrompt";
 import NetworkSelector from "./network-selector/NetworkSelector";
 
 const peraOnRamp = new PeraOnramp({
@@ -87,6 +98,8 @@ const Home = () => {
   const [isExperimentalMode, setExperimentalMode] = useState(
     localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true"
   );
+  const [wcVersion, setWcVersion] = useState<WalletConnectVersion>(wallet.version);
+  const {pairingUri, closePairing, isSignPromptOpen} = useWcPairingUi(wallet);
 
   // Menus / popovers
   const [generatorsAnchor, setGeneratorsAnchor] = useState<HTMLElement | null>(null);
@@ -110,21 +123,19 @@ const Home = () => {
   );
 
   useEffect(() => {
-    peraWallet.updateConfig({
-      compactMode: isConnectCompactMode,
-      chainId: PeraWalletManager.getChainId(chainType)
-    });
+    peraWallet.updateConfig({compactMode: isConnectCompactMode});
+    wallet.setChain(chainType);
     peraApiManager.updateFetcher(chainType);
   }, [isConnectCompactMode, chainType]);
 
   useEffect(() => {
-    peraWallet
-      .reconnectSessionAndSetupEventHandlers({
-        onDisconnect: async () => {
-          setConnectedAccounts([]);
-          setAccountAddress(null);
-        }
-      })
+    const unsubscribe = wallet.onDisconnect(() => {
+      setConnectedAccounts([]);
+      setAccountAddress(null);
+    });
+
+    wallet
+      .reconnectSession()
       .then((accounts) => {
         if (accounts && accounts[0]) {
           setConnectedAccounts(accounts);
@@ -138,6 +149,8 @@ const Home = () => {
         }
       })
       .catch((e) => console.error(e));
+
+    return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -147,16 +160,14 @@ const Home = () => {
     `${address.slice(0, ADDRESS_PREFIX_LEN)}…${address.slice(-ADDRESS_SUFFIX_LEN)}`;
   const shortAddress = accountAddress ? shorten(accountAddress) : "";
   const avatarInitial = accountAddress ? accountAddress.charAt(0).toUpperCase() : "";
-  const wcServer = peraWallet.connector?.bridge;
+  const wcServer = wallet.describe();
 
   const handleNetworkChange = (newChainType: ChainType) => {
     setChainType(newChainType);
     setEndpointNonce((n) => n + 1);
     persistNetwork(newChainType);
     peraApiManager.updateFetcher(newChainType);
-    peraWallet.updateConfig({
-      chainId: PeraWalletManager.getChainId(newChainType)
-    });
+    wallet.setChain(newChainType);
   };
 
   const handleCompactModeSwitch = () => {
@@ -237,7 +248,7 @@ const Home = () => {
               []
             );
 
-            const signedTxn = await peraWallet.signTransaction([transactions]);
+            const signedTxn = await wallet.signTransaction([transactions]);
 
             await clientForChain(chainType).sendRawTransaction(signedTxn).do();
 
@@ -260,12 +271,11 @@ const Home = () => {
 
   const handleConnectWalletClick = async () => {
     try {
-      const newAccounts = await peraWallet.connectAndSetupEventHandlers({
-        onDisconnect: async () => {
-          setConnectedAccounts([]);
-          setAccountAddress(null);
-        }
-      });
+      const newAccounts = await wallet.connect();
+
+      if (newAccounts.length === 0) {
+        return;
+      }
 
       handleSetLog(
         newAccounts.length > 1
@@ -276,15 +286,33 @@ const Home = () => {
       setConnectedAccounts(newAccounts);
       setAccountAddress(newAccounts[0]);
     } catch (e) {
+      if (isWcV2Error(e, "MODAL_CLOSED")) {
+        return;
+      }
       console.error(e);
-      handleSetLog(`${e}`);
+      handleSetLog(e instanceof Error ? e.message : `${e}`);
     }
   };
 
   const handleDisconnectWalletClick = () => {
-    peraWallet.disconnect();
+    wallet.disconnect().catch((e) => console.error(e));
     setConnectedAccounts([]);
     setAccountAddress(null);
+  };
+
+  const handleWcVersionChange = async (version: WalletConnectVersion) => {
+    setMoreAnchor(null);
+
+    try {
+      await wallet.setVersion(version);
+      wallet.setChain(chainType);
+      setWcVersion(version);
+      setConnectedAccounts([]);
+      setAccountAddress(null);
+      handleSetLog(`Switched to WalletConnect ${version}`);
+    } catch (e) {
+      handleSetLog(e instanceof Error ? e.message : `${e}`);
+    }
   };
 
   const handleSelectAccount = (address: string) => {
@@ -408,6 +436,29 @@ const Home = () => {
                   onClick={(e) => e.stopPropagation()}
                 />
               </MenuItem>
+              <MenuItem
+                onClick={(e) => e.stopPropagation()}
+                disableRipple={true}>
+                <ListItemIcon>
+                  <LinkIcon fontSize={"small"} />
+                </ListItemIcon>
+                <ListItemText>{"WalletConnect version"}</ListItemText>
+                <FormControl size={"small"} sx={{ml: 2, minWidth: 72}}>
+                  <Select
+                    value={wcVersion}
+                    inputProps={{"aria-label": "WalletConnect version"}}
+                    onChange={(e) =>
+                      handleWcVersionChange(e.target.value as WalletConnectVersion)
+                    }
+                    onClick={(e) => e.stopPropagation()}>
+                    {WALLET_CONNECT_VERSIONS.map((version) => (
+                      <MenuItem key={version} value={version}>
+                        {version}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </MenuItem>
               <Divider />
               <Box sx={{px: 2, py: 1}}>
                 <Typography
@@ -416,7 +467,7 @@ const Home = () => {
                   {"WC server"}
                 </Typography>
                 <Typography variant={"body2"} sx={{wordBreak: "break-all"}}>
-                  {peraWallet.isConnected && wcServer ? wcServer : "Not connected"}
+                  {wcServer ?? "Not connected"}
                 </Typography>
               </Box>
               {isConnectedToPeraWallet && [
@@ -505,6 +556,16 @@ const Home = () => {
                 color={"primary"}
                 size={"small"}
                 onClick={handleConnectWalletClick}
+                endIcon={
+                  wcVersion === "v2" ? (
+                    <Chip
+                      label={"WC v2"}
+                      size={"small"}
+                      color={"secondary"}
+                      sx={{height: 18, fontSize: 10}}
+                    />
+                  ) : undefined
+                }
                 sx={{whiteSpace: "nowrap"}}>
                 {"Connect"}
               </Button>
@@ -536,7 +597,7 @@ const Home = () => {
         <SignTxn
           accountAddress={accountAddress}
           connectedAccounts={connectedAccounts}
-          peraWallet={peraWallet}
+          wallet={wallet}
           handleSetLog={handleSetLog}
           chain={chainType}
           refecthAccountDetail={refetchAccountDetail}
@@ -566,11 +627,14 @@ const Home = () => {
 
       <CreateTxn
         chain={chainType}
-        peraWallet={peraWallet}
+        wallet={wallet}
         address={accountAddress ?? ""}
         isOpen={createTxnOpen}
         onClose={() => setCreateTxnOpen(false)}
       />
+
+      <WcV2PairingDialog uri={pairingUri} onClose={closePairing} />
+      <WcV2SignPrompt open={isSignPromptOpen} />
 
       <Drawer
         anchor={"right"}

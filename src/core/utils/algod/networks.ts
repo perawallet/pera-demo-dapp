@@ -46,6 +46,9 @@ export interface NetworkConfig {
   chainId: AlgorandChainId;
   /** Which scenario set this network gets. See `getScenarios`. */
   scenarioNetwork: ScenarioNetwork;
+  /** Standard base64 genesis hash. Absent for networks without a fixed
+   *  identity (LocalNet, Custom); those cannot be addressed over WC v2. */
+  genesisHash?: string;
   /** Absent when no Pera API exists for this network. */
   peraApiBaseUrl?: string;
   /** Sample application. Absent → app scenarios are disabled. */
@@ -68,6 +71,7 @@ const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
     label: "MainNet",
     algod: {token: "", baseServer: "https://mainnet-api.algonode.cloud", port: ""},
     chainId: MAINNET_CHAIN_ID,
+    genesisHash: "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
     scenarioNetwork: "mainnet",
     peraApiBaseUrl: "https://mainnet.api.perawallet.app/v1/",
     appIndex: 305162725,
@@ -78,6 +82,7 @@ const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
     label: "TestNet",
     algod: {token: "", baseServer: "https://testnet-api.algonode.cloud", port: ""},
     chainId: TESTNET_CHAIN_ID,
+    genesisHash: "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",
     scenarioNetwork: "testnet",
     peraApiBaseUrl: "https://testnet.api.perawallet.app/v1/",
     appIndex: 22314999,
@@ -88,6 +93,7 @@ const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
     label: "BetaNet",
     algod: {token: "", baseServer: "https://betanet-api.algonode.cloud", port: ""},
     chainId: BETANET_CHAIN_ID,
+    genesisHash: "mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=",
     scenarioNetwork: "testnet"
   },
   [ChainType.LocalNet]: {
@@ -151,4 +157,25 @@ export const getNetworkConfig = (chain: ChainType): NetworkConfig => {
   }
 
   return PRESETS[chain];
+};
+
+export const ALGORAND_CAIP2_NAMESPACE = "algorand";
+const CAIP2_REFERENCE_LENGTH = 32;
+
+/** CAIP-2 chain id as the Pera mobile app computes it: `algorand:` plus the
+ *  first 32 characters of the genesis hash in the URL-safe base64 alphabet.
+ *  Null for networks with no fixed genesis hash. */
+export const caip2ChainId = (chain: ChainType): string | null => {
+  const {genesisHash} = getNetworkConfig(chain);
+
+  if (!genesisHash || genesisHash.length < CAIP2_REFERENCE_LENGTH) {
+    return null;
+  }
+
+  const reference = genesisHash
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .slice(0, CAIP2_REFERENCE_LENGTH);
+
+  return `${ALGORAND_CAIP2_NAMESPACE}:${reference}`;
 };

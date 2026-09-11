@@ -2,7 +2,7 @@
 import algosdk from "algosdk";
 import {useState} from "react";
 import type {SignerTransaction} from "@perawallet/connect";
-import {PeraWalletConnect} from "@perawallet/connect";
+import type {WalletSigner} from "../../../utils/pera-wallet/transport/WalletTransport";
 import {
   Box,
   Button,
@@ -41,7 +41,7 @@ interface CreateTxnModalProps {
   address: string;
   isOpen: boolean;
   onClose: VoidFunction;
-  peraWallet: PeraWalletConnect;
+  wallet: Pick<WalletSigner, "signTransaction">;
 }
 
 export interface TxnForm {
@@ -95,7 +95,7 @@ const ASSET_TXN_TABS: {id: AssetTransactionType; label: string}[] = [
   {id: "destroy", label: "Destroy"}
 ];
 
-const CreateTxn = ({chain, address, isOpen, onClose, peraWallet}: CreateTxnModalProps) => {
+const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProps) => {
   const [transactions, setTransactions] = useState<SignerTransaction[]>([]);
   const [txnType, setTxnType] = useState<PeraTransactionType>("pay");
   const [assetTabIndex, setAssetTabIndex] = useState(0);
@@ -306,7 +306,7 @@ const CreateTxn = ({chain, address, isOpen, onClose, peraWallet}: CreateTxnModal
         return;
       }
 
-      const signedTransactions = await peraWallet.signTransaction([transactions]);
+      const signedTransactions = await wallet.signTransaction([transactions]);
 
       console.log({signedTransactions});
 

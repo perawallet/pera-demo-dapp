@@ -37,7 +37,7 @@ describe("signAndSubmit", () => {
     ];
 
     const result = await signAndSubmit({
-      peraWallet,
+      wallet: peraWallet,
       algod,
       accountAddress: "ABC",
       txnsToSign
@@ -93,7 +93,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      peraWallet,
+      wallet: peraWallet,
       algod,
       accountAddress: testAccounts[1].addr.toString(),
       txnsToSign: [[{ txn: userTxn }, { txn: externalTxn, signers: [] }]]
@@ -122,7 +122,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      peraWallet,
+      wallet: peraWallet,
       algod,
       accountAddress: "ABC",
       txnsToSign: [
@@ -172,7 +172,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      peraWallet,
+      wallet: peraWallet,
       algod,
       accountAddress: testAccounts[0].addr.toString(),
       txnsToSign: [[{ txn: createTxn }]],
@@ -222,7 +222,7 @@ describe("signAndSubmit", () => {
     } as never;
 
     const result = await signAndSubmit({
-      peraWallet,
+      wallet: peraWallet,
       algod,
       accountAddress: testAccounts[0].addr.toString(),
       txnsToSign: [[{ txn: createTxn }]],
