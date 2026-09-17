@@ -21,36 +21,52 @@ const persistNetwork = (chain: ChainType): void => {
   localStorage.setItem(PERA_WALLET_LOCAL_STORAGE_KEYS.SELECTED_NETWORK, chain);
 };
 
+/** Whether the connect modal should offer (and pre-select) the Pera browser
+ *  extension when `window.pera` is present. Defaults to enabled — matching the
+ *  SDK's own default — so only an explicit opt-out turns it off. */
+const getPersistedPreferExtension = (): boolean =>
+  localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.PREFER_EXTENSION) !== "false";
+
+const persistPreferExtension = (shouldPrefer: boolean): void => {
+  localStorage.setItem(
+    PERA_WALLET_LOCAL_STORAGE_KEYS.PREFER_EXTENSION,
+    String(shouldPrefer)
+  );
+};
+
 interface PeraWalletConfig {
   compactMode?: boolean;
   chainId: AlgorandChainId;
   singleAccount?: boolean;
-  /** Enables experimental wallet features (e.g. the browser extension
-   *  connection option). Passed through to the PeraWalletConnect constructor. */
-  experimental?: boolean;
+  /** Whether the connect modal lists "Connect with Pera Extension" first when
+   *  the extension's `window.pera` provider is present. Passed through to the
+   *  PeraWalletConnect constructor, which defaults it to `true`. */
+  shouldPreferExtension?: boolean;
 }
 
 class PeraWalletManager extends PeraWalletConnect {
   private config: PeraWalletConfig;
+  /** Tears down the previous `disconnect` subscription so repeated
+   *  connect/reconnect calls leave a single handler behind. */
+  private unsubscribeDisconnect: (() => void) | null = null;
   private static instance: PeraWalletManager | null = null;
 
   private constructor(config: PeraWalletConfig) {
-    super(config as any);
+    super(config);
     this.config = config;
   }
 
   static getInstance(): PeraWalletManager {
     if (!PeraWalletManager.instance) {
       const isCompactMode = localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.COMPACT_MODE) === "true";
-      const isExperimentalMode =
-        localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true";
+      const shouldPreferExtension = getPersistedPreferExtension();
       const config: PeraWalletConfig = {
         compactMode: isCompactMode,
         chainId: getNetworkConfig(getPersistedNetwork()).chainId,
         // Allow selecting more than one account at connect time so the demo can
         // exercise multi-account approval and multi-signer requests.
         singleAccount: false,
-        experimental: isExperimentalMode
+        shouldPreferExtension
       };
       PeraWalletManager.instance = new PeraWalletManager(config);
     }
@@ -64,12 +80,13 @@ class PeraWalletManager extends PeraWalletConnect {
   updateConfig(options: {
     compactMode?: boolean;
     chainId?: PeraWalletConfig["chainId"];
-    experimental?: boolean;
+    shouldPreferExtension?: boolean;
   }): void {
     const hasChanges =
       (options.compactMode !== undefined && options.compactMode !== this.config.compactMode) ||
       (options.chainId !== undefined && options.chainId !== this.config.chainId) ||
-      (options.experimental !== undefined && options.experimental !== this.config.experimental);
+      (options.shouldPreferExtension !== undefined &&
+        options.shouldPreferExtension !== this.config.shouldPreferExtension);
 
     if (!hasChanges) {
       return;
@@ -90,8 +107,8 @@ class PeraWalletManager extends PeraWalletConnect {
     if (options.chainId !== undefined) {
       this.config.chainId = options.chainId;
     }
-    if (options.experimental !== undefined) {
-      this.config.experimental = options.experimental;
+    if (options.shouldPreferExtension !== undefined) {
+      this.config.shouldPreferExtension = options.shouldPreferExtension;
     }
 
     // Create new instance with updated config and replace the singleton
@@ -149,7 +166,12 @@ class PeraWalletManager extends PeraWalletConnect {
   }
 
   private setupEventHandlers({onDisconnect}: PeraConnectEventHandlers) {
-    this.connector?.on("disconnect", () => {
+    // The SDK's own `disconnect` event covers every transport: a killed
+    // WalletConnect session on mobile and the user revoking this site from the
+    // extension's Connections screen. Subscribing on the connector would miss
+    // the extension entirely, since that path never builds one.
+    this.unsubscribeDisconnect?.();
+    this.unsubscribeDisconnect = this.on("disconnect", () => {
       // For some reason, when we pass the `disconnectAccount` directly as the callback, it doesn't work
       onDisconnect();
     });
@@ -158,5 +180,11 @@ class PeraWalletManager extends PeraWalletConnect {
 
 const peraWallet = PeraWalletManager.getInstance();
 
-export {PeraWalletManager, getPersistedNetwork, persistNetwork};
+export {
+  PeraWalletManager,
+  getPersistedNetwork,
+  persistNetwork,
+  getPersistedPreferExtension,
+  persistPreferExtension
+};
 export default peraWallet;

@@ -8,8 +8,10 @@ export enum ChainType {
   Custom = "custom"
 }
 
-const MAINNET_CHAIN_ID = 416001;
-const TESTNET_CHAIN_ID = 416002;
+/** Exported: ARC-60 signer resolution is only possible on the two networks
+ *  Pera Connect can read accounts on. See `arc60Signer.ts`. */
+export const MAINNET_CHAIN_ID = 416001;
+export const TESTNET_CHAIN_ID = 416002;
 const BETANET_CHAIN_ID = 416003;
 /** Network-agnostic: the wallet signs the bytes it is handed regardless of
  *  which network they target. Used for LocalNet and custom endpoints, which

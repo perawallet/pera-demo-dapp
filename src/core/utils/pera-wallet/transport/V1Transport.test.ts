@@ -6,21 +6,25 @@ const makeManager = () => {
   const manager = {
     isConnected: false,
     connector: null as {bridge: string} | null,
+    platform: null as "mobile" | "web" | "extension" | null,
     connectAndSetupEventHandlers: jest.fn(async ({onDisconnect}) => {
       disconnectHandlers.push(onDisconnect);
       manager.isConnected = true;
       manager.connector = {bridge: "https://bridge.example"};
+      manager.platform = "mobile";
       return ["ADDR1", "ADDR2"];
     }),
     reconnectSessionAndSetupEventHandlers: jest.fn(async ({onDisconnect}) => {
       disconnectHandlers.push(onDisconnect);
       manager.isConnected = true;
       manager.connector = {bridge: "https://bridge.example"};
+      manager.platform = "mobile";
       return ["ADDR1"];
     }),
     disconnect: jest.fn(async () => {
       manager.isConnected = false;
       manager.connector = null;
+      manager.platform = null;
       // Mirror the real SDK: `disconnect()` -> `killSession()` triggers the
       // same "disconnect" event that any other disconnect path fires, so an
       // explicit `transport.disconnect()` call also echoes through here.
@@ -31,7 +35,11 @@ const makeManager = () => {
     signArc60Data: jest.fn(async () => ({signature: new Uint8Array([3])})),
     updateConfig: jest.fn()
   };
-  return {manager: manager as unknown as V1Manager, fireDisconnect: () => disconnectHandlers.forEach((h) => h())};
+  return {
+    manager: manager as unknown as V1Manager,
+    raw: manager,
+    fireDisconnect: () => disconnectHandlers.forEach((h) => h())
+  };
 };
 
 describe("V1Transport", () => {
@@ -53,6 +61,19 @@ describe("V1Transport", () => {
     expect(transport.accounts).toEqual(["ADDR1", "ADDR2"]);
     expect(transport.isConnected).toBe(true);
     expect(transport.describe()).toBe("https://bridge.example");
+  });
+
+  it("names the extension provider instead of a bridge on an extension session", async () => {
+    const {manager, raw} = makeManager();
+    const transport = new V1Transport(manager);
+
+    await transport.connect();
+    // An extension session talks to `window.pera` directly, so the SDK never
+    // builds a WalletConnect connector.
+    raw.connector = null;
+    raw.platform = "extension";
+
+    expect(transport.describe()).toBe("Pera browser extension (window.pera)");
   });
 
   it("reconnects through the manager", async () => {

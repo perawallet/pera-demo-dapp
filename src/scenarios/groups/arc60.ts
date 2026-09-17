@@ -139,6 +139,9 @@ export const arc60Scenarios: Scenario[] = [
     modifiers: ["invalid"],
     networks: ["testnet", "mainnet"],
     kind: "arc60",
+    // The whole point is an unresolved / mismatched signer, so keep the
+    // payload's own signer instead of resolving the account's auth address.
+    preservesArc60Signer: true,
     async build(_chain, address) {
       const payload = await buildArc60Payload({
         signerAddress: address,

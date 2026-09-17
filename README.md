@@ -22,15 +22,39 @@ automatically disabled on BetaNet, LocalNet, and Custom, with the reason shown
 on the card — those fixtures only exist on MainNet and TestNet.
 
 LocalNet and Custom sign under wallet chain ID `4160` (network-agnostic). Rekey
-address resolution is unreliable on those networks: `@perawallet/connect`'s
-internal `getNetworkFromChainId()` falls back to `"mainnet"` for chain IDs it
-doesn't recognize. This is a known limitation of `@perawallet/connect`, not a
-bug in this dApp.
+address resolution is unreliable on those networks: `@perawallet/connect` can
+only read accounts on MainNet and TestNet, and for an all-networks session its
+legacy `signData` path resolves the auth address against MainNet regardless of
+which node this dApp is pointed at. This is a known limitation of
+`@perawallet/connect`, not a bug in this dApp.
 
 Custom is always treated as TestNet-class for scenario filtering, so pointing
 it at a MainNet node surfaces spend-real-ALGO scenarios **without** the red
 MainNet banner. Double-check the host before running anything on a Custom
 endpoint.
+
+## ARC-60 and rekeyed accounts
+
+An ARC-60 signature verifies against the `signer` key and Pera never
+substitutes another one, so a **rekeyed** account cannot sign for itself: the
+request has to name the account's on-chain auth address as `signer` while the
+SIWA payload keeps the account as `account_address`. ARC-60 carries no network,
+so the dApp resolves this before the wallet request — every ARC-60 scenario
+runs `PeraWalletConnect.resolveArc60Signer()` and substitutes the result, and
+the log names the auth address whenever an account turns out to be rekeyed.
+
+`arc60-signer-mismatch` opts out (`preservesArc60Signer`), since an unresolved
+signer is the thing it exists to test.
+
+Resolution only happens on MainNet and TestNet. A rekey is per network and the
+wallet checks it on whichever network it is connected to, which Pera Connect
+cannot observe; a session pinned to MainNet's or TestNet's chain ID is only
+served there, so the lookup agrees with the wallet. LocalNet and Custom sign
+under the all-networks chain ID `4160` and BetaNet has no algod in the SDK, so
+the scenarios log that the signer was left as-is rather than guess — a rekeyed
+account's ARC-60 scenarios will be rejected by the wallet on those networks.
+A failed auth-address lookup fails the scenario instead of quietly falling back
+to the account's own key.
 
 ## WalletConnect v2 (testing)
 
@@ -58,3 +82,24 @@ ID, so v2 works only in local builds unless the deploy workflow is given one —
 and a project ID baked into a public bundle should be domain-restricted in the
 Reown dashboard.
 
+
+
+## Pera browser extension (`window.pera`)
+
+When the Pera extension is installed it injects a provider at `window.pera`, and
+`@perawallet/connect` uses it instead of WalletConnect: the connect modal lists
+**Connect with Pera Extension** first and pre-selects it. This is no longer an
+experimental opt-in — it is on by default, and the ⋮ menu's **Prefer Pera
+extension** toggle turns it off (the modal then offers only the QR code and Pera
+Web options). The toggle's caption reports whether `window.pera` was detected on
+this page, and the **Connection** caption at the bottom of the menu names the
+provider in place of a WalletConnect bridge URL while an extension session is
+live.
+
+Toggling it disconnects any live session, because the SDK has to be
+reconstructed with the new option.
+
+The SDK still accepts its old `experimental` option, but nothing is gated behind
+it any more, so this dApp no longer passes it — that is why the ⋮ menu has a
+**Prefer Pera extension** toggle where it used to have **Experimental
+features**.
