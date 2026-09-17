@@ -33,7 +33,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import CloseIcon from "@mui/icons-material/Close";
 import HistoryIcon from "@mui/icons-material/History";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ScienceIcon from "@mui/icons-material/Science";
+import ExtensionIcon from "@mui/icons-material/Extension";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -53,7 +53,9 @@ import DeeplinkGenerator from "../deeplink/DeeplinkGenerator";
 import UriGenerator from "./sign-txn/uri-generator/UriGenerator";
 import peraWallet, {
   getPersistedNetwork,
-  persistNetwork
+  getPersistedPreferExtension,
+  persistNetwork,
+  persistPreferExtension
 } from "../utils/pera-wallet/PeraWalletManager";
 import wallet from "../utils/pera-wallet/walletInstance";
 import {
@@ -95,9 +97,10 @@ const Home = () => {
   const [isConnectCompactMode, setConnectCompactMode] = useState(
     peraWallet.compactMode || false
   );
-  const [isExperimentalMode, setExperimentalMode] = useState(
-    localStorage.getItem(PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE) === "true"
+  const [shouldPreferExtension, setShouldPreferExtension] = useState(
+    getPersistedPreferExtension
   );
+  const [isExtensionAvailable, setExtensionAvailable] = useState(false);
   const [wcVersion, setWcVersion] = useState<WalletConnectVersion>(wallet.version);
   const {pairingUri, closePairing, isSignPromptOpen} = useWcPairingUi(wallet);
 
@@ -127,6 +130,27 @@ const Home = () => {
     wallet.setChain(chainType);
     peraApiManager.updateFetcher(chainType);
   }, [isConnectCompactMode, chainType]);
+
+  // Resolved once: the extension injects `window.pera` before any page script
+  // runs, so its presence cannot change while this page is open. The SDK keeps
+  // `isExtensionAvailable` promise-returning for backwards compatibility even
+  // though the detection behind it is synchronous.
+  useEffect(() => {
+    let isCurrent = true;
+
+    peraWallet
+      .isExtensionAvailable()
+      .then((isAvailable) => {
+        if (isCurrent) {
+          setExtensionAvailable(isAvailable);
+        }
+      })
+      .catch(() => setExtensionAvailable(false));
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = wallet.onDisconnect(() => {
@@ -184,19 +208,24 @@ const Home = () => {
     });
   };
 
-  const handleExperimentalModeSwitch = () => {
-    const newExperimentalMode = !isExperimentalMode;
-    setExperimentalMode(newExperimentalMode);
+  const handlePreferExtensionSwitch = () => {
+    const newShouldPreferExtension = !shouldPreferExtension;
+    setShouldPreferExtension(newShouldPreferExtension);
 
-    localStorage.setItem(
-      PERA_WALLET_LOCAL_STORAGE_KEYS.EXPERIMENTAL_MODE,
-      newExperimentalMode ? "true" : "false"
-    );
+    persistPreferExtension(newShouldPreferExtension);
 
     peraWallet.updateConfig({
-      experimental: newExperimentalMode
+      shouldPreferExtension: newShouldPreferExtension
     });
   };
+
+  // Left to the SDK's own session chain ID rather than passed explicitly —
+  // `PeraWalletManager` keeps `chainId` in step with the selected network, and
+  // a pinned session is only served on that network anyway.
+  const resolveArc60Signer = useCallback(
+    (address: string) => peraWallet.resolveArc60Signer(address),
+    []
+  );
 
   const handleCopyAddress = async () => {
     if (accountAddress) {
@@ -426,12 +455,19 @@ const Home = () => {
                 onClick={(e) => e.stopPropagation()}
                 disableRipple={true}>
                 <ListItemIcon>
-                  <ScienceIcon fontSize={"small"} />
+                  <ExtensionIcon fontSize={"small"} />
                 </ListItemIcon>
-                <ListItemText>{"Experimental features"}</ListItemText>
+                <ListItemText
+                  primary={"Prefer Pera extension"}
+                  secondary={
+                    isExtensionAvailable
+                      ? "window.pera detected"
+                      : "window.pera not detected"
+                  }
+                />
                 <Switch
-                  checked={isExperimentalMode}
-                  onChange={handleExperimentalModeSwitch}
+                  checked={shouldPreferExtension}
+                  onChange={handlePreferExtensionSwitch}
                   size={"small"}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -464,7 +500,7 @@ const Home = () => {
                 <Typography
                   variant={"caption"}
                   sx={{color: "text.secondary", display: "block"}}>
-                  {"WC server"}
+                  {"Connection"}
                 </Typography>
                 <Typography variant={"body2"} sx={{wordBreak: "break-all"}}>
                   {wcServer ?? "Not connected"}
@@ -601,6 +637,7 @@ const Home = () => {
           handleSetLog={handleSetLog}
           chain={chainType}
           refecthAccountDetail={refetchAccountDetail}
+          resolveArc60Signer={resolveArc60Signer}
         />
       </Container>
 

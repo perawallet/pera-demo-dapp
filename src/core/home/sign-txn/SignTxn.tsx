@@ -1,7 +1,12 @@
 import {useState} from "react";
 import {ScopeType} from "@perawallet/connect";
+import type {PeraWalletArc60SignData} from "@perawallet/connect";
 
 import type {WalletSigner} from "../../utils/pera-wallet/transport/WalletTransport";
+import {
+  resolveArc60SignerForChain,
+  type Arc60SignerLookup
+} from "../../utils/pera-wallet/arc60Signer";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
 import {getNetworkConfig} from "../../utils/algod/networks";
 import {signAndSubmit} from "./signing";
@@ -21,6 +26,9 @@ interface SignTxnProps {
   handleSetLog: (log: string) => void;
   chain: ChainType;
   refecthAccountDetail: () => void;
+  /** `PeraWalletConnect.resolveArc60Signer`. Injected rather than imported so
+   *  this component stays independent of the connect singleton. */
+  resolveArc60Signer: Arc60SignerLookup;
 }
 
 const SignTxn = ({
@@ -29,7 +37,8 @@ const SignTxn = ({
   wallet,
   handleSetLog,
   chain,
-  refecthAccountDetail
+  refecthAccountDetail,
+  resolveArc60Signer
 }: SignTxnProps) => {
   const [invokingId, setInvokingId] = useState<string | null>(null);
 
@@ -38,6 +47,34 @@ const SignTxn = ({
 
   const {label: networkLabel, appIndex, assetIds} = getNetworkConfig(chain);
   const availableFixtures = {app: appIndex !== undefined, asset: assetIds !== undefined};
+
+  /** Replaces the payload's `signer` with the account's resolved ARC-60
+   *  signer. A lookup failure propagates: proceeding with the account's own
+   *  key is exactly what makes a rekeyed account fail at the wallet. */
+  const resolvedArc60Payload = async (
+    payload: PeraWalletArc60SignData,
+    accountAddress: string
+  ): Promise<PeraWalletArc60SignData> => {
+    const outcome = await resolveArc60SignerForChain(
+      chain,
+      accountAddress,
+      resolveArc60Signer
+    );
+
+    if (outcome.status === "unavailable") {
+      handleSetLog(outcome.reason);
+
+      return payload;
+    }
+
+    if (outcome.resolution.isRekeyed) {
+      handleSetLog(
+        `${accountAddress} is rekeyed — signing ARC-60 as its auth address ${outcome.resolution.signerAddress}.`
+      );
+    }
+
+    return {...payload, signer: outcome.resolution.signer};
+  };
 
   const invoke = async (scenario: NumberedScenario) => {
     if (!accountAddress) {
@@ -102,7 +139,14 @@ const SignTxn = ({
         const result = await scenario.build(chain, accountAddress, connectedAccounts);
         if ("notice" in result) throw new Error("kind mismatch: unexpected notice");
         if (!("payload" in result)) throw new Error("kind mismatch: expected payload");
-        const signature = await wallet.signArc60Data(result.payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
+        // ARC-60 carries no network, so who signs has to be settled here
+        // rather than by the wallet: a rekeyed account must name its auth
+        // address as `signer` while the SIWA payload keeps the account as
+        // `account_address`.
+        const payload = scenario.preservesArc60Signer
+          ? result.payload
+          : await resolvedArc60Payload(result.payload, accountAddress);
+        const signature = await wallet.signArc60Data(payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
         handleSetLog(`ARC-60 auth signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signature});
       }

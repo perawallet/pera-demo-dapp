@@ -15,6 +15,9 @@ import type {WalletTransport} from "./WalletTransport";
 export interface V1Manager {
   readonly isConnected: boolean;
   readonly connector: {bridge: string} | null;
+  /** Which transport the active session runs on. `"extension"` sessions talk
+   *  to `window.pera` directly and never build a WalletConnect connector. */
+  readonly platform: "mobile" | "web" | "extension" | null;
   connectAndSetupEventHandlers(handlers: {onDisconnect: () => Promise<void>}): Promise<string[]>;
   reconnectSessionAndSetupEventHandlers(handlers: {
     onDisconnect: () => Promise<void>;
@@ -114,7 +117,17 @@ export class V1Transport implements WalletTransport {
   }
 
   describe(): string | null {
-    return this.manager.isConnected ? this.manager.connector?.bridge ?? null : null;
+    if (!this.manager.isConnected) {
+      return null;
+    }
+
+    // An extension session bypasses WalletConnect entirely, so there is no
+    // bridge to report — name the provider instead.
+    if (this.manager.platform === "extension") {
+      return "Pera browser extension (window.pera)";
+    }
+
+    return this.manager.connector?.bridge ?? null;
   }
 
   setChain(chain: ChainType): void {

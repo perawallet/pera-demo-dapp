@@ -75,6 +75,14 @@ export interface Scenario {
   /** Requires the owned test asset (see owned-asset.ts). UI disables the
    *  scenario with a hint until the setup scenario has stored one. */
   requiresOwnedAsset?: boolean;
+  /**
+   * ARC-60 only. Send the payload's `signer` exactly as `build` set it,
+   * instead of replacing it with the account's resolved ARC-60 signer (its
+   * on-chain auth address when rekeyed). Only for scenarios that deliberately
+   * test a mismatched signer — every other ARC-60 scenario wants the
+   * resolution, or a rekeyed account cannot sign at all.
+   */
+  preservesArc60Signer?: boolean;
   /** On-chain fixtures this scenario needs from the selected network's config
    *  (a sample app, or the sample assets). Networks that do not supply them
    *  disable the scenario with a reason instead of letting it fail on invoke. */
