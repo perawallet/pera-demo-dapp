@@ -9,6 +9,7 @@ import { multiGroupMixedScenarios } from "./groups/multi-group-mixed";
 import { multiAccountScenarios } from "./groups/multi-account";
 import { arbitraryDataScenarios } from "./groups/arbitrary-data";
 import { arc60Scenarios } from "./groups/arc60";
+import { emptySignatureScenarios } from "./groups/empty-signatures";
 import { edgeCaseScenarios } from "./groups/edge-case";
 import { mainnetDappScenarios } from "./groups/mainnet-dapp";
 
@@ -23,6 +24,7 @@ const allScenarios: Scenario[] = [
   ...multiAccountScenarios,
   ...arbitraryDataScenarios,
   ...arc60Scenarios,
+  ...emptySignatureScenarios,
   ...edgeCaseScenarios,
   ...mainnetDappScenarios
 ];

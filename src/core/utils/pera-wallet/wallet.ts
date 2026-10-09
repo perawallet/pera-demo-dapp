@@ -101,6 +101,7 @@ export const createWallet = (deps: WalletDeps): Wallet => {
       verifySignature?: boolean
     ): Promise<PeraWalletArc60SignDataResponse> =>
       active.signArc60Data(payload, metadata, verifySignature),
+    getEmptySignatures: (chain) => active.getEmptySignatures(chain),
     onDisconnect(handler) {
       disconnectHandlers.add(handler);
       return () => disconnectHandlers.delete(handler);

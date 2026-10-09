@@ -562,6 +562,17 @@ describe("V2Transport signing", () => {
   });
 });
 
+describe("V2Transport getEmptySignatures", () => {
+  it("rejects with NOT_SUPPORTED without contacting the relay", async () => {
+    const {transport, createClient} = makeTransport();
+
+    await expect(transport.getEmptySignatures(ChainType.TestNet)).rejects.toSatisfy((e) =>
+      isWcV2Error(e, "NOT_SUPPORTED")
+    );
+    expect(createClient).not.toHaveBeenCalled();
+  });
+});
+
 describe("pairingDeepLink", () => {
   it("wraps the wc uri in the perawallet-wc scheme", () => {
     expect(pairingDeepLink("wc:abc@2?relay-protocol=irn&symKey=1")).toBe(
