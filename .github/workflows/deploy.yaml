@@ -2,7 +2,7 @@ name: Deploy React Application
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
+  # Pull requests to main install, audit and build only; pushes to main also deploy to GitHub Pages.
   push:
     branches: [main]
   pull_request:
@@ -38,6 +38,7 @@ jobs:
         env:
           REACT_APP_REOWN_PROJECT_ID: ${{ secrets.REOWN_PROJECT_ID }}
       - name: deploy to gh-pages
+        if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
