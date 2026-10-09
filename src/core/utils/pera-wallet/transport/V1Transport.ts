@@ -6,7 +6,7 @@ import type {
   SignMetadata
 } from "@perawallet/connect";
 
-import type {ChainType} from "../../algod/algod";
+import {ChainType} from "../../algod/algod";
 import {getNetworkConfig} from "../../algod/networks";
 import type {WalletTransport} from "./WalletTransport";
 
@@ -34,8 +34,23 @@ export interface V1Manager {
     metadata: SignMetadata,
     verifySignature?: boolean
   ): Promise<PeraWalletArc60SignDataResponse>;
+  getEmptySignatures(network?: "mainnet" | "testnet" | "betanet"): Promise<Record<string, string>>;
   updateConfig(options: {chainId?: number}): void;
 }
+
+/** The networks connect names; LocalNet and custom endpoints have none. */
+const connectNetwork = (chain: ChainType): "mainnet" | "testnet" | "betanet" | undefined => {
+  switch (chain) {
+    case ChainType.MainNet:
+      return "mainnet";
+    case ChainType.TestNet:
+      return "testnet";
+    case ChainType.BetaNet:
+      return "betanet";
+    default:
+      return undefined;
+  }
+};
 
 /** WalletConnect v1 through the existing `@perawallet/connect` manager. The
  *  manager keeps owning the modal, the bridge and session persistence; this
@@ -109,6 +124,10 @@ export class V1Transport implements WalletTransport {
     verifySignature?: boolean
   ): Promise<PeraWalletArc60SignDataResponse> {
     return this.manager.signArc60Data(payload, metadata, verifySignature);
+  }
+
+  getEmptySignatures(chain: ChainType): Promise<Record<string, string>> {
+    return this.manager.getEmptySignatures(connectNetwork(chain));
   }
 
   onDisconnect(handler: () => void): () => void {

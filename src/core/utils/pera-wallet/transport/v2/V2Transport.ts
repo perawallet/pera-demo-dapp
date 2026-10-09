@@ -205,6 +205,15 @@ export class V2Transport implements WalletTransport {
     return signatures;
   }
 
+  /** Not wired up here yet: it needs `algo_getEmptySignatures` in the session's
+   *  optional namespace and a request path without the sign prompt. */
+  async getEmptySignatures(_chain: ChainType): Promise<Record<string, string>> {
+    throw new WcV2Error(
+      "NOT_SUPPORTED",
+      "Empty signatures go through Pera Connect (WalletConnect v1) in this demo."
+    );
+  }
+
   async signArc60Data(
     payload: PeraWalletArc60SignData,
     metadata: SignMetadata,

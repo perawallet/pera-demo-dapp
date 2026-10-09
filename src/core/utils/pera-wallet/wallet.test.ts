@@ -32,6 +32,7 @@ const fakeTransport = (version: "v1" | "v2"): FakeTransport => {
     signTransaction: jest.fn(async () => []),
     signData: jest.fn(async () => []),
     signArc60Data: jest.fn(async () => ({}) as any),
+    getEmptySignatures: jest.fn(async () => ({})),
     onDisconnect: (h: () => void) => {
       handlers.add(h);
       return () => handlers.delete(h);

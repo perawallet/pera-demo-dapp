@@ -14,6 +14,7 @@ export type ScenarioCategory =
   | "multi-account"
   | "arbitrary-data"
   | "arc60"
+  | "empty-signatures"
   | "edge-case"
   | "mainnet-dapp";
 
@@ -64,7 +65,7 @@ export interface Scenario {
   modifiers: Modifier[];
   networks: Network[];
   /** Defaults to "txn" if omitted. */
-  kind?: "txn" | "arbitrary-data" | "arc60";
+  kind?: "txn" | "arbitrary-data" | "arc60" | "empty-signatures";
   /**
    * Minimum number of connected (session-approved) accounts required to run
    * this scenario. Used by multi-signer scenarios that need ≥2 real accounts.
