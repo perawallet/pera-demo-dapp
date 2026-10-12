@@ -29,6 +29,9 @@ export interface WalletTransport {
     metadata: SignMetadata,
     verifySignature?: boolean
   ): Promise<PeraWalletArc60SignDataResponse>;
+  /** use-wallet's empty signatures (address to base64 `SignedTransaction`
+   *  without `txn`) for the connected accounts on `chain`. No wallet prompt. */
+  getEmptySignatures(chain: ChainType): Promise<Record<string, string>>;
   /** Subscribe to the session ending for any reason. Returns an unsubscribe. */
   onDisconnect(handler: () => void): () => void;
   /** Human-readable connection target for the "WC server" caption, or null
@@ -39,7 +42,10 @@ export interface WalletTransport {
 }
 
 /** The signing subset components take as a prop. */
-export type WalletSigner = Pick<WalletTransport, "signTransaction" | "signData" | "signArc60Data">;
+export type WalletSigner = Pick<
+  WalletTransport,
+  "signTransaction" | "signData" | "signArc60Data" | "getEmptySignatures"
+>;
 
 /** UI hooks a transport needs from React land. Only v2 uses them; v1 renders
  *  its own modal inside the connect SDK. */

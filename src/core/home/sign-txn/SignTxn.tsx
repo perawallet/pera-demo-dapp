@@ -7,6 +7,7 @@ import {
   resolveArc60SignerForChain,
   type Arc60SignerLookup
 } from "../../utils/pera-wallet/arc60Signer";
+import {summarizeEmptySignatures} from "../../utils/pera-wallet/emptySignature";
 import {ChainType, clientForChain} from "../../utils/algod/algod";
 import {getNetworkConfig} from "../../utils/algod/networks";
 import {signAndSubmit} from "./signing";
@@ -149,6 +150,10 @@ const SignTxn = ({
         const signature = await wallet.signArc60Data(payload, {scope: ScopeType.AUTH, encoding: "base64"}, true);
         handleSetLog(`ARC-60 auth signed: ${scenario.title}`);
         console.log({scenario: scenario.id, signature});
+      } else if (scenario.kind === "empty-signatures") {
+        const emptySignatures = await wallet.getEmptySignatures(chain);
+        handleSetLog(summarizeEmptySignatures(emptySignatures, connectedAccounts));
+        console.log({scenario: scenario.id, emptySignatures});
       }
     } catch (error) {
       handleSetLog(`${error}`);

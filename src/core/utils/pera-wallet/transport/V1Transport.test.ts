@@ -33,6 +33,7 @@ const makeManager = () => {
     signTransaction: jest.fn(async () => [new Uint8Array([1])]),
     signData: jest.fn(async () => [new Uint8Array([2])]),
     signArc60Data: jest.fn(async () => ({signature: new Uint8Array([3])})),
+    getEmptySignatures: jest.fn(async () => ({ADDR1: "gA=="})),
     updateConfig: jest.fn()
   };
   return {
@@ -193,5 +194,22 @@ describe("V1Transport", () => {
     transport.setChain(ChainType.BetaNet);
 
     expect(manager.updateConfig).toHaveBeenCalledWith({chainId: 416003});
+  });
+
+  it("asks connect for the selected network's empty signatures", async () => {
+    const {manager} = makeManager();
+    const transport = new V1Transport(manager);
+
+    await expect(transport.getEmptySignatures(ChainType.TestNet)).resolves.toEqual({ADDR1: "gA=="});
+    expect(manager.getEmptySignatures).toHaveBeenCalledWith("testnet");
+  });
+
+  it("lets connect fall back to its own rules on networks it has no name for", async () => {
+    const {manager} = makeManager();
+    const transport = new V1Transport(manager);
+
+    await transport.getEmptySignatures(ChainType.LocalNet);
+
+    expect(manager.getEmptySignatures).toHaveBeenCalledWith(undefined);
   });
 });

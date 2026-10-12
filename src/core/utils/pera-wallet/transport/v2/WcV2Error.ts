@@ -7,7 +7,8 @@ export type WcV2ErrorType =
   | "NO_SIGNATURE"
   | "REQUEST_FAILED"
   | "SIGN_DATA_DOMAIN_MISMATCH"
-  | "SIGN_DATA_VERIFICATION_FAILED";
+  | "SIGN_DATA_VERIFICATION_FAILED"
+  | "NOT_SUPPORTED";
 
 export class WcV2Error extends Error {
   readonly type: WcV2ErrorType;
