@@ -1,0 +1,17 @@
+# Catches real committed secrets (rotatable credentials). Everything allowlisted here is a deliberate,
+# non-sensitive match: lockfile hashes, env templates, test fixtures or public identifiers.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Lockfile integrity hashes are not secrets"
+paths = ['''(^|/)(pnpm-lock\.yaml|package-lock\.json|yarn\.lock|bun\.lockb?|uv\.lock|poetry\.lock|go\.sum|Gemfile\.lock|Podfile\.lock)$''']
+
+[[allowlists]]
+description = "Env templates hold placeholders; real .env files are gitignored"
+paths = ['''(^|/)\.env\.(example|sample|template)$''']
+
+[[allowlists]]
+description = "Algorand addresses are public keys (58-char base32)"
+regexes = ['''\b[A-Z2-7]{58}\b''']
