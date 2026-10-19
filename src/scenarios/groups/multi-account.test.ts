@@ -1,20 +1,18 @@
+import type {MockedFunction} from "vitest";
 import algosdk from "algosdk";
 import { ChainType, apiGetTxnParams } from "../../core/utils/algod/algod";
 import { testAccounts } from "../test-accounts";
 import { multiAccountScenarios } from "./multi-account";
 
 // The scenario builder fetches suggested params from algod; stub that out so
-// the test stays offline and deterministic. CRA's jest config sets
-// `resetMocks: true`, which clears factory-provided implementations before
-// each test — so the resolved value is (re)applied in `beforeEach`.
-jest.mock("../../core/utils/algod/algod", () => ({
-  __esModule: true,
+// the test stays offline and deterministic.
+vi.mock("../../core/utils/algod/algod", () => ({
   ChainType: { MainNet: "mainnet", TestNet: "testnet" },
-  clientForChain: jest.fn(),
-  apiGetTxnParams: jest.fn()
+  clientForChain: vi.fn(),
+  apiGetTxnParams: vi.fn()
 }));
 
-const mockedGetTxnParams = apiGetTxnParams as jest.MockedFunction<
+const mockedGetTxnParams = apiGetTxnParams as MockedFunction<
   typeof apiGetTxnParams
 >;
 

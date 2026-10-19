@@ -1,20 +1,3 @@
-// src/scenarios/groups/arc60.test.ts
-// jsdom (jest 27) lacks TextEncoder, crypto.subtle, and crypto.randomUUID —
-// polyfill from Node before importing the module under test.
-import { TextEncoder, TextDecoder } from "util";
-import { webcrypto } from "crypto";
-
-Object.assign(globalThis, { TextEncoder, TextDecoder });
-if (!globalThis.crypto?.subtle) {
-  Object.defineProperty(globalThis, "crypto", { value: webcrypto });
-}
-
-jest.mock(
-  "@perawallet/connect",
-  () => ({ __esModule: true, ScopeType: { AUTH: "auth" } }),
-  { virtual: true }
-);
-
 import algosdk from "algosdk";
 
 import { buildArc60Payload } from "./arc60";

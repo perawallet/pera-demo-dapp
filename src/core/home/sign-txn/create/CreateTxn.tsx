@@ -31,7 +31,7 @@ import {
   ALGORAND_DEFAULT_TXN_WAIT_ROUNDS,
   TRANSACTION_IN_GROUP_LIMIT
 } from "../../../transaction/transactionConstants";
-import {
+import type {
   AssetTransactionType,
   PeraTransactionType
 } from "../../../transaction/transactionTypes";

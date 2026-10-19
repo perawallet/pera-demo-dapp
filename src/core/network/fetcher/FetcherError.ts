@@ -1,4 +1,4 @@
-import {FetcherErrorStatus} from "./fetcherTypes";
+import type {FetcherErrorStatus} from "./fetcherTypes";
 
 class FetcherError extends Error {
   data: any;

@@ -13,7 +13,7 @@ const wallet = createWallet({
   createV1: () => new V1Transport(peraWallet),
   createV2: (chain, ui) =>
     new V2Transport({
-      getProjectId: () => normalizeProjectId(process.env.REACT_APP_REOWN_PROJECT_ID),
+      getProjectId: () => normalizeProjectId(import.meta.env.VITE_REOWN_PROJECT_ID),
       initialChain: chain,
       createClient: createSignClient,
       ui,

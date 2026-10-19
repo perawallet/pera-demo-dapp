@@ -1,3 +1,4 @@
+import type {Mock} from "vitest";
 import {ChainType} from "../algod/algod";
 import {createWallet, type WalletDeps} from "./wallet";
 import type {PairingUi, WalletTransport} from "./transport/WalletTransport";
@@ -5,8 +6,8 @@ import type {PairingUi, WalletTransport} from "./transport/WalletTransport";
 type FakeTransport = Omit<WalletTransport, "accounts"> & {
   accounts: string[];
   fireDisconnect: () => void;
-  setChain: jest.Mock;
-  disconnect: jest.Mock;
+  setChain: Mock;
+  disconnect: Mock;
 };
 
 const fakeTransport = (version: "v1" | "v2"): FakeTransport => {
@@ -18,27 +19,27 @@ const fakeTransport = (version: "v1" | "v2"): FakeTransport => {
       return connected;
     },
     accounts: [] as string[],
-    connect: jest.fn(async () => {
+    connect: vi.fn(async () => {
       connected = true;
       t.accounts = [`${version}-ADDR`];
       return t.accounts;
     }),
-    reconnectSession: jest.fn(async () => []),
-    disconnect: jest.fn(async () => {
+    reconnectSession: vi.fn(async () => []),
+    disconnect: vi.fn(async () => {
       connected = false;
       t.accounts = [];
       handlers.forEach((h) => h());
     }),
-    signTransaction: jest.fn(async () => []),
-    signData: jest.fn(async () => []),
-    signArc60Data: jest.fn(async () => ({}) as any),
-    getEmptySignatures: jest.fn(async () => ({})),
+    signTransaction: vi.fn(async () => []),
+    signData: vi.fn(async () => []),
+    signArc60Data: vi.fn(async () => ({}) as any),
+    getEmptySignatures: vi.fn(async () => ({})),
     onDisconnect: (h: () => void) => {
       handlers.add(h);
       return () => handlers.delete(h);
     },
     describe: () => (connected ? `${version}-server` : null),
-    setChain: jest.fn(),
+    setChain: vi.fn(),
     fireDisconnect: () => handlers.forEach((h) => h())
   };
   return t;
@@ -47,8 +48,8 @@ const fakeTransport = (version: "v1" | "v2"): FakeTransport => {
 const setup = (initialVersion: "v1" | "v2" = "v1") => {
   const v1 = fakeTransport("v1");
   const v2 = fakeTransport("v2");
-  const createV2 = jest.fn((_chain: ChainType, _ui: PairingUi) => v2);
-  const persistVersion = jest.fn();
+  const createV2 = vi.fn((_chain: ChainType, _ui: PairingUi) => v2);
+  const persistVersion = vi.fn();
   const deps: WalletDeps = {
     initialVersion,
     initialChain: ChainType.TestNet,
@@ -73,7 +74,7 @@ describe("wallet dispatcher", () => {
 
   it("setVersion disconnects, swaps, persists and notifies", async () => {
     const {wallet, v1, v2, persistVersion} = setup("v1");
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     wallet.onVersionChange(onChange);
     await wallet.connect();
 
@@ -99,7 +100,7 @@ describe("wallet dispatcher", () => {
 
   it("forwards disconnect events from whichever transport is active", async () => {
     const {wallet, v1, v2} = setup("v1");
-    const handler = jest.fn();
+    const handler = vi.fn();
     wallet.onDisconnect(handler);
 
     v1.fireDisconnect();
@@ -125,8 +126,8 @@ describe("wallet dispatcher", () => {
   it("hands the registered pairing UI to the v2 transport", async () => {
     const {wallet, createV2} = setup("v1");
     const ui: PairingUi = {
-      openPairing: jest.fn(),
-      closePairing: jest.fn(),
+      openPairing: vi.fn(),
+      closePairing: vi.fn(),
       showSignPrompt: () => () => undefined
     };
     wallet.setPairingUi(ui);

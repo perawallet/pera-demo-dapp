@@ -1,5 +1,5 @@
 import Fetcher from "../../../network/fetcher/Fetcher";
-import {FetcherConfig} from "../../../network/fetcher/fetcherTypes";
+import type {FetcherConfig} from "../../../network/fetcher/fetcherTypes";
 import {ChainType} from "../../algod/algod";
 import {getNetworkConfig} from "../../algod/networks";
 

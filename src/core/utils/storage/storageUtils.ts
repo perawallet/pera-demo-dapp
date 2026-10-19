@@ -1,6 +1,6 @@
 import {
   PERA_WALLET_LOCAL_STORAGE_KEYS,
-  PeraWalletDetails
+  type PeraWalletDetails
 } from "./pera-wallet/peraWalletTypes";
 
 const getLocalStorage = () => {

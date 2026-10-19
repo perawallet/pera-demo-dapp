@@ -1,5 +1,3 @@
-declare module "*.scss";
-declare module "*.css";
 
 interface AccountAsset {
   amount: number;

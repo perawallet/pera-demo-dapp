@@ -50,7 +50,7 @@ const defaultMetadata = (): WcMetadata => ({
   url: typeof window !== "undefined" ? window.location.origin : "https://perawallet.github.io",
   icons: [
     typeof window !== "undefined"
-      ? `${window.location.origin}${process.env.PUBLIC_URL ?? ""}/logo192.png`
+      ? `${window.location.origin}${import.meta.env.BASE_URL}logo192.png`
       : ""
   ].filter(Boolean)
 });

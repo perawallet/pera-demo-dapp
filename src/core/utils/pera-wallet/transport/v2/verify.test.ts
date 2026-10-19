@@ -41,12 +41,8 @@ describe("verifyArc60Signature", () => {
   });
 
   it("rejects a raw signature over data (no hashing)", () => {
-    // `new Uint8Array(data)` (not `data` directly): this project's jsdom test
-    // environment (jest-environment-jsdom@27.5.1 under Node 22) gives `Buffer`
-    // instances that fail tweetnacl's own `instanceof Uint8Array` guard, since
-    // jsdom's vm context has its own Uint8Array realm distinct from Node's
-    // Buffer. Rebuilding as a plain Uint8Array sidesteps that realm mismatch
-    // without changing what this test asserts.
+    // tweetnacl's `instanceof Uint8Array` guard rejects Node Buffers under
+    // jsdom (separate realm), so copy into a plain Uint8Array first.
     const signature = nacl.sign.detached(new Uint8Array(data), account.sk);
 
     expect(verifyArc60Signature(data, authenticatorData, signature, address)).toBe(false);

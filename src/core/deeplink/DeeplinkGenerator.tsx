@@ -12,8 +12,8 @@ import {
 
 import {
   DEEP_LINKS,
-  ParameterDefinition,
-  DeeplinkDefinition
+  type ParameterDefinition,
+  type DeeplinkDefinition
 } from "./deeplink_config";
 
 // ---------- Base prefixes for each link type ----------

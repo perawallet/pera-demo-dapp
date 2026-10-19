@@ -4,13 +4,13 @@ import algosdk, {Transaction, isValidAddress} from "algosdk";
 import type {SignerTransaction} from "@perawallet/connect";
 
 import useAsyncProcess from "../../../../hooks/useAsyncProcess/useAsyncProcess";
-import peraApi, {Asset} from "../../../../utils/pera/api/peraApi";
+import peraApi, {type Asset} from "../../../../utils/pera/api/peraApi";
 import peraApiManager from "../../../../utils/pera/api/peraApiManager";
 import {getSearchParams} from "../../../../utils/url/urlUtils";
-import {TxnForm} from "../CreateTxn";
+import type {TxnForm} from "../CreateTxn";
 import {ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
 import {getNetworkConfig} from "../../../../utils/algod/networks";
-import {PeraTransactionType} from "../../../../transaction/transactionTypes";
+import type {PeraTransactionType} from "../../../../transaction/transactionTypes";
 import {usePeraToast} from "../../../../component/toast/PeraToast";
 
 const CreateTxnButton = ({

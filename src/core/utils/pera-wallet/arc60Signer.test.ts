@@ -18,7 +18,7 @@ const resolution = (
 
 describe("resolveArc60SignerForChain", () => {
   it("resolves on TestNet, where the pinned chain ID matches the wallet's network", async () => {
-    const lookup = jest.fn(async () => resolution());
+    const lookup = vi.fn(async () => resolution());
 
     const outcome = await resolveArc60SignerForChain(ChainType.TestNet, ACCOUNT, lookup);
 
@@ -27,7 +27,7 @@ describe("resolveArc60SignerForChain", () => {
   });
 
   it("resolves on MainNet", async () => {
-    const lookup = jest.fn(async () => resolution());
+    const lookup = vi.fn(async () => resolution());
 
     const outcome = await resolveArc60SignerForChain(ChainType.MainNet, ACCOUNT, lookup);
 
@@ -36,7 +36,7 @@ describe("resolveArc60SignerForChain", () => {
 
   it("hands back the auth address for a rekeyed account", async () => {
     const rekeyed = resolution({signerAddress: AUTH_ADDR, isRekeyed: true});
-    const lookup = jest.fn(async () => rekeyed);
+    const lookup = vi.fn(async () => rekeyed);
 
     const outcome = await resolveArc60SignerForChain(ChainType.TestNet, ACCOUNT, lookup);
 
@@ -52,7 +52,7 @@ describe("resolveArc60SignerForChain", () => {
     [ChainType.Custom, "Custom"],
     [ChainType.BetaNet, "BetaNet"]
   ])("reports %s unavailable without calling the lookup", async (chain, label) => {
-    const lookup = jest.fn(async () => resolution());
+    const lookup = vi.fn(async () => resolution());
 
     const outcome = await resolveArc60SignerForChain(chain, ACCOUNT, lookup);
 
@@ -64,7 +64,7 @@ describe("resolveArc60SignerForChain", () => {
   });
 
   it("lets a lookup failure propagate rather than assuming the account is not rekeyed", async () => {
-    const lookup = jest.fn(async () => {
+    const lookup = vi.fn(async () => {
       throw new Error("SIGN_DATA_AUTH_ADDR_LOOKUP_FAILED");
     });
 

@@ -64,10 +64,10 @@ mobile app's WalletConnect v2 support:
 1. Create `.env.local` (gitignored) with a Reown / WalletConnect Cloud project ID:
 
    ```
-   REACT_APP_REOWN_PROJECT_ID=<your project id>
+   VITE_REOWN_PROJECT_ID=<your project id>
    ```
 
-2. Restart `pnpm start` (CRA reads env files at startup).
+2. Restart `pnpm dev` (Vite reads env files at startup).
 3. Open the ⋮ menu and set **WalletConnect version** to `v2`. The Connect button
    shows a `WC v2` chip while v2 is active. Switching versions disconnects any
    live session.

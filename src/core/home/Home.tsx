@@ -356,7 +356,7 @@ const Home = () => {
         <Toolbar sx={{gap: {xs: 0.5, sm: 1.5}}}>
           <Box
             component={"img"}
-            src={`${process.env.PUBLIC_URL}/logo192.png`}
+            src={`${import.meta.env.BASE_URL}logo192.png`}
             alt={"Pera"}
             sx={{height: 32, width: 32, mr: {xs: 0.5, sm: 1.5}, borderRadius: 1}}
           />

@@ -1,7 +1,7 @@
 import {isRecord} from "../../utils/object/objectUtils";
 import {stringifySearchParams} from "../../utils/url/urlUtils";
 import FetcherError from "./FetcherError";
-import {FetcherConfig, FetcherMiddleware} from "./fetcherTypes";
+import type {FetcherConfig, FetcherMiddleware} from "./fetcherTypes";
 import {fetchJSONMiddleware} from "./fetcherUtils";
 
 class Fetcher {

@@ -7,21 +7,21 @@ const makeManager = () => {
     isConnected: false,
     connector: null as {bridge: string} | null,
     platform: null as "mobile" | "web" | "extension" | null,
-    connectAndSetupEventHandlers: jest.fn(async ({onDisconnect}) => {
+    connectAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
       disconnectHandlers.push(onDisconnect);
       manager.isConnected = true;
       manager.connector = {bridge: "https://bridge.example"};
       manager.platform = "mobile";
       return ["ADDR1", "ADDR2"];
     }),
-    reconnectSessionAndSetupEventHandlers: jest.fn(async ({onDisconnect}) => {
+    reconnectSessionAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
       disconnectHandlers.push(onDisconnect);
       manager.isConnected = true;
       manager.connector = {bridge: "https://bridge.example"};
       manager.platform = "mobile";
       return ["ADDR1"];
     }),
-    disconnect: jest.fn(async () => {
+    disconnect: vi.fn(async () => {
       manager.isConnected = false;
       manager.connector = null;
       manager.platform = null;
@@ -30,11 +30,11 @@ const makeManager = () => {
       // explicit `transport.disconnect()` call also echoes through here.
       disconnectHandlers.forEach((h) => h());
     }),
-    signTransaction: jest.fn(async () => [new Uint8Array([1])]),
-    signData: jest.fn(async () => [new Uint8Array([2])]),
-    signArc60Data: jest.fn(async () => ({signature: new Uint8Array([3])})),
-    getEmptySignatures: jest.fn(async () => ({ADDR1: "gA=="})),
-    updateConfig: jest.fn()
+    signTransaction: vi.fn(async () => [new Uint8Array([1])]),
+    signData: vi.fn(async () => [new Uint8Array([2])]),
+    signArc60Data: vi.fn(async () => ({signature: new Uint8Array([3])})),
+    getEmptySignatures: vi.fn(async () => ({ADDR1: "gA=="})),
+    updateConfig: vi.fn()
   };
   return {
     manager: manager as unknown as V1Manager,
@@ -88,7 +88,7 @@ describe("V1Transport", () => {
   it("fires onDisconnect handlers when the SDK reports a disconnect and clears accounts", async () => {
     const {manager, fireDisconnect} = makeManager();
     const transport = new V1Transport(manager);
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     await transport.connect();
 
@@ -101,7 +101,7 @@ describe("V1Transport", () => {
   it("stops calling an unsubscribed handler", async () => {
     const {manager, fireDisconnect} = makeManager();
     const transport = new V1Transport(manager);
-    const handler = jest.fn();
+    const handler = vi.fn();
     const unsubscribe = transport.onDisconnect(handler);
     await transport.connect();
     unsubscribe();
@@ -114,7 +114,7 @@ describe("V1Transport", () => {
   it("disconnect calls the manager and fires handlers exactly once, even though the SDK's own disconnect event echoes the same teardown", async () => {
     const {manager} = makeManager();
     const transport = new V1Transport(manager);
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     await transport.connect();
 
@@ -128,7 +128,7 @@ describe("V1Transport", () => {
   it("does not fire handlers again for a disconnect event that arrives after the session already ended", async () => {
     const {manager, fireDisconnect} = makeManager();
     const transport = new V1Transport(manager);
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     await transport.connect();
     await transport.disconnect();
@@ -147,20 +147,20 @@ describe("V1Transport", () => {
     const manager = {
       isConnected: false,
       connector: null as {bridge: string} | null,
-      connectAndSetupEventHandlers: jest.fn(async ({onDisconnect}) => {
+      connectAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
         disconnectHandlers.push(onDisconnect);
         // Mirrors the user closing the connect modal before approving.
         return [];
       }),
-      reconnectSessionAndSetupEventHandlers: jest.fn(),
-      disconnect: jest.fn(),
-      signTransaction: jest.fn(),
-      signData: jest.fn(),
-      signArc60Data: jest.fn(),
-      updateConfig: jest.fn()
+      reconnectSessionAndSetupEventHandlers: vi.fn(),
+      disconnect: vi.fn(),
+      signTransaction: vi.fn(),
+      signData: vi.fn(),
+      signArc60Data: vi.fn(),
+      updateConfig: vi.fn()
     } as unknown as V1Manager;
     const transport = new V1Transport(manager);
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     await transport.connect();
 

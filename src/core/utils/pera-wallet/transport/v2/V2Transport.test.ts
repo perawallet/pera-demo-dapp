@@ -1,3 +1,4 @@
+import type {Mock} from "vitest";
 import algosdk from "algosdk";
 import nacl from "tweetnacl";
 import {sha256} from "js-sha256";
@@ -7,21 +8,6 @@ import type {PairingUi} from "../WalletTransport";
 import type {WcClient, WcSession} from "./wcClient";
 import {pairingDeepLink, V2Transport, type V2TransportDeps} from "./V2Transport";
 import {isWcV2Error} from "./WcV2Error";
-
-expect.extend({
-  toSatisfy(received: unknown, predicate: (value: unknown) => boolean) {
-    const pass = predicate(received);
-    return {pass, message: () => `expected ${String(received)} ${pass ? "not " : ""}to satisfy predicate`};
-  }
-});
-
-declare global {
-  namespace jest {
-    interface Matchers<R, T = {}> {
-      toSatisfy(predicate: (value: unknown) => boolean): R;
-    }
-  }
-}
 
 const TESTNET = "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe";
 const MAINNET = "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k";
@@ -56,14 +42,14 @@ const makeClient = (sessions: WcSession[] = []) => {
     emit: (event: "session_delete" | "session_expire", topic: string) => void;
     approve: (s: WcSession) => void;
   } = {
-    connect: jest.fn(async () => ({
+    connect: vi.fn(async () => ({
       uri: "wc:abc@2?relay-protocol=irn&symKey=123",
       approval: () => new Promise<WcSession>((resolve) => (approvalResolver = resolve))
     })),
     // The mock resolves a concrete value; `request` is generic in `T`, so the
     // cast is what lets a fixed return type stand in for it.
-    request: jest.fn(async () => ["AQID", null]) as WcClient["request"],
-    disconnect: jest.fn(async () => undefined),
+    request: vi.fn(async () => ["AQID", null]) as WcClient["request"],
+    disconnect: vi.fn(async () => undefined),
     session: {getAll: () => sessions},
     on: (event, handler) => handlers[event].push(handler),
     off: (event, handler) => {
@@ -77,9 +63,9 @@ const makeClient = (sessions: WcSession[] = []) => {
 
 const makeUi = () => {
   const ui = {
-    openPairing: jest.fn<void, [string, () => void]>(),
-    closePairing: jest.fn(),
-    showSignPrompt: jest.fn(() => jest.fn())
+    openPairing: vi.fn<(uri: string, onClosed: () => void) => void>(),
+    closePairing: vi.fn(),
+    showSignPrompt: vi.fn(() => vi.fn())
   };
   return ui as PairingUi & typeof ui;
 };
@@ -87,7 +73,7 @@ const makeUi = () => {
 const makeTransport = (over: Partial<V2TransportDeps> = {}, sessions: WcSession[] = []) => {
   const client = makeClient(sessions);
   const ui = makeUi();
-  const createClient = jest.fn(async () => client);
+  const createClient = vi.fn(async () => client);
   const transport = new V2Transport({
     getProjectId: () => "pid",
     initialChain: ChainType.TestNet,
@@ -193,7 +179,7 @@ describe("V2Transport connect", () => {
 describe("V2Transport session lifecycle", () => {
   it("fires onDisconnect and clears state on session_delete for the active topic only", async () => {
     const {transport, client} = makeTransport();
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     const pending = transport.connect();
     await flush();
@@ -211,7 +197,7 @@ describe("V2Transport session lifecycle", () => {
 
   it("disconnect sends USER_DISCONNECTED and fires handlers", async () => {
     const {transport, client} = makeTransport();
-    const handler = jest.fn();
+    const handler = vi.fn();
     transport.onDisconnect(handler);
     const pending = transport.connect();
     await flush();
@@ -373,7 +359,7 @@ describe("V2Transport signing", () => {
 
   it("sends legacy algo_signData as an array with the numeric chain id", async () => {
     const {transport, client} = await connected();
-    (client.request as jest.Mock).mockResolvedValueOnce(["AQ=="]);
+    (client.request as Mock).mockResolvedValueOnce(["AQ=="]);
 
     await transport.signData([{data: new Uint8Array([1]), message: "m"}], ADDR_A, false);
 
@@ -389,7 +375,7 @@ describe("V2Transport signing", () => {
 
   it("wraps a raw JSON-RPC rejection in a readable WcV2Error", async () => {
     const {transport, client} = await connected();
-    (client.request as jest.Mock).mockRejectedValueOnce({code: -32000, message: "User rejected"});
+    (client.request as Mock).mockRejectedValueOnce({code: -32000, message: "User rejected"});
 
     const error = await transport.signTransaction([[{txn: pay()}]]).catch((e) => e);
 
@@ -402,7 +388,7 @@ describe("V2Transport signing", () => {
   it("re-throws a real Error from the client unchanged", async () => {
     const {transport, client} = await connected();
     const original = new Error("relay down");
-    (client.request as jest.Mock).mockRejectedValueOnce(original);
+    (client.request as Mock).mockRejectedValueOnce(original);
 
     await expect(transport.signTransaction([[{txn: pay()}]])).rejects.toBe(original);
   });
@@ -411,11 +397,11 @@ describe("V2Transport signing", () => {
     const {transport, client} = await connected();
     const data = new Uint8Array([5, 6]);
     const good = algosdk.signBytes(data, A.sk);
-    (client.request as jest.Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
+    (client.request as Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
 
     await expect(transport.signData([{data, message: "m"}], ADDR_A, true)).resolves.toEqual([good]);
 
-    (client.request as jest.Mock).mockResolvedValueOnce([
+    (client.request as Mock).mockResolvedValueOnce([
       Buffer.from(new Uint8Array(64)).toString("base64")
     ]);
     await expect(transport.signData([{data, message: "m"}], ADDR_A, true)).rejects.toSatisfy((e) =>
@@ -424,11 +410,11 @@ describe("V2Transport signing", () => {
   });
 
   it("verifies a rekeyed account's signature against its auth address", async () => {
-    const resolveAuthAddr = jest.fn(async () => ADDR_B);
+    const resolveAuthAddr = vi.fn(async () => ADDR_B);
     const {transport, client} = await connected({resolveAuthAddr});
     const data = new Uint8Array([5, 6]);
     const signedByAuthAddr = algosdk.signBytes(data, B.sk);
-    (client.request as jest.Mock).mockResolvedValueOnce([
+    (client.request as Mock).mockResolvedValueOnce([
       Buffer.from(signedByAuthAddr).toString("base64")
     ]);
 
@@ -442,11 +428,11 @@ describe("V2Transport signing", () => {
     const {transport, client} = await connected({resolveAuthAddr: async () => null});
     const data = new Uint8Array([5, 6]);
     const good = algosdk.signBytes(data, A.sk);
-    (client.request as jest.Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
+    (client.request as Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
 
     await expect(transport.signData([{data, message: "m"}], ADDR_A, true)).resolves.toEqual([good]);
 
-    (client.request as jest.Mock).mockResolvedValueOnce([
+    (client.request as Mock).mockResolvedValueOnce([
       Buffer.from(new Uint8Array(64)).toString("base64")
     ]);
     await expect(transport.signData([{data, message: "m"}], ADDR_A, true)).rejects.toSatisfy((e) =>
@@ -455,7 +441,7 @@ describe("V2Transport signing", () => {
   });
 
   it("falls back to the signer when the auth address lookup fails", async () => {
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const {transport, client} = await connected({
       resolveAuthAddr: async () => {
         throw new Error("algod unreachable");
@@ -463,7 +449,7 @@ describe("V2Transport signing", () => {
     });
     const data = new Uint8Array([5, 6]);
     const good = algosdk.signBytes(data, A.sk);
-    (client.request as jest.Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
+    (client.request as Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
 
     await expect(transport.signData([{data, message: "m"}], ADDR_A, true)).resolves.toEqual([good]);
     expect(warn).toHaveBeenCalled();
@@ -473,7 +459,7 @@ describe("V2Transport signing", () => {
 
   it("sends ARC-60 algo_signData as a single object and returns the response shape", async () => {
     const {transport, client} = await connected();
-    (client.request as jest.Mock).mockResolvedValueOnce(["CQk="]);
+    (client.request as Mock).mockResolvedValueOnce(["CQk="]);
     const payload = {
       data: Buffer.from("{}").toString("base64"),
       signer: algosdk.decodeAddress(ADDR_A).publicKey,
@@ -483,7 +469,7 @@ describe("V2Transport signing", () => {
 
     const response = await transport.signArc60Data(payload, {scope: 1, encoding: "base64"}, false);
 
-    const sent = (client.request as jest.Mock).mock.calls.at(-1)[0];
+    const sent = (client.request as Mock).mock.calls.at(-1)![0];
     expect(sent.request.method).toBe("algo_signData");
     expect(Array.isArray(sent.request.params)).toBe(false);
     expect(sent.request.params).toMatchObject({
@@ -497,7 +483,7 @@ describe("V2Transport signing", () => {
 
   it("rejects an ARC-60 payload whose domain is not the page origin before contacting the wallet", async () => {
     const {transport, client} = await connected();
-    (client.request as jest.Mock).mockClear();
+    (client.request as Mock).mockClear();
     const payload = {
       data: Buffer.from("{}").toString("base64"),
       signer: algosdk.decodeAddress(ADDR_A).publicKey,
@@ -528,13 +514,13 @@ describe("V2Transport signing", () => {
       ...sha256.array(authenticatorData)
     ]);
     const good = nacl.sign.detached(message, A.sk);
-    (client.request as jest.Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
+    (client.request as Mock).mockResolvedValueOnce([Buffer.from(good).toString("base64")]);
 
     const response = await transport.signArc60Data(payload, {scope: 1, encoding: "base64"}, true);
 
     expect(response.signature).toEqual(good);
 
-    (client.request as jest.Mock).mockResolvedValueOnce([
+    (client.request as Mock).mockResolvedValueOnce([
       Buffer.from(new Uint8Array(64)).toString("base64")
     ]);
     await expect(
@@ -548,7 +534,7 @@ describe("V2Transport signing", () => {
     await flush();
     touch.client.approve(makeSession());
     await pending;
-    const dismiss = jest.fn();
+    const dismiss = vi.fn();
     touch.ui.showSignPrompt.mockReturnValueOnce(dismiss);
 
     await touch.transport.signTransaction([[{txn: pay()}]]);
