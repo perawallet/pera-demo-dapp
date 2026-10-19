@@ -1,5 +1,6 @@
 {
-    // Mirrors pera-react-native's formatter settings.
+    // Formatting mirrors pera-react-native. `sortImports` additionally
+    // enforces its documented import order (see CLAUDE.md).
     "$schema": "./node_modules/oxfmt/configuration_schema.json",
     "arrowParens": "avoid",
     "bracketSameLine": false,
@@ -15,5 +16,28 @@
     "tabWidth": 4,
     "useTabs": false,
     "trailingComma": "all",
-    "ignorePatterns": ["build/**", "coverage/**", "pnpm-lock.yaml"]
+    "sortImports": {
+        "internalPattern": [
+            "@app/",
+            "@components/",
+            "@lib/",
+            "@modules/",
+            "@scenarios/",
+            "@test-utils/"
+        ],
+        "customGroups": [
+            { "groupName": "react", "elementNamePattern": ["react", "react-dom", "react-dom/**"] },
+            { "groupName": "perawallet", "elementNamePattern": ["@perawallet/**"] }
+        ],
+        "groups": [
+            "side_effect",
+            "react",
+            ["builtin", "external"],
+            "perawallet",
+            "internal",
+            ["parent", "sibling", "index"],
+            "unknown"
+        ]
+    },
+    "ignorePatterns": ["build/**", "coverage/**"]
 }

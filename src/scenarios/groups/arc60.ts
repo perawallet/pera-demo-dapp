@@ -1,7 +1,11 @@
-import type { Siwa, PeraWalletArc60SignData } from '@perawallet/connect'
-import type { Scenario } from '../types'
-import { testAccounts } from '../test-accounts'
 import algosdk from 'algosdk'
+
+import type { Siwa, PeraWalletArc60SignData } from '@perawallet/connect'
+
+import { utf8ToBytes } from '@lib/bytes'
+
+import { testAccounts } from '../test-accounts'
+import type { Scenario } from '../types'
 
 export const buildArc60Payload = async (opts: {
     signerAddress: string
@@ -35,7 +39,7 @@ export const buildArc60Payload = async (opts: {
         version: opts.version ?? '1',
         'expiration-time': opts.expiredTime,
         'not-before': opts.notBefore,
-    } as Siwa
+    }
 
     for (const field of opts.omitFields ?? []) {
         delete (siwa as unknown as Record<string, unknown>)[field]
@@ -51,7 +55,7 @@ export const buildArc60Payload = async (opts: {
     )
 
     return {
-        data: Buffer.from(canonicalJson).toString('base64'),
+        data: algosdk.bytesToBase64(utf8ToBytes(canonicalJson)),
         signer: algosdk.decodeAddress(opts.signerAddress).publicKey,
         domain,
         authenticatorData,

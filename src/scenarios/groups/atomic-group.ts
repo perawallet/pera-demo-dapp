@@ -1,5 +1,7 @@
 import algosdk from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+
 import { AssetTransactionType, getAssetIndex } from '../asset-indexes'
 import { buildAssetTransfer } from '../builders/asset'
 import { buildPayment } from '../builders/payment'

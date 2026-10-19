@@ -1,9 +1,11 @@
 import algosdk from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
-import { buildPayment } from '../builders/payment'
-import { buildAssetTransfer } from '../builders/asset'
-import { asAtomicGroup } from '../modifiers'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+
 import { getAssetIndex, AssetTransactionType } from '../asset-indexes'
+import { buildAssetTransfer } from '../builders/asset'
+import { buildPayment } from '../builders/payment'
+import { asAtomicGroup } from '../modifiers'
 import { testAccounts } from '../test-accounts'
 import type { Scenario } from '../types'
 

@@ -1,5 +1,8 @@
 import algosdk from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+import { utf8ToBytes } from '@lib/bytes'
+
 import { testAccounts } from '../test-accounts'
 import type { Scenario } from '../types'
 
@@ -298,9 +301,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_1')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_1')],
                             suggestedParams,
                         }),
                     },
@@ -310,9 +311,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_2')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_2')],
                             suggestedParams,
                         }),
                     },
@@ -322,9 +321,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_3')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_3')],
                             suggestedParams,
                         }),
                     },
@@ -334,9 +331,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_4')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_4')],
                             suggestedParams,
                         }),
                     },
@@ -346,9 +341,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_5')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_5')],
                             suggestedParams,
                         }),
                     },
@@ -358,9 +351,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_6')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_6')],
                             suggestedParams,
                         }),
                     },
@@ -370,9 +361,7 @@ export const mainnetDappScenarios: Scenario[] = [
                         txn: algosdk.makeApplicationNoOpTxnFromObject({
                             sender: address,
                             appIndex: FF_POOL_APP_ID,
-                            appArgs: [
-                                new Uint8Array(Buffer.from('pool_step_7')),
-                            ],
+                            appArgs: [utf8ToBytes('pool_step_7')],
                             suggestedParams,
                         }),
                     },
@@ -412,9 +401,7 @@ export const mainnetDappScenarios: Scenario[] = [
                                 sender: address,
                                 receiver: address,
                                 amount: 0,
-                                note: new Uint8Array(
-                                    Buffer.from('challenge/1449301/gems'),
-                                ),
+                                note: utf8ToBytes('challenge/1449301/gems'),
                                 suggestedParams,
                             },
                         ),
@@ -622,7 +609,7 @@ export const mainnetDappScenarios: Scenario[] = [
                     receiver: testAccounts[0].addr,
                     amount: 1_000_000,
                     assetIndex: ZONE_ASSET_ID,
-                    note: new Uint8Array(Buffer.from('example note value')),
+                    note: utf8ToBytes('example note value'),
                     suggestedParams,
                 })
 

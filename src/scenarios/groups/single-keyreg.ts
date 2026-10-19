@@ -1,4 +1,5 @@
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+import { apiGetTxnParams } from '@lib/algod/algod'
+
 import { buildOnlineKeyreg, buildOfflineKeyreg } from '../builders/keyreg'
 import { testAccounts } from '../test-accounts'
 import type { Scenario } from '../types'

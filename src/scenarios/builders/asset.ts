@@ -1,5 +1,7 @@
 import algosdk, { type Address, type SuggestedParams } from 'algosdk'
 
+import { noteBytes } from '@lib/bytes'
+
 export interface BuildAssetTransferArgs {
     sender: string | Address
     receiver: string | Address
@@ -21,7 +23,7 @@ export const buildAssetTransfer = (
         receiver: args.receiver,
         amount: args.amount,
         assetIndex: args.assetIndex,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
         closeRemainderTo: args.closeRemainderTo,
         rekeyTo: args.rekeyTo,
@@ -62,7 +64,7 @@ export const buildAssetCreate = (
         reserve: args.reserve,
         freeze: args.freeze,
         clawback: args.clawback,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
         rekeyTo: args.rekeyTo,
         assetMetadataHash: args.assetMetadataHash,
@@ -92,7 +94,7 @@ export const buildAssetReconfig = (
         freeze: args.freeze,
         clawback: args.clawback,
         strictEmptyAddressChecking: args.strictEmptyAddressChecking,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
     })
 }
@@ -110,7 +112,7 @@ export const buildAssetDestroy = (
     return algosdk.makeAssetDestroyTxnWithSuggestedParamsFromObject({
         sender: args.sender,
         assetIndex: args.assetIndex,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
     })
 }
@@ -132,7 +134,7 @@ export const buildAssetFreeze = (
         assetIndex: args.assetIndex,
         freezeTarget: args.freezeTarget,
         frozen: args.frozen,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
     })
 }

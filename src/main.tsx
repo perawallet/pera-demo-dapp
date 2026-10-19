@@ -1,20 +1,16 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { ThemeProvider, CssBaseline } from '@mui/material'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 
-import App from './core/app/App'
-import theme from './core/theme/theme'
-import { PeraToastProvider } from './core/component/toast/PeraToast'
+import { App } from '@app/App'
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+const container = document.getElementById('root')
 
-root.render(
-    <React.StrictMode>
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <PeraToastProvider>
-                <App />
-            </PeraToastProvider>
-        </ThemeProvider>
-    </React.StrictMode>,
+if (!container) {
+    throw new Error('Missing #root element in index.html')
+}
+
+createRoot(container).render(
+    <StrictMode>
+        <App />
+    </StrictMode>,
 )

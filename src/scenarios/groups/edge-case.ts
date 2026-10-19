@@ -1,5 +1,8 @@
 import algosdk, { type SuggestedParams } from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+import { utf8ToBytes } from '@lib/bytes'
+
 import { buildPayment } from '../builders/payment'
 import { asAtomicGroup } from '../modifiers'
 import { testAccounts } from '../test-accounts'
@@ -181,7 +184,7 @@ export const edgeCaseScenarios: Scenario[] = [
                 sender: address,
                 receiver: testAccounts[0].addr,
                 amount: 100_000,
-                note: new Uint8Array(Buffer.from('Example future transaction')),
+                note: utf8ToBytes('Example future transaction'),
                 suggestedParams: newSuggestedParams,
             })
 

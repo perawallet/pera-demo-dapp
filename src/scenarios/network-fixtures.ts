@@ -1,5 +1,5 @@
-import { type ChainType } from '../core/utils/algod/algod'
-import { getNetworkConfig } from '../core/utils/algod/networks'
+import { type ChainType } from '@lib/algod/algod'
+import { getNetworkConfig } from '@lib/algod/networks'
 
 /** Thrown when a scenario needs an on-chain fixture the selected network does
  *  not provide. Scenarios should be annotated with `requiresFixtures` so the UI

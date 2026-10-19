@@ -12,7 +12,7 @@ export const emptySignatureScenarios: Scenario[] = [
         modifiers: [],
         networks: ['testnet', 'mainnet'],
         kind: 'empty-signatures',
-        // The request carries no payload; SignTxn calls the wallet directly.
+        // The request carries no payload; the scenario runner calls the wallet directly.
         async build() {
             return { notice: 'Empty signatures need no transactions.' }
         },

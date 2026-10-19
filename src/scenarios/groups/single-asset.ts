@@ -2,7 +2,8 @@ import {
     apiGetTxnParams,
     type ChainType,
     clientForChain,
-} from '../../core/utils/algod/algod'
+} from '@lib/algod/algod'
+
 import { AssetTransactionType, getAssetIndex } from '../asset-indexes'
 import {
     buildAssetCreate,

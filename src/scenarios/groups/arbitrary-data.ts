@@ -1,3 +1,5 @@
+import { utf8ToBytes } from '@lib/bytes'
+
 import type { Scenario } from '../types'
 
 export const arbitraryDataScenarios: Scenario[] = [
@@ -5,7 +7,7 @@ export const arbitraryDataScenarios: Scenario[] = [
         id: 'arbitrary-data-single',
         title: 'Sign single arbitrary data',
         description:
-            "Signs a single 'timestamp' payload via `peraWallet.signData`. ARC-1 arbitrary-data flow.",
+            "Signs a single 'timestamp' payload via `wallet.signData`. ARC-1 arbitrary-data flow.",
         expected:
             "Wallet shows the payload bytes and the 'Timestamp confirmation' message. User signs. `signData` returns a single 64-byte ed25519 signature over the payload.",
         category: 'arbitrary-data',
@@ -16,7 +18,7 @@ export const arbitraryDataScenarios: Scenario[] = [
             return {
                 data: [
                     {
-                        data: new Uint8Array(Buffer.from('timestamp')),
+                        data: utf8ToBytes('timestamp'),
                         message: 'Timestamp confirmation',
                     },
                 ],
@@ -38,15 +40,11 @@ export const arbitraryDataScenarios: Scenario[] = [
             return {
                 data: [
                     {
-                        data: new Uint8Array(
-                            Buffer.from(`timestamp//${Date.now()}`),
-                        ),
+                        data: utf8ToBytes(`timestamp//${Date.now()}`),
                         message: 'Timestamp confirmation',
                     },
                     {
-                        data: new Uint8Array(
-                            Buffer.from(`agent//${navigator.userAgent}`),
-                        ),
+                        data: utf8ToBytes(`agent//${navigator.userAgent}`),
                         message: 'User agent confirmation',
                     },
                 ],
@@ -65,7 +63,7 @@ export const arbitraryDataScenarios: Scenario[] = [
         networks: ['testnet', 'mainnet'],
         kind: 'arbitrary-data',
         async build(_chain, _address) {
-            const bytes = new Uint8Array(Buffer.from('héllo\0世界 🟢', 'utf-8'))
+            const bytes = utf8ToBytes('héllo\0世界 🟢')
             return {
                 data: [{ data: bytes, message: 'Non-ASCII payload' }],
             }

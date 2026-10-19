@@ -1,10 +1,13 @@
 import algosdk from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+import { utf8ToBytes } from '@lib/bytes'
+
+import { getAssetIndex, AssetTransactionType } from '../asset-indexes'
 import { buildAppCall, buildAppCreate } from '../builders/application'
+import { getAppIndex } from '../network-fixtures'
 import { testAccounts } from '../test-accounts'
 import type { Scenario } from '../types'
-import { getAssetIndex, AssetTransactionType } from '../asset-indexes'
-import { getAppIndex } from '../network-fixtures'
 
 // Approval/clear bytecode copied verbatim from the old singleAppCreate scenario.
 const APPROVAL_PROGRAM = Uint8Array.from([4, 129, 1, 67])
@@ -183,9 +186,7 @@ export const singleAppScenarios: Scenario[] = [
                 onComplete: algosdk.OnApplicationComplete.NoOpOC,
                 appArgs: DEFAULT_APP_ARGS,
                 access: [{ address }],
-                note: new Uint8Array(
-                    Buffer.from('single-appl-noop-with-access-list'),
-                ),
+                note: utf8ToBytes('single-appl-noop-with-access-list'),
                 suggestedParams,
             })
             return { transaction: [[{ txn }]] }
@@ -341,7 +342,7 @@ export const singleAppScenarios: Scenario[] = [
                 approvalProgram: APPROVAL_PROGRAM,
                 clearProgram: CLEAR_PROGRAM,
                 appArgs: DEFAULT_APP_ARGS,
-                note: new Uint8Array(Buffer.from('single-appl-update')),
+                note: utf8ToBytes('single-appl-update'),
                 suggestedParams,
             })
             return { transaction: [[{ txn }]] }

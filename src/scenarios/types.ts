@@ -3,7 +3,8 @@ import type {
     PeraWalletArbitraryData,
     PeraWalletArc60SignData,
 } from '@perawallet/connect'
-import type { ChainType } from '../core/utils/algod/algod'
+
+import type { ChainType } from '@lib/algod/algod'
 
 export type ScenarioCategory =
     | 'single-pay'

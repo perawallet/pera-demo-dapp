@@ -1,5 +1,7 @@
 import algosdk, { type Address, type SuggestedParams } from 'algosdk'
 
+import { noteBytes } from '@lib/bytes'
+
 export interface BuildOnlineKeyregArgs {
     sender: string | Address
     voteKey: string
@@ -26,7 +28,7 @@ export const buildOnlineKeyreg = (
         voteFirst: args.voteFirst,
         voteLast: args.voteLast,
         voteKeyDilution: args.voteKeyDilution,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
         suggestedParams: args.suggestedParams,
     })
@@ -46,7 +48,7 @@ export const buildOfflineKeyreg = (
     return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
         sender: args.sender,
         nonParticipation: args.nonParticipation,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
         suggestedParams: args.suggestedParams,
     })

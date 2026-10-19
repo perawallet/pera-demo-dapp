@@ -1,5 +1,7 @@
 import algosdk, { type Address, type SuggestedParams } from 'algosdk'
 
+import { noteBytes } from '@lib/bytes'
+
 export interface BuildPaymentArgs {
     sender: string | Address
     receiver: string | Address
@@ -16,7 +18,7 @@ export const buildPayment = (args: BuildPaymentArgs): algosdk.Transaction => {
         sender: args.sender,
         receiver: args.receiver,
         amount: args.amount,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
         closeRemainderTo: args.closeRemainderTo,
         rekeyTo: args.rekeyTo,

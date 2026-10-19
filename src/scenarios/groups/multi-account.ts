@@ -1,5 +1,7 @@
 import algosdk from 'algosdk'
-import { apiGetTxnParams } from '../../core/utils/algod/algod'
+
+import { apiGetTxnParams } from '@lib/algod/algod'
+
 import { buildPayment } from '../builders/payment'
 import { testAccounts } from '../test-accounts'
 import type { Scenario } from '../types'

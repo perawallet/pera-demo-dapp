@@ -4,6 +4,8 @@ import algosdk, {
     type OnApplicationComplete,
 } from 'algosdk'
 
+import { noteBytes } from '@lib/bytes'
+
 export interface BuildAppCallArgs {
     sender: string | Address
     appIndex: number
@@ -28,7 +30,7 @@ export const buildAppCall = (args: BuildAppCallArgs): algosdk.Transaction => {
         foreignApps: args.foreignApps,
         foreignAssets: args.foreignAssets,
         boxes: args.boxes,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
         rekeyTo: args.rekeyTo,
     })
@@ -61,7 +63,7 @@ export const buildAppCreate = (
         numGlobalByteSlices: args.numGlobalByteSlices,
         extraPages: args.extraPages,
         appArgs: args.appArgs,
-        note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
+        note: noteBytes(args.note),
         suggestedParams: args.suggestedParams,
         onComplete: algosdk.OnApplicationComplete.NoOpOC,
     })

@@ -1,4 +1,5 @@
 import algosdk from 'algosdk'
+
 import type { SignerTransaction } from '@perawallet/connect'
 
 /**
@@ -10,13 +11,4 @@ export const asAtomicGroup = (
 ): SignerTransaction[] => {
     algosdk.assignGroupID(txns)
     return txns.map(txn => (message ? { txn, message } : { txn }))
-}
-
-/**
- * Wrap an array of txns as one non-atomic group each (each becomes its own group of 1).
- */
-export const asIndividualGroups = (
-    txns: algosdk.Transaction[],
-): SignerTransaction[][] => {
-    return txns.map(txn => [{ txn }])
 }

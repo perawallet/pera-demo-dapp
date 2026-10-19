@@ -1,5 +1,6 @@
-import { type ChainType } from '../core/utils/algod/algod'
-import { getNetworkConfig } from '../core/utils/algod/networks'
+import { type ChainType } from '@lib/algod/algod'
+import { getNetworkConfig } from '@lib/algod/networks'
+
 import { MissingNetworkFixtureError } from './network-fixtures'
 
 export enum AssetTransactionType {
