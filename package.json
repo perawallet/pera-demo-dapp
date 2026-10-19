@@ -10,7 +10,7 @@
     "@mui/material": "^9.0.1",
     "@perawallet/connect": "1.8.0",
     "@perawallet/onramp": "^1.1.1",
-    "@walletconnect/sign-client": "2.24.0",
+    "@walletconnect/sign-client": "2.26.0",
     "algosdk": "3.5.2",
     "js-sha256": "^0.9.0",
     "qrcode.react": "^4.2.0",
