@@ -19,7 +19,7 @@
     "react-scripts": "^5.0.1",
     "tweetnacl": "^1.0.3",
     "typescript": "^5.9.3",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^6.2.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
