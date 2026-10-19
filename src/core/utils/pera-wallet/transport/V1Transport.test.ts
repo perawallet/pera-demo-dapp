@@ -1,215 +1,225 @@
-import {V1Transport, type V1Manager} from "./V1Transport";
-import {ChainType} from "../../algod/algod";
+import { V1Transport, type V1Manager } from './V1Transport'
+import { ChainType } from '../../algod/algod'
 
 const makeManager = () => {
-  const disconnectHandlers: Array<() => Promise<void>> = [];
-  const manager = {
-    isConnected: false,
-    connector: null as {bridge: string} | null,
-    platform: null as "mobile" | "web" | "extension" | null,
-    connectAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
-      disconnectHandlers.push(onDisconnect);
-      manager.isConnected = true;
-      manager.connector = {bridge: "https://bridge.example"};
-      manager.platform = "mobile";
-      return ["ADDR1", "ADDR2"];
-    }),
-    reconnectSessionAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
-      disconnectHandlers.push(onDisconnect);
-      manager.isConnected = true;
-      manager.connector = {bridge: "https://bridge.example"};
-      manager.platform = "mobile";
-      return ["ADDR1"];
-    }),
-    disconnect: vi.fn(async () => {
-      manager.isConnected = false;
-      manager.connector = null;
-      manager.platform = null;
-      // Mirror the real SDK: `disconnect()` -> `killSession()` triggers the
-      // same "disconnect" event that any other disconnect path fires, so an
-      // explicit `transport.disconnect()` call also echoes through here.
-      disconnectHandlers.forEach((h) => h());
-    }),
-    signTransaction: vi.fn(async () => [new Uint8Array([1])]),
-    signData: vi.fn(async () => [new Uint8Array([2])]),
-    signArc60Data: vi.fn(async () => ({signature: new Uint8Array([3])})),
-    getEmptySignatures: vi.fn(async () => ({ADDR1: "gA=="})),
-    updateConfig: vi.fn()
-  };
-  return {
-    manager: manager as unknown as V1Manager,
-    raw: manager,
-    fireDisconnect: () => disconnectHandlers.forEach((h) => h())
-  };
-};
-
-describe("V1Transport", () => {
-  it("reports version v1 and no accounts before connecting", () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
-
-    expect(transport.version).toBe("v1");
-    expect(transport.isConnected).toBe(false);
-    expect(transport.accounts).toEqual([]);
-    expect(transport.describe()).toBeNull();
-  });
-
-  it("connects through the manager and exposes the accounts and bridge", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
-
-    await expect(transport.connect()).resolves.toEqual(["ADDR1", "ADDR2"]);
-    expect(transport.accounts).toEqual(["ADDR1", "ADDR2"]);
-    expect(transport.isConnected).toBe(true);
-    expect(transport.describe()).toBe("https://bridge.example");
-  });
-
-  it("names the extension provider instead of a bridge on an extension session", async () => {
-    const {manager, raw} = makeManager();
-    const transport = new V1Transport(manager);
-
-    await transport.connect();
-    // An extension session talks to `window.pera` directly, so the SDK never
-    // builds a WalletConnect connector.
-    raw.connector = null;
-    raw.platform = "extension";
-
-    expect(transport.describe()).toBe("Pera browser extension (window.pera)");
-  });
-
-  it("reconnects through the manager", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
-
-    await expect(transport.reconnectSession()).resolves.toEqual(["ADDR1"]);
-    expect(transport.accounts).toEqual(["ADDR1"]);
-  });
-
-  it("fires onDisconnect handlers when the SDK reports a disconnect and clears accounts", async () => {
-    const {manager, fireDisconnect} = makeManager();
-    const transport = new V1Transport(manager);
-    const handler = vi.fn();
-    transport.onDisconnect(handler);
-    await transport.connect();
-
-    fireDisconnect();
-
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(transport.accounts).toEqual([]);
-  });
-
-  it("stops calling an unsubscribed handler", async () => {
-    const {manager, fireDisconnect} = makeManager();
-    const transport = new V1Transport(manager);
-    const handler = vi.fn();
-    const unsubscribe = transport.onDisconnect(handler);
-    await transport.connect();
-    unsubscribe();
-
-    fireDisconnect();
-
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it("disconnect calls the manager and fires handlers exactly once, even though the SDK's own disconnect event echoes the same teardown", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
-    const handler = vi.fn();
-    transport.onDisconnect(handler);
-    await transport.connect();
-
-    await transport.disconnect();
-
-    expect(manager.disconnect).toHaveBeenCalled();
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(transport.accounts).toEqual([]);
-  });
-
-  it("does not fire handlers again for a disconnect event that arrives after the session already ended", async () => {
-    const {manager, fireDisconnect} = makeManager();
-    const transport = new V1Transport(manager);
-    const handler = vi.fn();
-    transport.onDisconnect(handler);
-    await transport.connect();
-    await transport.disconnect();
-    handler.mockClear();
-
-    // A late/duplicate "disconnect" event from the SDK after the session is
-    // already torn down should be a no-op.
-    fireDisconnect();
-
-    expect(handler).not.toHaveBeenCalled();
-    expect(transport.accounts).toEqual([]);
-  });
-
-  it("does not fire handlers for a disconnect event when connect resolved with no accounts", async () => {
-    const disconnectHandlers: Array<() => Promise<void>> = [];
+    const disconnectHandlers: Array<() => Promise<void>> = []
     const manager = {
-      isConnected: false,
-      connector: null as {bridge: string} | null,
-      connectAndSetupEventHandlers: vi.fn(async ({onDisconnect}) => {
-        disconnectHandlers.push(onDisconnect);
-        // Mirrors the user closing the connect modal before approving.
-        return [];
-      }),
-      reconnectSessionAndSetupEventHandlers: vi.fn(),
-      disconnect: vi.fn(),
-      signTransaction: vi.fn(),
-      signData: vi.fn(),
-      signArc60Data: vi.fn(),
-      updateConfig: vi.fn()
-    } as unknown as V1Manager;
-    const transport = new V1Transport(manager);
-    const handler = vi.fn();
-    transport.onDisconnect(handler);
-    await transport.connect();
+        isConnected: false,
+        connector: null as { bridge: string } | null,
+        platform: null as 'mobile' | 'web' | 'extension' | null,
+        connectAndSetupEventHandlers: vi.fn(async ({ onDisconnect }) => {
+            disconnectHandlers.push(onDisconnect)
+            manager.isConnected = true
+            manager.connector = { bridge: 'https://bridge.example' }
+            manager.platform = 'mobile'
+            return ['ADDR1', 'ADDR2']
+        }),
+        reconnectSessionAndSetupEventHandlers: vi.fn(
+            async ({ onDisconnect }) => {
+                disconnectHandlers.push(onDisconnect)
+                manager.isConnected = true
+                manager.connector = { bridge: 'https://bridge.example' }
+                manager.platform = 'mobile'
+                return ['ADDR1']
+            },
+        ),
+        disconnect: vi.fn(async () => {
+            manager.isConnected = false
+            manager.connector = null
+            manager.platform = null
+            // Mirror the real SDK: `disconnect()` -> `killSession()` triggers the
+            // same "disconnect" event that any other disconnect path fires, so an
+            // explicit `transport.disconnect()` call also echoes through here.
+            disconnectHandlers.forEach(h => h())
+        }),
+        signTransaction: vi.fn(async () => [new Uint8Array([1])]),
+        signData: vi.fn(async () => [new Uint8Array([2])]),
+        signArc60Data: vi.fn(async () => ({ signature: new Uint8Array([3]) })),
+        getEmptySignatures: vi.fn(async () => ({ ADDR1: 'gA==' })),
+        updateConfig: vi.fn(),
+    }
+    return {
+        manager: manager as unknown as V1Manager,
+        raw: manager,
+        fireDisconnect: () => disconnectHandlers.forEach(h => h()),
+    }
+}
 
-    disconnectHandlers.forEach((h) => h());
+describe('V1Transport', () => {
+    it('reports version v1 and no accounts before connecting', () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
 
-    expect(handler).not.toHaveBeenCalled();
-    expect(transport.accounts).toEqual([]);
-  });
+        expect(transport.version).toBe('v1')
+        expect(transport.isConnected).toBe(false)
+        expect(transport.accounts).toEqual([])
+        expect(transport.describe()).toBeNull()
+    })
 
-  it("forwards signing calls verbatim", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
-    const groups = [[{txn: {} as any}]];
-    const data = [{data: new Uint8Array([9]), message: "m"}];
-    const payload = {} as any;
-    const metadata = {scope: 1, encoding: "base64"};
+    it('connects through the manager and exposes the accounts and bridge', async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
 
-    await transport.signTransaction(groups, "SIGNER");
-    await transport.signData(data, "SIGNER", true);
-    await transport.signArc60Data(payload, metadata, true);
+        await expect(transport.connect()).resolves.toEqual(['ADDR1', 'ADDR2'])
+        expect(transport.accounts).toEqual(['ADDR1', 'ADDR2'])
+        expect(transport.isConnected).toBe(true)
+        expect(transport.describe()).toBe('https://bridge.example')
+    })
 
-    expect(manager.signTransaction).toHaveBeenCalledWith(groups, "SIGNER");
-    expect(manager.signData).toHaveBeenCalledWith(data, "SIGNER", true);
-    expect(manager.signArc60Data).toHaveBeenCalledWith(payload, metadata, true);
-  });
+    it('names the extension provider instead of a bridge on an extension session', async () => {
+        const { manager, raw } = makeManager()
+        const transport = new V1Transport(manager)
 
-  it("setChain forwards the numeric chain id to updateConfig", () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
+        await transport.connect()
+        // An extension session talks to `window.pera` directly, so the SDK never
+        // builds a WalletConnect connector.
+        raw.connector = null
+        raw.platform = 'extension'
 
-    transport.setChain(ChainType.BetaNet);
+        expect(transport.describe()).toBe(
+            'Pera browser extension (window.pera)',
+        )
+    })
 
-    expect(manager.updateConfig).toHaveBeenCalledWith({chainId: 416_003});
-  });
+    it('reconnects through the manager', async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
 
-  it("asks connect for the selected network's empty signatures", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
+        await expect(transport.reconnectSession()).resolves.toEqual(['ADDR1'])
+        expect(transport.accounts).toEqual(['ADDR1'])
+    })
 
-    await expect(transport.getEmptySignatures(ChainType.TestNet)).resolves.toEqual({ADDR1: "gA=="});
-    expect(manager.getEmptySignatures).toHaveBeenCalledWith("testnet");
-  });
+    it('fires onDisconnect handlers when the SDK reports a disconnect and clears accounts', async () => {
+        const { manager, fireDisconnect } = makeManager()
+        const transport = new V1Transport(manager)
+        const handler = vi.fn()
+        transport.onDisconnect(handler)
+        await transport.connect()
 
-  it("lets connect fall back to its own rules on networks it has no name for", async () => {
-    const {manager} = makeManager();
-    const transport = new V1Transport(manager);
+        fireDisconnect()
 
-    await transport.getEmptySignatures(ChainType.LocalNet);
+        expect(handler).toHaveBeenCalledTimes(1)
+        expect(transport.accounts).toEqual([])
+    })
 
-    expect(manager.getEmptySignatures).toHaveBeenCalledWith(undefined);
-  });
-});
+    it('stops calling an unsubscribed handler', async () => {
+        const { manager, fireDisconnect } = makeManager()
+        const transport = new V1Transport(manager)
+        const handler = vi.fn()
+        const unsubscribe = transport.onDisconnect(handler)
+        await transport.connect()
+        unsubscribe()
+
+        fireDisconnect()
+
+        expect(handler).not.toHaveBeenCalled()
+    })
+
+    it("disconnect calls the manager and fires handlers exactly once, even though the SDK's own disconnect event echoes the same teardown", async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
+        const handler = vi.fn()
+        transport.onDisconnect(handler)
+        await transport.connect()
+
+        await transport.disconnect()
+
+        expect(manager.disconnect).toHaveBeenCalled()
+        expect(handler).toHaveBeenCalledTimes(1)
+        expect(transport.accounts).toEqual([])
+    })
+
+    it('does not fire handlers again for a disconnect event that arrives after the session already ended', async () => {
+        const { manager, fireDisconnect } = makeManager()
+        const transport = new V1Transport(manager)
+        const handler = vi.fn()
+        transport.onDisconnect(handler)
+        await transport.connect()
+        await transport.disconnect()
+        handler.mockClear()
+
+        // A late/duplicate "disconnect" event from the SDK after the session is
+        // already torn down should be a no-op.
+        fireDisconnect()
+
+        expect(handler).not.toHaveBeenCalled()
+        expect(transport.accounts).toEqual([])
+    })
+
+    it('does not fire handlers for a disconnect event when connect resolved with no accounts', async () => {
+        const disconnectHandlers: Array<() => Promise<void>> = []
+        const manager = {
+            isConnected: false,
+            connector: null as { bridge: string } | null,
+            connectAndSetupEventHandlers: vi.fn(async ({ onDisconnect }) => {
+                disconnectHandlers.push(onDisconnect)
+                // Mirrors the user closing the connect modal before approving.
+                return []
+            }),
+            reconnectSessionAndSetupEventHandlers: vi.fn(),
+            disconnect: vi.fn(),
+            signTransaction: vi.fn(),
+            signData: vi.fn(),
+            signArc60Data: vi.fn(),
+            updateConfig: vi.fn(),
+        } as unknown as V1Manager
+        const transport = new V1Transport(manager)
+        const handler = vi.fn()
+        transport.onDisconnect(handler)
+        await transport.connect()
+
+        disconnectHandlers.forEach(h => h())
+
+        expect(handler).not.toHaveBeenCalled()
+        expect(transport.accounts).toEqual([])
+    })
+
+    it('forwards signing calls verbatim', async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
+        const groups = [[{ txn: {} as any }]]
+        const data = [{ data: new Uint8Array([9]), message: 'm' }]
+        const payload = {} as any
+        const metadata = { scope: 1, encoding: 'base64' }
+
+        await transport.signTransaction(groups, 'SIGNER')
+        await transport.signData(data, 'SIGNER', true)
+        await transport.signArc60Data(payload, metadata, true)
+
+        expect(manager.signTransaction).toHaveBeenCalledWith(groups, 'SIGNER')
+        expect(manager.signData).toHaveBeenCalledWith(data, 'SIGNER', true)
+        expect(manager.signArc60Data).toHaveBeenCalledWith(
+            payload,
+            metadata,
+            true,
+        )
+    })
+
+    it('setChain forwards the numeric chain id to updateConfig', () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
+
+        transport.setChain(ChainType.BetaNet)
+
+        expect(manager.updateConfig).toHaveBeenCalledWith({ chainId: 416_003 })
+    })
+
+    it("asks connect for the selected network's empty signatures", async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
+
+        await expect(
+            transport.getEmptySignatures(ChainType.TestNet),
+        ).resolves.toEqual({ ADDR1: 'gA==' })
+        expect(manager.getEmptySignatures).toHaveBeenCalledWith('testnet')
+    })
+
+    it('lets connect fall back to its own rules on networks it has no name for', async () => {
+        const { manager } = makeManager()
+        const transport = new V1Transport(manager)
+
+        await transport.getEmptySignatures(ChainType.LocalNet)
+
+        expect(manager.getEmptySignatures).toHaveBeenCalledWith(undefined)
+    })
+})

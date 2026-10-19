@@ -1,22 +1,22 @@
 import {
-  PERA_WALLET_LOCAL_STORAGE_KEYS,
-  type PeraWalletDetails
-} from "./pera-wallet/peraWalletTypes";
+    PERA_WALLET_LOCAL_STORAGE_KEYS,
+    type PeraWalletDetails,
+} from './pera-wallet/peraWalletTypes'
 
 const getLocalStorage = () => {
-  return typeof localStorage === "undefined" ? undefined : localStorage;
-};
+    return typeof localStorage === 'undefined' ? undefined : localStorage
+}
 
 const getWalletDetailsFromStorage = (): PeraWalletDetails | null => {
-  const storedWalletDetails = getLocalStorage()?.getItem(
-    PERA_WALLET_LOCAL_STORAGE_KEYS.WALLET
-  );
+    const storedWalletDetails = getLocalStorage()?.getItem(
+        PERA_WALLET_LOCAL_STORAGE_KEYS.WALLET,
+    )
 
-  if (storedWalletDetails) {
-    return JSON.parse(storedWalletDetails) as PeraWalletDetails;
-  }
+    if (storedWalletDetails) {
+        return JSON.parse(storedWalletDetails) as PeraWalletDetails
+    }
 
-  return null;
-};
+    return null
+}
 
-export {getWalletDetailsFromStorage};
+export { getWalletDetailsFromStorage }

@@ -1,14 +1,14 @@
-import {useLayoutEffect} from "react";
+import { useLayoutEffect } from 'react'
 
 const useOnUnmount = (callback?: VoidFunction) => {
-  useLayoutEffect(() => {
-    return () => {
-      if (callback) {
-        callback();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-};
+    useLayoutEffect(() => {
+        return () => {
+            if (callback) {
+                callback()
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+}
 
-export default useOnUnmount;
+export default useOnUnmount

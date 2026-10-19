@@ -7,33 +7,33 @@
 
 /** Reduce a domain or origin to its host, tolerating a missing scheme. */
 export function hostFromMaybeUrl(value: string): string {
-  const trimmed = value.trim().toLowerCase();
-  const candidate = trimmed.includes("//") ? trimmed : `https://${trimmed}`;
+    const trimmed = value.trim().toLowerCase()
+    const candidate = trimmed.includes('//') ? trimmed : `https://${trimmed}`
 
-  try {
-    const url = new URL(candidate);
+    try {
+        const url = new URL(candidate)
 
-    // Userinfo smuggling ("trusted.com@evil.com") is never legitimate; return
-    // the raw string so the comparison fails safe (reports a mismatch).
-    if (url.username || url.password) {
-      return trimmed;
+        // Userinfo smuggling ("trusted.com@evil.com") is never legitimate; return
+        // the raw string so the comparison fails safe (reports a mismatch).
+        if (url.username || url.password) {
+            return trimmed
+        }
+
+        return url.host
+    } catch {
+        return trimmed
     }
-
-    return url.host;
-  } catch {
-    return trimmed;
-  }
 }
 
 /** True when the ARC-60 payload's `domain` names a different host than the page
  *  it was requested from. An unknown origin never reports a mismatch. */
 export function isArc60OriginMismatch(
-  domain: string,
-  verifiedOrigin: string | undefined
+    domain: string,
+    verifiedOrigin: string | undefined,
 ): boolean {
-  if (!verifiedOrigin) {
-    return false;
-  }
+    if (!verifiedOrigin) {
+        return false
+    }
 
-  return hostFromMaybeUrl(domain) !== hostFromMaybeUrl(verifiedOrigin);
+    return hostFromMaybeUrl(domain) !== hostFromMaybeUrl(verifiedOrigin)
 }

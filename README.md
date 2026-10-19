@@ -63,9 +63,9 @@ mobile app's WalletConnect v2 support:
 
 1. Create `.env.local` (gitignored) with a Reown / WalletConnect Cloud project ID:
 
-   ```
-   VITE_REOWN_PROJECT_ID=<your project id>
-   ```
+    ```
+    VITE_REOWN_PROJECT_ID=<your project id>
+    ```
 
 2. Restart `pnpm dev` (Vite reads env files at startup).
 3. Open the ⋮ menu and set **WalletConnect version** to `v2`. The Connect button
@@ -81,8 +81,6 @@ makes no relay call. The published GitHub Pages build ships without a project
 ID, so v2 works only in local builds unless the deploy workflow is given one —
 and a project ID baked into a public bundle should be domain-restricted in the
 Reown dashboard.
-
-
 
 ## Pera browser extension (`window.pera`)
 

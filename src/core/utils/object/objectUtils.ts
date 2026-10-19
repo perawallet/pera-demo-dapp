@@ -3,19 +3,22 @@
  * @param obj Target object
  * @param keys Keys to omit from obj
  */
-const omitKeys = <T extends {[x: string]: any}, K extends keyof T>(obj: T, ...keys: K[]) => {
-  const newObj: {[x: string]: any} = {};
+const omitKeys = <T extends { [x: string]: any }, K extends keyof T>(
+    obj: T,
+    ...keys: K[]
+) => {
+    const newObj: { [x: string]: any } = {}
 
-  Object.keys(obj).forEach((key) => {
-    // @ts-expect-error 'string' is assignable to the constraint of type 'K', but 'K' could be instantiated with a different subtype of constraint 'string | number | symbol'.
-    // couldn't solve this issue
-    if (!keys.includes(key)) {
-      newObj[key as string] = obj[key];
-    }
-  });
+    Object.keys(obj).forEach(key => {
+        // @ts-expect-error 'string' is assignable to the constraint of type 'K', but 'K' could be instantiated with a different subtype of constraint 'string | number | symbol'.
+        // couldn't solve this issue
+        if (!keys.includes(key)) {
+            newObj[key as string] = obj[key]
+        }
+    })
 
-  return newObj as Omit<T, K>;
-};
+    return newObj as Omit<T, K>
+}
 
 /**
  * Checks the given value if the value is object and not an array or null.
@@ -42,7 +45,7 @@ const omitKeys = <T extends {[x: string]: any}, K extends keyof T>(obj: T, ...ke
  * // => false
  */
 const isRecord = (x: unknown): x is Record<string, any> => {
-  return typeof x === "object" && Boolean(x) && !Array.isArray(x);
-};
+    return typeof x === 'object' && Boolean(x) && !Array.isArray(x)
+}
 
-export {omitKeys, isRecord};
+export { omitKeys, isRecord }

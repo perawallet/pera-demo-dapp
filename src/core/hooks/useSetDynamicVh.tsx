@@ -1,6 +1,6 @@
-import {useEffect} from "react";
+import { useEffect } from 'react'
 
-import useOnWindowResize from "./useOnWindowResize";
+import useOnWindowResize from './useOnWindowResize'
 
 /**
  * Creates a css variable `--vh` that is the calculated viewport height,
@@ -9,20 +9,23 @@ import useOnWindowResize from "./useOnWindowResize";
  * See: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
  */
 const useSetDynamicVhValue = () => {
-  const setVhVariable = () => {
-    // a vh unit is equal to 1% of the screen height
-    // eslint-disable-next-line no-magic-numbers
-    document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
-  };
+    const setVhVariable = () => {
+        // a vh unit is equal to 1% of the screen height
+        // eslint-disable-next-line no-magic-numbers
+        document.documentElement.style.setProperty(
+            '--vh',
+            `${window.innerHeight * 0.01}px`,
+        )
+    }
 
-  useEffect(() => {
-    // This useEffect was added to make sure vh is set on mount (even if there is no window resize)
-    setVhVariable();
-  }, []);
+    useEffect(() => {
+        // This useEffect was added to make sure vh is set on mount (even if there is no window resize)
+        setVhVariable()
+    }, [])
 
-  useOnWindowResize(() => {
-    setVhVariable();
-  });
-};
+    useOnWindowResize(() => {
+        setVhVariable()
+    })
+}
 
-export default useSetDynamicVhValue;
+export default useSetDynamicVhValue
