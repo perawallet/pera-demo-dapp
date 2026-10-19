@@ -65,7 +65,7 @@ const CreateTxnButton = ({
   } = txnForm;
   const {runAsyncProcess} = useAsyncProcess<ListRequestResponse<Asset>>();
   const {display: displayToast} = usePeraToast();
-  const assetsRef = useRef<ListRequestResponse<Asset>>();
+  const assetsRef = useRef<ListRequestResponse<Asset> | undefined>(undefined);
   const [isPending, setPendingState] = useState(false);
   const [isDisabled, setDisablingState] = useState(false);
 

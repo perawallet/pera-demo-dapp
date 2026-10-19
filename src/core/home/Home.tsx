@@ -1,8 +1,5 @@
-import algosdk from "algosdk";
 import {useCallback, useEffect, useState} from "react";
 import type {MouseEvent} from "react";
-import type {SignerTransaction} from "@perawallet/connect";
-import {PeraOnramp} from "@perawallet/onramp";
 import {
   AppBar,
   Toolbar,
@@ -35,7 +32,6 @@ import HistoryIcon from "@mui/icons-material/History";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ExtensionIcon from "@mui/icons-material/Extension";
 import SettingsIcon from "@mui/icons-material/Settings";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 import LinkIcon from "@mui/icons-material/Link";
@@ -44,7 +40,7 @@ import AccountBalance from "./account-balance/AccountBalance";
 import SignTxn from "./sign-txn/SignTxn";
 import CreateTxn from "./sign-txn/create/CreateTxn";
 import {usePeraToast} from "../component/toast/PeraToast";
-import {apiGetTxnParams, ChainType, clientForChain} from "../utils/algod/algod";
+import {ChainType} from "../utils/algod/algod";
 import {getNetworkConfig} from "../utils/algod/networks";
 import useGetAccountDetailRequest from "../hooks/useGetAccountDetailRequest/useGetAccountDetailRequest";
 import {PERA_WALLET_LOCAL_STORAGE_KEYS} from "../utils/storage/pera-wallet/peraWalletTypes";
@@ -67,10 +63,6 @@ import {useWcPairingUi} from "./wc-v2/useWcPairingUi";
 import WcV2PairingDialog from "./wc-v2/WcV2PairingDialog";
 import WcV2SignPrompt from "./wc-v2/WcV2SignPrompt";
 import NetworkSelector from "./network-selector/NetworkSelector";
-
-const peraOnRamp = new PeraOnramp({
-  optInEnabled: true
-});
 
 const Home = () => {
   const [chainType, setChainType] = useState<ChainType>(getPersistedNetwork);
@@ -237,65 +229,6 @@ const Home = () => {
       }
     }
     setAccountMenuAnchor(null);
-  };
-
-  const addFunds = () => {
-    if (accountAddress) {
-      peraOnRamp
-        .addFunds({
-          accountAddress
-        })
-        .then(() => {
-          handleSetLog("Funds added");
-        })
-        .catch((e) => {
-          handleSetLog(`${e}`);
-        });
-    }
-  };
-
-  const handleAddFunds = () => {
-    if (accountAddress) {
-      addFunds();
-
-      peraOnRamp.on({
-        OPT_IN_REQUEST: async ({accountAddress: addr, assetID}) => {
-          try {
-            const suggestedParams = await apiGetTxnParams(chainType);
-            const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-              sender: addr,
-              receiver: addr,
-              amount: 0,
-              assetIndex: Number(assetID),
-              note: new Uint8Array(Buffer.from("example note value")),
-              suggestedParams
-            });
-            const txnsToSign = [[{txn}]];
-
-            const transactions: SignerTransaction[] = txnsToSign.reduce(
-              (acc, val) => acc.concat(val),
-              []
-            );
-
-            const signedTxn = await wallet.signTransaction([transactions]);
-
-            await clientForChain(chainType).sendRawTransaction(signedTxn).do();
-
-            peraOnRamp.close();
-
-            addFunds();
-          } catch (error) {
-            handleSetLog(`${error}`);
-          }
-        },
-        ADD_FUNDS_COMPLETED: () => {
-          handleSetLog("Add funds completed");
-        },
-        ADD_FUNDS_FAILED: () => {
-          handleSetLog("Add funds failed");
-        }
-      });
-    }
   };
 
   const handleConnectWalletClick = async () => {
@@ -506,20 +439,6 @@ const Home = () => {
                   {wcServer ?? "Not connected"}
                 </Typography>
               </Box>
-              {isConnectedToPeraWallet && [
-                <Divider key={"add-funds-divider"} />,
-                <MenuItem
-                  key={"add-funds-item"}
-                  onClick={() => {
-                    handleAddFunds();
-                    setMoreAnchor(null);
-                  }}>
-                  <ListItemIcon>
-                    <AttachMoneyIcon fontSize={"small"} />
-                  </ListItemIcon>
-                  <ListItemText>{"Add funds"}</ListItemText>
-                </MenuItem>
-              ]}
             </Menu>
 
             {isConnectedToPeraWallet ? (

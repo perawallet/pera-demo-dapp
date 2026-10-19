@@ -69,7 +69,7 @@ export const PeraToastProvider = ({children}: {children: React.ReactNode}) => {
   const clearHistory = useCallback(() => setHistory([]), []);
 
   const handleClose = useCallback(
-    (_event?: React.SyntheticEvent | Event, reason?: string) => {
+    (_event?: React.SyntheticEvent | Event | null, reason?: string) => {
       if (reason === "clickaway") return;
       setToast((prev) => (prev ? {...prev, open: false} : prev));
     },
