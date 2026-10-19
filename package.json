@@ -12,7 +12,7 @@
     "@perawallet/onramp": "^1.1.1",
     "@walletconnect/sign-client": "2.24.0",
     "algosdk": "3.5.2",
-    "js-sha256": "^0.9.0",
+    "js-sha256": "^1.0.0",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
