@@ -1,0 +1,101 @@
+name: CI / Pre-Merge
+
+on:
+  pull_request:
+
+# Least-privilege default.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, test and build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      # A stale lockfile otherwise fails later with a cryptic frozen-lockfile error.
+      - name: Lockfile drift check
+        run: |
+          if ! pnpm install --lockfile-only --frozen-lockfile; then
+            echo "::error::pnpm-lock.yaml is out of date with package.json."
+            echo "Run 'pnpm install' locally and commit the updated lockfile."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: oxlint
+        run: pnpm lint
+
+      - name: oxlint (type-aware)
+        run: pnpm lint:types
+
+      - name: oxfmt
+        run: pnpm format:check
+
+      - name: Unit and integration tests
+        run: pnpm test:coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  audit:
+    name: Audit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .tool-versions
+
+      # npm retired the legacy audit endpoints pnpm 10 uses, so the audit runs
+      # through pnpm 11 (same approach as pera-react-native).
+      - name: pnpm audit (runtime)
+        run: >
+          pnpm dlx --config.minimumReleaseAge=0 pnpm@11.13.0
+          --pm-on-fail=ignore --config.manage-package-manager-versions=false
+          audit --prod --audit-level=moderate
+
+      - name: pnpm audit (all, informational)
+        if: always()
+        run: >
+          pnpm dlx --config.minimumReleaseAge=0 pnpm@11.13.0
+          --pm-on-fail=ignore --config.manage-package-manager-versions=false
+          audit --audit-level=low || true

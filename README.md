@@ -1,6 +1,40 @@
-# Pera Wallet Example Demo dApp
+# Pera Wallet Demo dApp
 
-- You can check live demo from [here](https://perawallet.github.io/pera-demo-dapp/)
+A test bench for [Pera Connect](https://github.com/perawallet/connect): every
+signing flow Pera Wallet supports (payments, assets, apps, key registration,
+atomic and multi-group batches, arbitrary data, ARC-60, empty signatures) is a
+scenario you can invoke against MainNet, TestNet, BetaNet, LocalNet or any
+custom algod node. It also hosts ARC-90 URI, Pera deeplink and custom
+transaction generators.
+
+Live: <https://perawallet.github.io/pera-demo-dapp/>
+
+## Getting started
+
+Requires Node 22 (see `.tool-versions`) and pnpm (the version is pinned in
+`package.json`; `corepack enable` picks it up).
+
+```sh
+pnpm install
+pnpm dev        # https://localhost:5173/pera-demo-dapp/
+```
+
+The dev server uses a self-signed certificate and listens on the LAN, so you
+can open it from a phone; accept the certificate warning once.
+
+| Script               | Does                                           |
+| -------------------- | ---------------------------------------------- |
+| `pnpm dev`           | Vite dev server                                |
+| `pnpm build`         | Typecheck and production build into `build/`   |
+| `pnpm preview`       | Serve the production build                     |
+| `pnpm test`          | Unit and integration tests (Vitest)            |
+| `pnpm test:coverage` | Tests with coverage thresholds                 |
+| `pnpm lint`          | oxlint (`lint:types` for the type-aware rules) |
+| `pnpm format`        | oxfmt                                          |
+| `pnpm check`         | Everything CI runs before merge                |
+
+Pushes to `main` deploy to GitHub Pages. Code layout and conventions are in
+[`CLAUDE.md`](./CLAUDE.md).
 
 ## Networks
 
