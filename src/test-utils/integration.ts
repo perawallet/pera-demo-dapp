@@ -1,4 +1,5 @@
 import { queryClient } from '@app/queryClient'
+import { resetSessionRestore } from '@modules/session/hooks/useWalletSession'
 
 import { fakeAlgod } from './fakeAlgod'
 import { testWallet } from './fakeWallet'
@@ -8,6 +9,7 @@ import { resetStores } from './resetStores'
 /** Runs before every integration spec (see integrationSetup.ts). */
 export const resetIntegrationState = async () => {
     resetStores()
+    resetSessionRestore()
     queryClient.clear()
     vi.clearAllMocks()
 

@@ -1,7 +1,9 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 
 import { App } from '@app/App'
 import { useToastStore } from '@components/toast/useToastStore'
+import { ChainType } from '@lib/algod/networks'
+import { useSettingsStore } from '@modules/settings/hooks/useSettingsStore'
 import { header, openDialog, openMenu } from '@test-utils/appQueries'
 import { fakeAlgod } from '@test-utils/fakeAlgod'
 import { testWallet } from '@test-utils/fakeWallet'
@@ -218,6 +220,25 @@ describe('custom transaction builder', () => {
         await user.click(dialog.getByRole('tab', { name: 'Destroy' }))
         expect(dialog.getByLabelText('Asset index')).toBeVisible()
         expect(dialog.queryByLabelText('Unit name')).not.toBeInTheDocument()
+    })
+
+    it('drops queued transactions when the network changes', async () => {
+        const user = setupUser()
+        const dialog = await connectAndOpen(user)
+
+        await user.type(dialog.getByLabelText('Receiver'), TEST_ADDRESSES[1])
+        await user.click(
+            dialog.getByRole('button', { name: 'Add pay transaction' }),
+        )
+        expect(await dialog.findByText('Queued transactions (1)')).toBeVisible()
+
+        act(() => useSettingsStore.getState().setChain(ChainType.BetaNet))
+
+        await waitFor(() =>
+            expect(
+                dialog.queryByText(/Queued transactions/),
+            ).not.toBeInTheDocument(),
+        )
     })
 
     it('signs without submitting when submission is off', async () => {

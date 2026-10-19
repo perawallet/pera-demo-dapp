@@ -262,11 +262,17 @@ export const groupTransactions = (
     for (let i = 0; i < transactions.length; i += MAX_GROUP_SIZE) {
         const chunk = transactions
             .slice(i, i + MAX_GROUP_SIZE)
-            .map(({ txn }) =>
-                algosdk.decodeUnsignedTransaction(
+            .map(({ txn }) => {
+                const clone = algosdk.decodeUnsignedTransaction(
                     algosdk.encodeUnsignedTransaction(txn),
-                ),
-            )
+                )
+
+                // The group ID hashes each txn ID, which includes any previous
+                // group, so regrouping must start from ungrouped transactions.
+                clone.group = undefined
+
+                return clone
+            })
 
         algosdk.assignGroupID(chunk)
         grouped.push(...chunk.map(txn => ({ txn })))

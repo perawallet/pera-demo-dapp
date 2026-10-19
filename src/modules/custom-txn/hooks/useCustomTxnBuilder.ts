@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import algosdk from 'algosdk'
 
@@ -61,6 +61,10 @@ export const useCustomTxnBuilder = (): UseCustomTxnBuilderResult => {
     const [queue, setQueue] = useState<SignerTransaction[]>([])
     const [shouldSubmit, setShouldSubmit] = useState(false)
     const [isBusy, setBusy] = useState(false)
+
+    // Queued transactions carry this sender and network's genesis; signing them
+    // after either changes would only produce a confusing wallet rejection.
+    useEffect(() => setQueue([]), [sender, chain])
 
     const updateForm = (changes: Partial<CustomTxnForm>) =>
         setForm(previous => ({ ...previous, ...changes }))

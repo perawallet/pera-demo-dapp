@@ -1,3 +1,5 @@
+import { StrictMode } from 'react'
+
 import { render, screen, waitFor, within } from '@testing-library/react'
 
 import { App } from '@app/App'
@@ -36,6 +38,22 @@ describe('wallet session', () => {
             await screen.findByText(shortenAddress(SECOND, 8, 4)),
         ).toBeInTheDocument()
         expect(lastToast()).toBe('Connected to Pera Wallet')
+    })
+
+    it('restores the session once under StrictMode', async () => {
+        testWallet.transports.v1.restoredAccounts = [SECOND]
+
+        render(
+            <StrictMode>
+                <App />
+            </StrictMode>,
+        )
+
+        await screen.findByText(shortenAddress(SECOND, 8, 4))
+        expect(testWallet.transports.v1.reconnectSession).toHaveBeenCalledTimes(
+            1,
+        )
+        expect(useToastStore.getState().history).toHaveLength(1)
     })
 
     it('does nothing when the user closes the connect modal', async () => {

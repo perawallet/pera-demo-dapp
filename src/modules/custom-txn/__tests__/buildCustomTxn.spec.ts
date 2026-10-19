@@ -160,6 +160,17 @@ describe('groupTransactions', () => {
         expect(input[0].txn.group).toBeUndefined()
     })
 
+    it('produces a valid group when regrouping already grouped transactions', () => {
+        const input = payments(3)
+
+        const regrouped = groupTransactions(groupTransactions(input))
+        const fresh = groupTransactions(input)
+
+        expect(regrouped.map(({ txn }) => txn.txID())).toEqual(
+            fresh.map(({ txn }) => txn.txID()),
+        )
+    })
+
     it('submits each group together and ungrouped transactions alone', () => {
         const grouped = groupTransactions(payments(3))
         const loose = payments(2)

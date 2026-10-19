@@ -12,24 +12,42 @@ const connectedMessage = (count: number) =>
         ? `Connected to Pera Wallet (${count} accounts)`
         : 'Connected to Pera Wallet'
 
+// Module-level so StrictMode's mount/unmount/mount restores the persisted
+// session once; a second reconnect would open a second WalletConnect connector.
+let restoreAttempt: Promise<string[]> | null = null
+
+const restoreSessionOnce = (): Promise<string[]> => {
+    restoreAttempt ??= wallet.reconnectSession()
+
+    return restoreAttempt
+}
+
+/** Test-only: lets each test start from a page that has not restored yet. */
+export const resetSessionRestore = (): void => {
+    restoreAttempt = null
+}
+
 /** Restores a persisted session and keeps the session store in step with the
  *  wallet. Mount once, at the app root. */
 export const useWalletSessionSync = (): void => {
     useEffect(() => {
         const { setAccounts, clear } = useSessionStore.getState()
         const unsubscribe = wallet.onDisconnect(clear)
+        let isCurrent = true
 
-        wallet
-            .reconnectSession()
+        restoreSessionOnce()
             .then(accounts => {
-                if (accounts.length > 0) {
+                if (isCurrent && accounts.length > 0) {
                     setAccounts(accounts)
                     notify({ message: connectedMessage(accounts.length) })
                 }
             })
             .catch((error: unknown) => console.error(error))
 
-        return unsubscribe
+        return () => {
+            isCurrent = false
+            unsubscribe()
+        }
     }, [])
 }
 
