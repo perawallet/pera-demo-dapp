@@ -249,4 +249,92 @@ describe('signAndSubmit', () => {
         expect(result.submittedGroups).toBe(1)
         expect(result.createdAssetIndex).toBe(777)
     })
+
+    describe('with a submission delay (future transactions)', () => {
+        const signEverything = {
+            signTransaction: async (groups: unknown[][]) =>
+                groups.flat().map((_, i) => new Uint8Array([i])),
+        } as never
+
+        afterEach(() => vi.useRealTimers())
+
+        it('waits, then submits every group in one request', async () => {
+            vi.useFakeTimers()
+            const sendRawTransaction = vi.fn((_bytes: Uint8Array[]) => ({
+                do: async () => ({}),
+            }))
+
+            const pending = signAndSubmit({
+                wallet: signEverything,
+                algod: { sendRawTransaction } as never,
+                txnsToSign: [
+                    [{ txn: {} as never }],
+                    [{ txn: {} as never }, { txn: {} as never }],
+                ],
+                transactionTimeout: 5000,
+            })
+
+            await vi.advanceTimersByTimeAsync(4999)
+            expect(sendRawTransaction).not.toHaveBeenCalled()
+
+            await vi.advanceTimersByTimeAsync(1)
+            await expect(pending).resolves.toEqual({
+                submittedGroups: 2,
+                partialSignGroups: 0,
+                createdAssetIndex: undefined,
+            })
+            expect(sendRawTransaction).toHaveBeenCalledTimes(1)
+            expect(sendRawTransaction.mock.calls[0][0]).toHaveLength(3)
+        })
+
+        it('propagates a rejected submission', async () => {
+            vi.useFakeTimers()
+            const algod = {
+                sendRawTransaction: () => ({
+                    do: async () => {
+                        throw new Error('round not reached')
+                    },
+                }),
+            } as never
+
+            const pending = signAndSubmit({
+                wallet: signEverything,
+                algod,
+                txnsToSign: [[{ txn: {} as never }]],
+                transactionTimeout: 1000,
+            })
+            const assertion =
+                expect(pending).rejects.toThrow('round not reached')
+
+            await vi.advanceTimersByTimeAsync(1000)
+            await assertion
+        })
+
+        it('submits nothing when no group is complete', async () => {
+            vi.useFakeTimers()
+            const sendRawTransaction = vi.fn()
+            const externalSender = algosdk.generateAccount().addr
+
+            const pending = signAndSubmit({
+                wallet: signEverything,
+                algod: { sendRawTransaction } as never,
+                txnsToSign: [
+                    [
+                        {
+                            txn: { sender: externalSender } as never,
+                            signers: [],
+                        },
+                    ],
+                ],
+                transactionTimeout: 1000,
+            })
+
+            await vi.advanceTimersByTimeAsync(1000)
+            await expect(pending).resolves.toMatchObject({
+                submittedGroups: 0,
+                partialSignGroups: 1,
+            })
+            expect(sendRawTransaction).not.toHaveBeenCalled()
+        })
+    })
 })

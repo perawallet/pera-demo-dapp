@@ -55,6 +55,44 @@ export default defineConfig({
         globals: true,
         environment: 'jsdom',
         setupFiles: ['./src/test-utils/setup.ts'],
-        include: ['src/**/*.spec.{ts,tsx}'],
+        restoreMocks: true,
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: 'unit',
+                    include: ['src/**/__tests__/**/*.spec.{ts,tsx}'],
+                },
+            },
+            {
+                extends: true,
+                test: {
+                    name: 'integration',
+                    include: ['src/__integration__/**/*.spec.{ts,tsx}'],
+                    setupFiles: ['./src/test-utils/integrationSetup.ts'],
+                    // Each flow renders the full scenario list under jsdom.
+                    testTimeout: 20_000,
+                },
+            },
+        ],
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.{ts,tsx}'],
+            exclude: [
+                'src/**/__tests__/**',
+                'src/__integration__/**',
+                'src/test-utils/**',
+                'src/main.tsx',
+                'src/**/*.d.ts',
+            ],
+            reporter: ['text-summary', 'html', 'lcov'],
+            // Ratchet: raise these as coverage grows, never lower them.
+            thresholds: {
+                statements: 94,
+                branches: 82,
+                functions: 92,
+                lines: 94,
+            },
+        },
     },
 })
