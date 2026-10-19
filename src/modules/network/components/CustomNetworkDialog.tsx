@@ -22,6 +22,50 @@ import {
  *  warning when Test connection resolves to it. */
 const MAINNET_GENESIS_ID = 'mainnet-v1.0'
 
+const isHttpUrl = (value: string): boolean => {
+    try {
+        const url = new URL(value)
+
+        return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+        return false
+    }
+}
+
+interface TestResult {
+    severity: 'success' | 'warning' | 'error'
+    message: string
+}
+
+// Builds a throwaway client rather than going through clientForChain, so the
+// endpoint can be tested before it is saved.
+const testConnection = async ({
+    baseServer,
+    port,
+    token,
+}: CustomNetworkSettings): Promise<TestResult> => {
+    try {
+        const params = await new algosdk.Algodv2(token, baseServer, port)
+            .getTransactionParams()
+            .do()
+
+        return params.genesisID === MAINNET_GENESIS_ID
+            ? {
+                  severity: 'warning',
+                  message: `Connected, but this is MAINNET (genesis ${params.genesisID}). Transactions here spend real ALGO.`,
+              }
+            : {
+                  severity: 'success',
+                  message: `Connected. Genesis ID: ${params.genesisID}`,
+              }
+    } catch (error) {
+        return {
+            severity: 'error',
+            message: `${error instanceof Error ? error.message : error}`,
+        }
+    }
+}
+
 interface CustomNetworkDialogProps {
     isOpen: boolean
     onClose: VoidFunction
@@ -41,21 +85,10 @@ export const CustomNetworkDialog = ({
         String(stored.port ?? LOCALNET_DEFAULTS.port),
     )
     const [token, setToken] = useState(stored.token || LOCALNET_DEFAULTS.token)
-    const [testResult, setTestResult] = useState<{
-        severity: 'success' | 'warning' | 'error'
-        message: string
-    } | null>(null)
+    const [testResult, setTestResult] = useState<TestResult | null>(null)
     const [isTesting, setTesting] = useState(false)
 
-    const isBaseServerValid = (() => {
-        try {
-            const url = new URL(baseServer)
-
-            return url.protocol === 'http:' || url.protocol === 'https:'
-        } catch {
-            return false
-        }
-    })()
+    const isBaseServerValid = isHttpUrl(baseServer)
 
     const settings = (): CustomNetworkSettings => ({
         baseServer: baseServer.trim(),
@@ -63,38 +96,11 @@ export const CustomNetworkDialog = ({
         token: token.trim(),
     })
 
-    // Builds a throwaway client rather than going through clientForChain, so the
-    // endpoint can be tested before it is saved.
     const handleTestConnection = async () => {
-        const { baseServer: server, port: p, token: t } = settings()
-
         setTesting(true)
         setTestResult(null)
-
-        try {
-            const params = await new algosdk.Algodv2(t, server, p)
-                .getTransactionParams()
-                .do()
-
-            if (params.genesisID === MAINNET_GENESIS_ID) {
-                setTestResult({
-                    severity: 'warning',
-                    message: `Connected, but this is MAINNET (genesis ${params.genesisID}). Transactions here spend real ALGO.`,
-                })
-            } else {
-                setTestResult({
-                    severity: 'success',
-                    message: `Connected. Genesis ID: ${params.genesisID}`,
-                })
-            }
-        } catch (error) {
-            setTestResult({
-                severity: 'error',
-                message: `${error instanceof Error ? error.message : error}`,
-            })
-        } finally {
-            setTesting(false)
-        }
+        setTestResult(await testConnection(settings()))
+        setTesting(false)
     }
 
     return (

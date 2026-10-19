@@ -347,7 +347,7 @@ export class V2Transport implements WalletTransport {
         if (!this.deps.getProjectId()) {
             throw new WcV2Error(
                 'MISSING_PROJECT_ID',
-                'Set REACT_APP_REOWN_PROJECT_ID to use WalletConnect v2.',
+                'Set VITE_REOWN_PROJECT_ID to use WalletConnect v2.',
             )
         }
 
@@ -370,7 +370,7 @@ export class V2Transport implements WalletTransport {
             if (!projectId) {
                 throw new WcV2Error(
                     'MISSING_PROJECT_ID',
-                    'Set REACT_APP_REOWN_PROJECT_ID to use WalletConnect v2.',
+                    'Set VITE_REOWN_PROJECT_ID to use WalletConnect v2.',
                 )
             }
 

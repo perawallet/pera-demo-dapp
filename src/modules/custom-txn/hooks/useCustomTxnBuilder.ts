@@ -6,8 +6,9 @@ import type { SignerTransaction } from '@perawallet/connect'
 
 import { notify } from '@components/toast/useToastStore'
 import { apiGetTxnParams, clientForChain } from '@lib/algod/algod'
+import { getNetworkConfig } from '@lib/algod/networks'
 import { errorMessage } from '@lib/format/format'
-import { fetchAssets } from '@lib/pera-api/peraApi'
+import { fetchAssets, isPeraApiAvailable } from '@lib/pera-api/peraApi'
 import { wallet } from '@lib/wallet/walletInstance'
 import { useSessionStore } from '@modules/session/hooks/useSessionStore'
 import { useSettingsStore } from '@modules/settings/hooks/useSettingsStore'
@@ -55,6 +56,7 @@ export interface UseCustomTxnBuilderResult {
 
 export const useCustomTxnBuilder = (): UseCustomTxnBuilderResult => {
     const chain = useSettingsStore(state => state.chain)
+    const endpointRevision = useSettingsStore(state => state.endpointRevision)
     const sender = useSessionStore(state => state.activeAddress)
     const [type, setType] = useState<CustomTxnType>('pay')
     const [form, setForm] = useState<CustomTxnForm>(EMPTY_CUSTOM_TXN_FORM)
@@ -64,7 +66,8 @@ export const useCustomTxnBuilder = (): UseCustomTxnBuilderResult => {
 
     // Queued transactions carry this sender and network's genesis; signing them
     // after either changes would only produce a confusing wallet rejection.
-    useEffect(() => setQueue([]), [sender, chain])
+    // `endpointRevision` covers a new Custom endpoint, which leaves `chain` as is.
+    useEffect(() => setQueue([]), [sender, chain, endpointRevision])
 
     const updateForm = (changes: Partial<CustomTxnForm>) =>
         setForm(previous => ({ ...previous, ...changes }))
@@ -88,6 +91,13 @@ export const useCustomTxnBuilder = (): UseCustomTxnBuilderResult => {
             }
 
             const count = type === 'axfer' ? transferCount(form) : 1
+
+            if (count > 1 && !isPeraApiAvailable(chain)) {
+                throw new Error(
+                    `Bulk asset transfers need the Pera API, which is unavailable on ${getNetworkConfig(chain).label}. Set the number of transactions to 1 and enter an asset index manually.`,
+                )
+            }
+
             const bulkAssetIds =
                 count > 1
                     ? (await fetchAssets(chain, count)).map(a => a.asset_id)
@@ -97,6 +107,16 @@ export const useCustomTxnBuilder = (): UseCustomTxnBuilderResult => {
                 suggestedParams: await apiGetTxnParams(chain),
                 bulkAssetIds,
             })
+
+            // The sender or network can change while the params are in flight;
+            // the queue was cleared then, so these must not land in it.
+            if (
+                useSessionStore.getState().activeAddress !== sender ||
+                useSettingsStore.getState().endpointRevision !==
+                    endpointRevision
+            ) {
+                return
+            }
 
             setQueue(previous => [...previous, ...transactions])
             updateForm(

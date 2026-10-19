@@ -241,6 +241,36 @@ describe('custom transaction builder', () => {
         )
     })
 
+    it('explains that bulk asset transfers need the Pera API', async () => {
+        const user = setupUser()
+        const dialog = await connectAndOpen(user)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+        act(() => useSettingsStore.getState().setChain(ChainType.BetaNet))
+
+        await user.click(
+            dialog.getByRole('combobox', { name: 'Transaction type' }),
+        )
+        await user.click(
+            within(await screen.findByRole('listbox')).getByText(
+                'axfer — asset transfer',
+            ),
+        )
+        await user.type(dialog.getByLabelText('Receiver'), TEST_ADDRESSES[1])
+        await user.type(dialog.getByLabelText('Number of transactions'), '3')
+        await user.click(
+            dialog.getByRole('button', { name: 'Add axfer transaction' }),
+        )
+
+        await waitFor(() =>
+            expect(lastToast()?.message).toMatch(
+                /^Bulk asset transfers need the Pera API, which is unavailable on BetaNet\./,
+            ),
+        )
+        expect(
+            dialog.queryByText(/Queued transactions/),
+        ).not.toBeInTheDocument()
+    })
+
     it('signs without submitting when submission is off', async () => {
         const user = setupUser()
         const dialog = await connectAndOpen(user)

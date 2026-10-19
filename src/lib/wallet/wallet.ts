@@ -24,9 +24,6 @@ export interface Wallet extends WalletTransport {
     setVersion(version: WalletConnectVersion): Promise<void>
     /** React registers the pairing dialog / sign prompt implementation here. */
     setPairingUi(ui: PairingUi): void
-    onVersionChange(
-        handler: (version: WalletConnectVersion) => void,
-    ): () => void
 }
 
 /** Forwards to whatever UI React has registered; safe before registration. */
@@ -46,7 +43,6 @@ const createUiProxy = (): PairingUi & { set(ui: PairingUi): void } => {
 export const createWallet = (deps: WalletDeps): Wallet => {
     const ui = createUiProxy()
     const disconnectHandlers = new Set<() => void>()
-    const versionHandlers = new Set<(version: WalletConnectVersion) => void>()
     let chain = deps.initialChain
     let unsubscribeActive: () => void = () => undefined
     let active: WalletTransport
@@ -83,13 +79,8 @@ export const createWallet = (deps: WalletDeps): Wallet => {
             }
             activate(build(version))
             deps.persistVersion(version)
-            versionHandlers.forEach(h => h(version))
         },
         setPairingUi: next => ui.set(next),
-        onVersionChange(handler) {
-            versionHandlers.add(handler)
-            return () => versionHandlers.delete(handler)
-        },
         connect: () => active.connect(),
         reconnectSession: () => active.reconnectSession(),
         disconnect: () => active.disconnect(),

@@ -141,9 +141,12 @@ describe('PeraConnectManager', () => {
         const manager = new PeraConnectManager(OPTIONS)
         const onDisconnect = vi.fn()
 
-        await manager.reconnectSessionAndSetupEventHandlers({ onDisconnect })
+        const accounts = await manager.reconnectSessionAndSetupEventHandlers({
+            onDisconnect,
+        })
 
         expect(onDisconnect).toHaveBeenCalledTimes(1)
+        expect(accounts).toEqual([])
     })
 
     it('delegates everything else to the current SDK instance', async () => {

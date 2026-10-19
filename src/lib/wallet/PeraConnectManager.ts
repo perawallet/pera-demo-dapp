@@ -129,9 +129,13 @@ export class PeraConnectManager implements V1Manager {
 
         this.subscribeToDisconnect(handlers)
 
-        // The bridge can drop the session while it is being restored.
+        // The bridge can drop the session while it is being restored. The
+        // caller has not marked the session active yet, so returning its
+        // accounts would show a dead session as connected.
         if (!this.connect.isConnected) {
             handlers.onDisconnect()
+
+            return []
         }
 
         return accounts

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -36,7 +36,11 @@ export const useScenarioRunner = (): UseScenarioRunnerResult => {
     const activeAddress = useSessionStore(state => state.activeAddress)
     const [invokingId, setInvokingId] = useState<string | null>(null)
 
-    const scenarios = getScenarios(scenarioNetworkForChain(chain))
+    const scenarioNetwork = scenarioNetworkForChain(chain)
+    const scenarios = useMemo(
+        () => getScenarios(scenarioNetwork),
+        [scenarioNetwork],
+    )
     const { label, appIndex, assetIds } = getNetworkConfig(chain)
     const availableFixtures = {
         app: appIndex !== undefined,

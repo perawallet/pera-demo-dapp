@@ -17,6 +17,8 @@ import {
     Typography,
 } from '@mui/material'
 
+import type { SignerTransaction } from '@perawallet/connect'
+
 import { DialogHeader } from '@components/DialogHeader'
 import { FormFields } from '@components/form/FormFields'
 import { shortenAddress } from '@lib/format/format'
@@ -24,6 +26,20 @@ import { shortenAddress } from '@lib/format/format'
 import { ASSET_CONFIG_ACTIONS, fieldsFor, TXN_TYPE_OPTIONS } from '../fields'
 import { useCustomTxnBuilder } from '../hooks/useCustomTxnBuilder'
 import type { CustomTxnType } from '../types'
+
+// Identical transactions queued within one round share a txID.
+const queueRowKeys = (queue: SignerTransaction[]): string[] => {
+    const seen = new Map<string, number>()
+
+    return queue.map(({ txn }) => {
+        const id = txn.txID()
+        const occurrence = seen.get(id) ?? 0
+
+        seen.set(id, occurrence + 1)
+
+        return `${id}:${occurrence}`
+    })
+}
 
 interface CustomTxnDialogProps {
     isOpen: boolean
@@ -46,6 +62,7 @@ export const CustomTxnDialog = ({ isOpen, onClose }: CustomTxnDialogProps) => {
         clearQueue,
         signQueue,
     } = useCustomTxnBuilder()
+    const rowKeys = queueRowKeys(queue)
 
     return (
         <Dialog
@@ -158,7 +175,7 @@ export const CustomTxnDialog = ({ isOpen, onClose }: CustomTxnDialogProps) => {
                             <List dense={true}>
                                 {queue.map(({ txn }, index) => (
                                     <ListItem
-                                        key={txn.txID()}
+                                        key={rowKeys[index]}
                                         disablePadding={true}
                                     >
                                         <ListItemText

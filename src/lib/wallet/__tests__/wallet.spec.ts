@@ -74,10 +74,8 @@ describe('wallet dispatcher', () => {
         expect(wallet.describe()).toBe('v1-server')
     })
 
-    it('setVersion disconnects, swaps, persists and notifies', async () => {
+    it('setVersion disconnects, swaps and persists', async () => {
         const { wallet, v1, v2, persistVersion } = setup('v1')
-        const onChange = vi.fn()
-        wallet.onVersionChange(onChange)
         await wallet.connect()
 
         await wallet.setVersion('v2')
@@ -85,7 +83,6 @@ describe('wallet dispatcher', () => {
         expect(v1.disconnect).toHaveBeenCalled()
         expect(wallet.version).toBe('v2')
         expect(persistVersion).toHaveBeenCalledWith('v2')
-        expect(onChange).toHaveBeenCalledWith('v2')
         await wallet.connect()
         expect(v2.connect).toHaveBeenCalled()
     })
