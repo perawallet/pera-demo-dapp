@@ -35,7 +35,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn2 = buildAssetTransfer({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -75,7 +75,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn2 = buildAssetTransfer({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -83,7 +83,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 500000,
+        amount: 500_000,
         note: "this is a payment txn",
         suggestedParams
       });
@@ -120,7 +120,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 500000,
+        amount: 500_000,
         note: "example note value",
         suggestedParams
       });
@@ -135,7 +135,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn3 = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -160,14 +160,14 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 500000,
+        amount: 500_000,
         note: "example note value",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 500000,
+        amount: 500_000,
         note: "example note value",
         rekeyTo: testAccounts[2].addr,
         suggestedParams
@@ -379,7 +379,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const payment = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 500000,
+        amount: 500_000,
         note: "example note value",
         suggestedParams
       });
@@ -402,7 +402,7 @@ export const atomicGroupScenarios: Scenario[] = [
       const accountRekeyAndClose = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 50000,
+        amount: 50_000,
         note: "example note value",
         closeRemainderTo: testAccounts[1].addr,
         rekeyTo: testAccounts[2].addr,
@@ -480,14 +480,14 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100001,
+        amount: 100_001,
         note: "txn with 0 fee",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "txn with double fee",
         suggestedParams
       });
@@ -518,35 +518,35 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         note: "example note value",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         note: "example note value",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         note: "example note value",
         suggestedParams
       });
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         note: "example note value",
         suggestedParams
       });
       const txn5 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 1000000,
+        amount: 1_000_000,
         note: "example note value",
         suggestedParams
       });
@@ -574,21 +574,21 @@ export const atomicGroupScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100001,
+        amount: 100_001,
         note: "txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100002,
+        amount: 100_002,
         note: "txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100003,
+        amount: 100_003,
         note: "txn 3",
         suggestedParams
       });

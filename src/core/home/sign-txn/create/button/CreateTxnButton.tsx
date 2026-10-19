@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {Button, CircularProgress} from "@mui/material";
-import algosdk, {Transaction, isValidAddress} from "algosdk";
+import algosdk, {type Transaction, isValidAddress} from "algosdk";
 import type {SignerTransaction} from "@perawallet/connect";
 
 import useAsyncProcess from "../../../../hooks/useAsyncProcess/useAsyncProcess";
@@ -8,7 +8,7 @@ import peraApi, {type Asset} from "../../../../utils/pera/api/peraApi";
 import peraApiManager from "../../../../utils/pera/api/peraApiManager";
 import {getSearchParams} from "../../../../utils/url/urlUtils";
 import type {TxnForm} from "../CreateTxn";
-import {ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
+import {type ChainType, apiGetTxnParams} from "../../../../utils/algod/algod";
 import {getNetworkConfig} from "../../../../utils/algod/networks";
 import type {PeraTransactionType} from "../../../../transaction/transactionTypes";
 import {usePeraToast} from "../../../../component/toast/PeraToast";

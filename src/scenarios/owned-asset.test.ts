@@ -14,8 +14,8 @@ describe("owned-asset storage", () => {
 
   it("round-trips set/get/clear", () => {
     expect(getOwnedAsset(ChainType.TestNet, ADDR_A)).toBeNull();
-    setOwnedAsset(ChainType.TestNet, ADDR_A, 12345);
-    expect(getOwnedAsset(ChainType.TestNet, ADDR_A)).toBe(12345);
+    setOwnedAsset(ChainType.TestNet, ADDR_A, 12_345);
+    expect(getOwnedAsset(ChainType.TestNet, ADDR_A)).toBe(12_345);
     clearOwnedAsset(ChainType.TestNet, ADDR_A);
     expect(getOwnedAsset(ChainType.TestNet, ADDR_A)).toBeNull();
   });

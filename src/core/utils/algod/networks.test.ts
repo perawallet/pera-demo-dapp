@@ -14,27 +14,27 @@ describe("network config registry", () => {
     const config = getNetworkConfig(ChainType.MainNet);
 
     expect(config.label).toBe("MainNet");
-    expect(config.chainId).toBe(416001);
+    expect(config.chainId).toBe(416_001);
     expect(config.scenarioNetwork).toBe("mainnet");
     expect(config.peraApiBaseUrl).toBe("https://mainnet.api.perawallet.app/v1/");
-    expect(config.appIndex).toBe(305162725);
-    expect(config.assetIds).toEqual({transfer: 604, optIn: 312769, close: 672});
+    expect(config.appIndex).toBe(305_162_725);
+    expect(config.assetIds).toEqual({transfer: 604, optIn: 312_769, close: 672});
   });
 
   it("resolves the TestNet preset with its fixtures and Pera API", () => {
     const config = getNetworkConfig(ChainType.TestNet);
 
-    expect(config.chainId).toBe(416002);
+    expect(config.chainId).toBe(416_002);
     expect(config.scenarioNetwork).toBe("testnet");
     expect(config.peraApiBaseUrl).toBe("https://testnet.api.perawallet.app/v1/");
-    expect(config.appIndex).toBe(22314999);
-    expect(config.assetIds).toEqual({transfer: 11711, optIn: 135270, close: 180132});
+    expect(config.appIndex).toBe(22_314_999);
+    expect(config.assetIds).toEqual({transfer: 11_711, optIn: 135_270, close: 180_132});
   });
 
   it("gives BetaNet its own chain id but no Pera API and no fixtures", () => {
     const config = getNetworkConfig(ChainType.BetaNet);
 
-    expect(config.chainId).toBe(416003);
+    expect(config.chainId).toBe(416_003);
     expect(config.scenarioNetwork).toBe("testnet");
     expect(config.peraApiBaseUrl).toBeUndefined();
     expect(config.appIndex).toBeUndefined();

@@ -193,7 +193,7 @@ describe("V1Transport", () => {
 
     transport.setChain(ChainType.BetaNet);
 
-    expect(manager.updateConfig).toHaveBeenCalledWith({chainId: 416003});
+    expect(manager.updateConfig).toHaveBeenCalledWith({chainId: 416_003});
   });
 
   it("asks connect for the selected network's empty signatures", async () => {

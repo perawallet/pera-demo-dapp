@@ -110,7 +110,7 @@ const Home = () => {
   const handleSetLog = useCallback(
     (log: string) => {
       displayToast({
-        timeout: 10000,
+        timeout: 10_000,
         message: log
       });
     },

@@ -368,20 +368,20 @@ describe("V2Transport signing", () => {
       chainId: TESTNET,
       request: {
         method: "algo_signData",
-        params: [{data: "AQ==", message: "m", signer: ADDR_A, chainId: 416002}]
+        params: [{data: "AQ==", message: "m", signer: ADDR_A, chainId: 416_002}]
       }
     });
   });
 
   it("wraps a raw JSON-RPC rejection in a readable WcV2Error", async () => {
     const {transport, client} = await connected();
-    (client.request as Mock).mockRejectedValueOnce({code: -32000, message: "User rejected"});
+    (client.request as Mock).mockRejectedValueOnce({code: -32_000, message: "User rejected"});
 
     const error = await transport.signTransaction([[{txn: pay()}]]).catch((e) => e);
 
     expect(isWcV2Error(error, "REQUEST_FAILED")).toBe(true);
     expect(error.message).toBe("User rejected");
-    expect(error.code).toBe(-32000);
+    expect(error.code).toBe(-32_000);
     expect(String(error)).toBe("WcV2Error: User rejected");
   });
 

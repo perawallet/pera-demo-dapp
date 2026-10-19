@@ -2,8 +2,8 @@ import {useCallback, useEffect, useState} from "react";
 
 import {usePeraToast} from "../../component/toast/PeraToast";
 import {getAccountInformation} from "../../utils/account/accountUtils";
-import {ChainType} from "../../utils/algod/algod";
-import algosdk from "algosdk";
+import {type ChainType} from "../../utils/algod/algod";
+import type algosdk from "algosdk";
 
 const useGetAccountDetailRequest = ({
   chain,

@@ -9,40 +9,40 @@ import type { Scenario } from "../types";
 // and may go stale if a protocol redeploys its contracts.
 
 // algofi: ALGO -> USDC swap
-const ALGOFI_USDC_ASSET_ID = 31566704;
+const ALGOFI_USDC_ASSET_ID = 31_566_704;
 const ALGOFI_USDC_POOL_ADDRESS = "NGIHJMECRSFHIEQDHBVTLR54K7DOZWM5M6UM3A5CIOYSP6H3QTGSHHGJCQ";
-const ALGOFI_USDC_POOL_APP_ID = 605929989;
+const ALGOFI_USDC_POOL_APP_ID = 605_929_989;
 
 // algofi: ALGO -> goETH swap
-const ALGOFI_GOETH_ASSET_ID = 386195940;
+const ALGOFI_GOETH_ASSET_ID = 386_195_940;
 const ALGOFI_GOETH_POOL_ADDRESS = "6NXX7RGJFLEI3HEQEZXDP73SMQKAPWS4N7CEQJ4IEVONUWYWJLT4NM5QQM";
-const ALGOFI_GOETH_POOL_APP_ID = 607660059;
+const ALGOFI_GOETH_POOL_APP_ID = 607_660_059;
 
 // folksfinance: deposit ALGO
 const FF_DEPOSIT_ALGO_ADDRESS = "AV6PFVXWDQ7RVNQYOEXCWXCLXVJ5V57WVMVQZ2TWH4EKTB7GSWKUIAUPXQ";
-const FF_DEPOSIT_ALGO_APP_ID = 686498781;
+const FF_DEPOSIT_ALGO_APP_ID = 686_498_781;
 
 // folksfinance: ALGO-USDC pool
-const FF_POOL_LP_ASSET_ID = 919950894;
-const FF_POOL_USDC_ASSET_ID = 31566704;
+const FF_POOL_LP_ASSET_ID = 919_950_894;
+const FF_POOL_USDC_ASSET_ID = 31_566_704;
 const FF_POOL_ADDRESS = "KIW56KLIBX5UMWS5RT346TNA4HRV5H445S2LMQLRCR73SOHRVSM5TZBQ4A";
-const FF_POOL_APP_ID = 919954173;
+const FF_POOL_APP_ID = 919_954_173;
 
 // algogems
-const ALGOGEMS_NFT_ASSET_ID = 886237574;
+const ALGOGEMS_NFT_ASSET_ID = 886_237_574;
 const ALGOGEMS_NFT_SELLER = "N4EJ2ZFGWCEL4PVTCJSLD7RC4WVIUNO57V7LW2FQY7DFOP4EEN4XYC5UEM";
 const ALGOGEMS_PAYOUT_PRIMARY = "RJASLRMECMQL66PH2KLMFSCYMOOBOK7KRX3XMAWDKDB2PQ5J3U5FMPAJNE";
 const ALGOGEMS_PAYOUT_SECONDARY = "VWZBFLBUN6O5A5W6IWHMDUVP5NH2LPV4ZYFMAHP4FQBBYP627MP6WPOEG4";
 
 // algoxnft
-const ALGOXNFT_ASSET_ID = 865021507;
+const ALGOXNFT_ASSET_ID = 865_021_507;
 const ALGOXNFT_SELLER = "CATN6JYGMBZF4OAQBXZTGALLB3X3XUUU6CQAKXUPNKVOC32VNTRWK25HD4";
 const ALGOXNFT_PAYOUT_1 = "BSKX6GSPTSY2KKXBO5L367OBY5SJT6GD25FV3RY25VLOGCMORQ6COPCOXY";
 const ALGOXNFT_PAYOUT_2 = "ANGEL3CMT7TEXSBJR3DCTJTZCQFOF6FJB6PDKU4IOAMTNPXGR7XUYKOU5Y";
 const ALGOXNFT_PAYOUT_3 = "XNFT36FUCFRR6CK675FW4BEBCCCOJ4HOSMGCN6J2W6ZMB34KM2ENTNQCP4";
 
 // zone: asset transfer
-const ZONE_ASSET_ID = 444035862;
+const ZONE_ASSET_ID = 444_035_862;
 
 export const mainnetDappScenarios: Scenario[] = [
   {
@@ -75,7 +75,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOFI_USDC_POOL_ADDRESS,
-              amount: 5000000,
+              amount: 5_000_000,
               suggestedParams
             })
           }
@@ -132,7 +132,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOFI_GOETH_POOL_ADDRESS,
-              amount: 3000000,
+              amount: 3_000_000,
               suggestedParams
             })
           }
@@ -178,7 +178,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: FF_DEPOSIT_ALGO_ADDRESS,
-              amount: 2000000,
+              amount: 2_000_000,
               suggestedParams
             })
           }
@@ -235,7 +235,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: FF_POOL_ADDRESS,
-              amount: 1160825,
+              amount: 1_160_825,
               assetIndex: FF_POOL_USDC_ASSET_ID,
               suggestedParams
             })
@@ -246,7 +246,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: FF_POOL_ADDRESS,
-              amount: 3977452,
+              amount: 3_977_452,
               suggestedParams
             })
           }
@@ -323,7 +323,7 @@ export const mainnetDappScenarios: Scenario[] = [
         ]
       ];
 
-      groups[3][0].txn.fee = 29000n;
+      groups[3][0].txn.fee = 29_000n;
 
       // Assign Group ID
       groups.forEach((txns) => algosdk.assignGroupID(txns.map((toSign) => toSign.txn)));
@@ -406,7 +406,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOGEMS_PAYOUT_PRIMARY,
-              amount: 3600000,
+              amount: 3_600_000,
               suggestedParams
             })
           }
@@ -416,7 +416,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOGEMS_PAYOUT_SECONDARY,
-              amount: 400000,
+              amount: 400_000,
               suggestedParams
             })
           }
@@ -472,7 +472,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOXNFT_PAYOUT_1,
-              amount: 196900,
+              amount: 196_900,
               suggestedParams
             })
           }
@@ -482,7 +482,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOXNFT_PAYOUT_2,
-              amount: 18803950,
+              amount: 18_803_950,
               suggestedParams
             })
           }
@@ -492,7 +492,7 @@ export const mainnetDappScenarios: Scenario[] = [
             txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
               sender: address,
               receiver: ALGOXNFT_PAYOUT_3,
-              amount: 689150,
+              amount: 689_150,
               suggestedParams
             })
           }
@@ -533,7 +533,7 @@ export const mainnetDappScenarios: Scenario[] = [
       const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: ZONE_ASSET_ID,
         note: new Uint8Array(Buffer.from("example note value")),
         suggestedParams

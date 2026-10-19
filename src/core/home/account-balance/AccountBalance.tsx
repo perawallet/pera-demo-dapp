@@ -1,8 +1,8 @@
-import algosdk from "algosdk";
+import type algosdk from "algosdk";
 import {Box, Card, CardContent, Typography} from "@mui/material";
 
 import {getAccountBalanceText} from "../../utils/account/accountUtils";
-import {ChainType} from "../../utils/algod/algod";
+import {type ChainType} from "../../utils/algod/algod";
 import {getWalletDetailsFromStorage} from "../../utils/storage/storageUtils";
 import {truncateAccountAddress} from "../../utils/string/stringUtils";
 

@@ -23,14 +23,14 @@ export const multiAccountScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: signerA,
         receiver: signerB,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-atomic-2-signers A->B",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: signerB,
         receiver: signerA,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-atomic-2-signers B->A",
         suggestedParams
       });
@@ -65,14 +65,14 @@ export const multiAccountScenarios: Scenario[] = [
       const g1t1 = buildPayment({
         sender: signerA,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-two-groups g1 t1",
         suggestedParams
       });
       const g1t2 = buildPayment({
         sender: signerA,
         receiver: testAccounts[1].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-two-groups g1 t2",
         suggestedParams
       });
@@ -81,14 +81,14 @@ export const multiAccountScenarios: Scenario[] = [
       const g2t1 = buildPayment({
         sender: signerB,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-two-groups g2 t1",
         suggestedParams
       });
       const g2t2 = buildPayment({
         sender: signerB,
         receiver: testAccounts[1].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-two-groups g2 t2",
         suggestedParams
       });
@@ -119,14 +119,14 @@ export const multiAccountScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: signerA,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-non-atomic A",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: signerB,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-non-atomic B",
         suggestedParams
       });
@@ -150,21 +150,21 @@ export const multiAccountScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: signerA,
         receiver: signerB,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-external slot 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: signerB,
         receiver: signerA,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-external slot 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: signerA,
-        amount: 100000,
+        amount: 100_000,
         note: "multi-account-external slot 3",
         suggestedParams
       });

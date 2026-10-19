@@ -24,7 +24,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-import {ChainType, clientForChain} from "../../../utils/algod/algod";
+import {type ChainType, clientForChain} from "../../../utils/algod/algod";
 import CreateTxnButton from "./button/CreateTxnButton";
 import {separateIntoChunks} from "../../../utils/array/arrayUtils";
 import {
@@ -344,7 +344,7 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
 
   const renderForm = () => {
     switch (txnType) {
-      case "pay":
+      case "pay": {
         return (
           <>
             <TextField
@@ -392,8 +392,9 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
             />
           </>
         );
+      }
 
-      case "axfer":
+      case "axfer": {
         return (
           <>
             <TextField
@@ -465,8 +466,9 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
             />
           </>
         );
+      }
 
-      case "keyreg":
+      case "keyreg": {
         return (
           <>
             <FormControlLabel
@@ -568,8 +570,9 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
             )}
           </>
         );
+      }
 
-      case "acfg":
+      case "acfg": {
         return (
           <Box>
             <Box sx={{borderBottom: 1, borderColor: "divider", mb: 2}}>
@@ -594,8 +597,9 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
             ))}
           </Box>
         );
+      }
 
-      case "afrz":
+      case "afrz": {
         return (
           <>
             <TextField
@@ -649,9 +653,11 @@ const CreateTxn = ({chain, address, isOpen, onClose, wallet}: CreateTxnModalProp
             />
           </>
         );
+      }
 
-      default:
+      default: {
         return null;
+      }
     }
   };
 

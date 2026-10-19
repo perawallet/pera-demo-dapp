@@ -120,7 +120,7 @@ export const edgeCaseScenarios: Scenario[] = [
 
       const minutes = prompt("Please enter minutes for future transaction: ");
       const exactDate = new Date().getTime();
-      const futureTrxDate = exactDate + Number(minutes) * 60000;
+      const futureTrxDate = exactDate + Number(minutes) * 60_000;
 
       const differenceInSeconds = Math.round((futureTrxDate - exactDate) / 1000);
       const blockRound = Math.abs(Math.round(differenceInSeconds / 4));
@@ -140,7 +140,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: new Uint8Array(Buffer.from("Example future transaction")),
         suggestedParams: newSuggestedParams
       });
@@ -166,7 +166,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-invalid-auth-address",
         suggestedParams
       });
@@ -192,7 +192,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-valid-auth-address",
         suggestedParams
       });
@@ -224,7 +224,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-invalid-signer-address",
         suggestedParams
       });
@@ -250,7 +250,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-valid-signer-address",
         suggestedParams
       });
@@ -282,7 +282,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-lease",
         lease: new Uint8Array(32).fill(1),
         suggestedParams
@@ -315,7 +315,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-expired-window",
         suggestedParams: expiredParams
       });
@@ -345,7 +345,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-network-mismatch",
         suggestedParams: mainnetParams
       });
@@ -367,7 +367,7 @@ export const edgeCaseScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: testAccounts[2].addr,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "edge-unconnected-sender",
         suggestedParams
       });

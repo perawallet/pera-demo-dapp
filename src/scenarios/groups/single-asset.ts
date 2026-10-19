@@ -1,4 +1,4 @@
-import {apiGetTxnParams, ChainType, clientForChain} from "../../core/utils/algod/algod";
+import {apiGetTxnParams, type ChainType, clientForChain} from "../../core/utils/algod/algod";
 import {AssetTransactionType, getAssetIndex} from "../asset-indexes";
 import {
   buildAssetCreate,
@@ -64,7 +64,7 @@ export const singleAssetScenarios: Scenario[] = [
       const suggestedParams = await apiGetTxnParams(chain);
       const txn = buildAssetCreate({
         sender: address,
-        total: 1000000n,
+        total: 1_000_000n,
         decimals: 2,
         defaultFrozen: false,
         unitName: "PDT",
@@ -166,7 +166,7 @@ export const singleAssetScenarios: Scenario[] = [
       const txn = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "single-axfer-transfer-plain",
         suggestedParams
@@ -190,7 +190,7 @@ export const singleAssetScenarios: Scenario[] = [
       const txn = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "single-axfer-transfer-with-close",
         closeRemainderTo: testAccounts[1].addr,
@@ -213,7 +213,7 @@ export const singleAssetScenarios: Scenario[] = [
       const txn = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: INVALID_ASSET_INDEX,
         note: "single-axfer-transfer-invalid-asset",
         suggestedParams
@@ -237,7 +237,7 @@ export const singleAssetScenarios: Scenario[] = [
       const txn = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 1000000,
+        amount: 1_000_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "single-axfer-transfer-with-rekey",
         rekeyTo: testAccounts[1].addr,
@@ -286,7 +286,7 @@ export const singleAssetScenarios: Scenario[] = [
       const suggestedParams = await apiGetTxnParams(chain);
       const txn = buildAssetCreate({
         sender: address,
-        total: 1000000n,
+        total: 1_000_000n,
         decimals: 2,
         defaultFrozen: false,
         unitName: "EX",
@@ -338,7 +338,7 @@ export const singleAssetScenarios: Scenario[] = [
       const suggestedParams = await apiGetTxnParams(chain);
       const txn = buildAssetCreate({
         sender: address,
-        total: 1000000n,
+        total: 1_000_000n,
         decimals: 2,
         defaultFrozen: false,
         unitName: "EX",

@@ -41,14 +41,18 @@ export interface V1Manager {
 /** The networks connect names; LocalNet and custom endpoints have none. */
 const connectNetwork = (chain: ChainType): "mainnet" | "testnet" | "betanet" | undefined => {
   switch (chain) {
-    case ChainType.MainNet:
+    case ChainType.MainNet: {
       return "mainnet";
-    case ChainType.TestNet:
+    }
+    case ChainType.TestNet: {
       return "testnet";
-    case ChainType.BetaNet:
+    }
+    case ChainType.BetaNet: {
       return "betanet";
-    default:
+    }
+    default: {
       return undefined;
+    }
   }
 };
 

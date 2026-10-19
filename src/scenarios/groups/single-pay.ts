@@ -22,7 +22,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-plain",
         suggestedParams
       });
@@ -44,7 +44,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-with-close",
         closeRemainderTo: testAccounts[1].addr,
         suggestedParams
@@ -67,7 +67,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-with-rekey",
         rekeyTo: testAccounts[1].addr,
         suggestedParams
@@ -90,7 +90,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-with-rekey-and-close",
         closeRemainderTo: testAccounts[1].addr,
         rekeyTo: testAccounts[1].addr,
@@ -114,7 +114,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-invalid-auth-address",
         suggestedParams
       });
@@ -162,7 +162,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: new Uint8Array(1024).fill(0x61),
         suggestedParams
       });
@@ -184,11 +184,11 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-high-fee",
         suggestedParams
       });
-      txn.fee = 500000n;
+      txn.fee = 500_000n;
       return { transaction: [[{ txn }]] };
     }
   },
@@ -207,7 +207,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-rekey-to-self",
         rekeyTo: address,
         suggestedParams
@@ -230,7 +230,7 @@ export const singlePayScenarios: Scenario[] = [
       const txn = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100000,
+        amount: 100_000,
         note: "single-pay-unicode-note 🚀 你好 مرحبا שלום",
         suggestedParams
       });

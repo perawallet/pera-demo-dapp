@@ -10,9 +10,9 @@ export enum ChainType {
 
 /** Exported: ARC-60 signer resolution is only possible on the two networks
  *  Pera Connect can read accounts on. See `arc60Signer.ts`. */
-export const MAINNET_CHAIN_ID = 416001;
-export const TESTNET_CHAIN_ID = 416002;
-const BETANET_CHAIN_ID = 416003;
+export const MAINNET_CHAIN_ID = 416_001;
+export const TESTNET_CHAIN_ID = 416_002;
+const BETANET_CHAIN_ID = 416_003;
 /** Network-agnostic: the wallet signs the bytes it is handed regardless of
  *  which network they target. Used for LocalNet and custom endpoints, which
  *  have no chain ID of their own. */
@@ -76,8 +76,8 @@ const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
     genesisHash: "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
     scenarioNetwork: "mainnet",
     peraApiBaseUrl: "https://mainnet.api.perawallet.app/v1/",
-    appIndex: 305162725,
-    assetIds: {transfer: 604, optIn: 312769, close: 672}
+    appIndex: 305_162_725,
+    assetIds: {transfer: 604, optIn: 312_769, close: 672}
   },
   [ChainType.TestNet]: {
     id: ChainType.TestNet,
@@ -87,8 +87,8 @@ const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
     genesisHash: "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",
     scenarioNetwork: "testnet",
     peraApiBaseUrl: "https://testnet.api.perawallet.app/v1/",
-    appIndex: 22314999,
-    assetIds: {transfer: 11711, optIn: 135270, close: 180132}
+    appIndex: 22_314_999,
+    assetIds: {transfer: 11_711, optIn: 135_270, close: 180_132}
   },
   [ChainType.BetaNet]: {
     id: ChainType.BetaNet,

@@ -1,4 +1,4 @@
-import {ChainType} from "../core/utils/algod/algod";
+import {type ChainType} from "../core/utils/algod/algod";
 import {getNetworkConfig} from "../core/utils/algod/networks";
 
 /** Thrown when a scenario needs an on-chain fixture the selected network does

@@ -22,7 +22,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
         buildPayment({
           sender: address,
           receiver: testAccounts[0].addr,
-          amount: 100000 + n,
+          amount: 100_000 + n,
           note: `non-atomic-pay-x3 ${n}`,
           suggestedParams
         });
@@ -59,7 +59,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       const transferA = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 10000,
+        amount: 10_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "non-atomic-axfer-x3 transferA",
         suggestedParams
@@ -67,7 +67,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       const transferB = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 30000,
+        amount: 30_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "non-atomic-axfer-x3 transferB",
         suggestedParams
@@ -97,7 +97,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       const pay = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "non-atomic-mixed-x3 pay",
         suggestedParams
       });
@@ -112,7 +112,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
       const transfer = buildAssetTransfer({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 10000,
+        amount: 10_000,
         assetIndex: getAssetIndex(chain, AssetTransactionType.Transfer),
         note: "non-atomic-mixed-x3 transfer",
         suggestedParams

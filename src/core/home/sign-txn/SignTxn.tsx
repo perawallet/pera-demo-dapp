@@ -8,7 +8,7 @@ import {
   type Arc60SignerLookup
 } from "../../utils/pera-wallet/arc60Signer";
 import {summarizeEmptySignatures} from "../../utils/pera-wallet/emptySignature";
-import {ChainType, clientForChain} from "../../utils/algod/algod";
+import {type ChainType, clientForChain} from "../../utils/algod/algod";
 import {getNetworkConfig} from "../../utils/algod/networks";
 import {signAndSubmit} from "./signing";
 import ScenarioList from "./scenario-list/ScenarioList";

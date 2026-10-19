@@ -1,4 +1,4 @@
-import algosdk from "algosdk";
+import type algosdk from "algosdk";
 import { buildPayment } from "./payment";
 import { testAccounts } from "../test-accounts";
 

@@ -24,28 +24,28 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100003,
+        amount: 100_003,
         note: "txn 3",
         suggestedParams
       });
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "txn 4",
         suggestedParams
       });
@@ -83,7 +83,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
@@ -98,7 +98,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn3 = buildAssetTransfer({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 10000,
+        amount: 10_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -106,7 +106,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "txn 4",
         suggestedParams
       });
@@ -138,28 +138,28 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "atomic group 1 txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100003,
+        amount: 100_003,
         note: "atomic group 2 txn 1",
         suggestedParams
       });
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
@@ -196,7 +196,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn2 = buildAssetTransfer({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 10000,
+        amount: 10_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -246,7 +246,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
@@ -261,14 +261,14 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100003,
+        amount: 100_003,
         note: "atomic group 2 txn 1",
         suggestedParams
       });
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
@@ -297,14 +297,14 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildAssetTransfer({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 10000,
+        amount: 10_000,
         assetIndex: transferAssetIndex,
         note: "example note value",
         suggestedParams
@@ -320,7 +320,7 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
@@ -355,14 +355,14 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "atomic group 1 txn 2",
         suggestedParams
       });
@@ -410,28 +410,28 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100003,
+        amount: 100_003,
         note: "txn 3",
         suggestedParams
       });
       const txn4 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100004,
+        amount: 100_004,
         note: "txn 4",
         suggestedParams
       });
@@ -463,21 +463,21 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100001,
+        amount: 100_001,
         note: "atomic group 1 txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "atomic group 2 txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100003,
+        amount: 100_003,
         note: "txn 3",
         suggestedParams
       });
@@ -508,21 +508,21 @@ export const multiGroupMixedScenarios: Scenario[] = [
       const txn1 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100001,
+        amount: 100_001,
         note: "txn 1",
         suggestedParams
       });
       const txn2 = buildPayment({
         sender: address,
         receiver: testAccounts[0].addr,
-        amount: 100002,
+        amount: 100_002,
         note: "txn 2",
         suggestedParams
       });
       const txn3 = buildPayment({
         sender: testAccounts[0].addr,
         receiver: address,
-        amount: 100003,
+        amount: 100_003,
         note: "txn 3",
         suggestedParams
       });

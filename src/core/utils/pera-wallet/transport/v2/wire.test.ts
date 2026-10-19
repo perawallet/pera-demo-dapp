@@ -84,11 +84,11 @@ describe("algo_signData params", () => {
     const result = buildLegacySignDataParams(
       [{data: new Uint8Array([1, 2, 3]), message: "why"}],
       A.addr.toString(),
-      416002
+      416_002
     );
 
     expect(result).toEqual([
-      {data: "AQID", message: "why", signer: A.addr.toString(), chainId: 416002}
+      {data: "AQID", message: "why", signer: A.addr.toString(), chainId: 416_002}
     ]);
   });
 

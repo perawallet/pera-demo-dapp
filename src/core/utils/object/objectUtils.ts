@@ -7,7 +7,7 @@ const omitKeys = <T extends {[x: string]: any}, K extends keyof T>(obj: T, ...ke
   const newObj: {[x: string]: any} = {};
 
   Object.keys(obj).forEach((key) => {
-    // @ts-ignore 'string' is assignable to the constraint of type 'K', but 'K' could be instantiated with a different subtype of constraint 'string | number | symbol'.
+    // @ts-expect-error 'string' is assignable to the constraint of type 'K', but 'K' could be instantiated with a different subtype of constraint 'string | number | symbol'.
     // couldn't solve this issue
     if (!keys.includes(key)) {
       newObj[key as string] = obj[key];

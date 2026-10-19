@@ -1,6 +1,6 @@
-import {microalgosToAlgos, modelsv2} from "algosdk";
+import {microalgosToAlgos, type modelsv2} from "algosdk";
 
-import {ChainType, clientForChain} from "../algod/algod";
+import {type ChainType, clientForChain} from "../algod/algod";
 import {formatNumber} from "../number/numberUtils";
 
 const getAccountBalanceText = (account: modelsv2.Account) => {

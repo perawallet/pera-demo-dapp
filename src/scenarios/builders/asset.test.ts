@@ -1,4 +1,4 @@
-import algosdk from "algosdk";
+import type algosdk from "algosdk";
 import { buildAssetTransfer, buildAssetCreate } from "./asset";
 import { testAccounts } from "../test-accounts";
 
