@@ -6,7 +6,7 @@ import React, {
   useState
 } from "react";
 import {Alert, Snackbar} from "@mui/material";
-import type {AlertColor} from "@mui/material";
+import type {AlertColor, SnackbarCloseReason} from "@mui/material";
 
 export interface PeraToastOptions {
   message: React.ReactNode;
@@ -69,7 +69,7 @@ export const PeraToastProvider = ({children}: {children: React.ReactNode}) => {
   const clearHistory = useCallback(() => setHistory([]), []);
 
   const handleClose = useCallback(
-    (_event?: React.SyntheticEvent | Event, reason?: string) => {
+    (_event: React.SyntheticEvent | Event | null, reason?: SnackbarCloseReason) => {
       if (reason === "clickaway") return;
       setToast((prev) => (prev ? {...prev, open: false} : prev));
     },
