@@ -124,6 +124,82 @@ describe('buildCustomTransactions', () => {
         expect(txn.assetConfig?.unitName).toBe('TST')
     })
 
+    it('keeps uint64 values past the safe integer range exact', () => {
+        const [{ txn }] = buildCustomTransactions(
+            'acfg',
+            form({ assetAction: 'create', total: '18446744073709551615' }),
+            ctx,
+        )
+
+        expect(txn.assetConfig?.total).toBe(2n ** 64n - 1n)
+        expect(() =>
+            buildCustomTransactions(
+                'acfg',
+                form({ assetAction: 'create', total: '18446744073709551616' }),
+                ctx,
+            ),
+        ).toThrow(CustomTxnFormError)
+    })
+
+    it.each<[string, Partial<CustomTxnForm>]>([
+        ['zero asset index', { assetAction: 'destroy', assetIndex: '0' }],
+        ['too many decimals', { assetAction: 'create', decimals: '20' }],
+        ['a long unit name', { assetAction: 'create', unitName: 'NINECHARS' }],
+        [
+            'a long asset URL',
+            { assetAction: 'create', assetURL: 'u'.repeat(97) },
+        ],
+    ])('rejects an asset config with %s', (_case, overrides) => {
+        expect(() =>
+            buildCustomTransactions('acfg', form(overrides), ctx),
+        ).toThrow(CustomTxnFormError)
+    })
+
+    it('rejects a note over the protocol limit', () => {
+        expect(() =>
+            buildCustomTransactions(
+                'pay',
+                form({ receiver: RECEIVER, note: 'n'.repeat(1025) }),
+                ctx,
+            ),
+        ).toThrow('Note must be at most 1024 bytes.')
+    })
+
+    it.each<[string, Partial<CustomTxnForm>, string]>([
+        [
+            'junk vote key',
+            { voteKey: 'not base64!' },
+            'Vote key must be base64.',
+        ],
+        [
+            'short vote key',
+            { voteKey: algosdk.bytesToBase64(new Uint8Array(31)) },
+            'Vote key must be 32 bytes.',
+        ],
+        [
+            'vote last before vote first',
+            { voteFirst: '300', voteLast: '200' },
+            'Vote last must be after vote first.',
+        ],
+    ])('rejects an online keyreg with a %s', (_case, overrides, message) => {
+        const key = algosdk.bytesToBase64(new Uint8Array(32).fill(1))
+
+        expect(() =>
+            buildCustomTransactions(
+                'keyreg',
+                form({
+                    isOnline: true,
+                    voteKey: key,
+                    selectionKey: key,
+                    stateProofKey: algosdk.bytesToBase64(new Uint8Array(64)),
+                    voteKeyDilution: '10',
+                    ...overrides,
+                }),
+                ctx,
+            ),
+        ).toThrow(message)
+    })
+
     it('builds a freeze against the target account', () => {
         const [{ txn }] = buildCustomTransactions(
             'afrz',
