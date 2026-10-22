@@ -1,6 +1,40 @@
-# Pera Wallet Example Demo dApp
+# Pera Wallet Demo dApp
 
-- You can check live demo from [here](https://perawallet.github.io/pera-demo-dapp/)
+A test bench for [Pera Connect](https://github.com/perawallet/connect): every
+signing flow Pera Wallet supports (payments, assets, apps, key registration,
+atomic and multi-group batches, arbitrary data, ARC-60, empty signatures) is a
+scenario you can invoke against MainNet, TestNet, BetaNet, LocalNet or any
+custom algod node. It also hosts ARC-90 URI, Pera deeplink and custom
+transaction generators.
+
+Live: <https://perawallet.github.io/pera-demo-dapp/>
+
+## Getting started
+
+Requires Node 22 (see `.tool-versions`) and pnpm (the version is pinned in
+`package.json`; `corepack enable` picks it up).
+
+```sh
+pnpm install
+pnpm dev        # https://localhost:5173/pera-demo-dapp/
+```
+
+The dev server uses a self-signed certificate and listens on the LAN, so you
+can open it from a phone; accept the certificate warning once.
+
+| Script               | Does                                           |
+| -------------------- | ---------------------------------------------- |
+| `pnpm dev`           | Vite dev server                                |
+| `pnpm build`         | Typecheck and production build into `build/`   |
+| `pnpm preview`       | Serve the production build                     |
+| `pnpm test`          | Unit and integration tests (Vitest)            |
+| `pnpm test:coverage` | Tests with coverage thresholds                 |
+| `pnpm lint`          | oxlint (`lint:types` for the type-aware rules) |
+| `pnpm format`        | oxfmt                                          |
+| `pnpm check`         | Everything CI runs before merge                |
+
+Pushes to `main` deploy to GitHub Pages. Code layout and conventions are in
+[`CLAUDE.md`](./CLAUDE.md).
 
 ## Networks
 
@@ -63,11 +97,11 @@ mobile app's WalletConnect v2 support:
 
 1. Create `.env.local` (gitignored) with a Reown / WalletConnect Cloud project ID:
 
-   ```
-   REACT_APP_REOWN_PROJECT_ID=<your project id>
-   ```
+    ```
+    VITE_REOWN_PROJECT_ID=<your project id>
+    ```
 
-2. Restart `pnpm start` (CRA reads env files at startup).
+2. Restart `pnpm dev` (Vite reads env files at startup).
 3. Open the ⋮ menu and set **WalletConnect version** to `v2`. The Connect button
    shows a `WC v2` chip while v2 is active. Switching versions disconnects any
    live session.
@@ -81,8 +115,6 @@ makes no relay call. The published GitHub Pages build ships without a project
 ID, so v2 works only in local builds unless the deploy workflow is given one —
 and a project ID baked into a public bundle should be domain-restricted in the
 Reown dashboard.
-
-
 
 ## Pera browser extension (`window.pera`)
 
