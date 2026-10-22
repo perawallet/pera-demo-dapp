@@ -29,7 +29,7 @@
     "@typescript-eslint/parser": "^8.59.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "prettier": "^3.9.10",
     "react-error-overlay": "^6.0.9",
     "sass": "^1.105.1",
