@@ -32,7 +32,7 @@
     "eslint-import-resolver-typescript": "^4.4.5",
     "prettier": "^3.9.10",
     "react-error-overlay": "^6.0.9",
-    "sass": "^1.105.1",
+    "sass": "^1.105.2",
     "stylelint": "^17.16.0",
     "stylelint-no-unsupported-browser-features": "^8.1.2",
     "stylelint-order": "^8.1.2",
