@@ -34,7 +34,7 @@
     "react-error-overlay": "^6.0.9",
     "sass": "^1.105.1",
     "stylelint": "^17.16.0",
-    "stylelint-no-unsupported-browser-features": "^5.0.4",
+    "stylelint-no-unsupported-browser-features": "^8.1.2",
     "stylelint-order": "^8.1.2",
     "stylelint-scss": "^7.3.0"
   },
