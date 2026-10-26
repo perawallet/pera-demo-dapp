@@ -43,6 +43,9 @@ export const singleAssetScenarios: Scenario[] = [
           throw new Error(`"${existing}" is not a valid asset ID.`);
         }
         const assetInfo = await clientForChain(chain).getAssetByID(assetId).do();
+        if (!assetInfo.params) {
+          throw new Error(`Asset ${assetId} has no parameters (was it destroyed?).`);
+        }
         const roles = {
           manager: String(assetInfo.params.manager ?? ""),
           freeze: String(assetInfo.params.freeze ?? ""),

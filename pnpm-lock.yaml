@@ -37,7 +37,7 @@ importers:
         version: 9.5.0(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@perawallet/connect':
         specifier: 1.8.0
-        version: 1.8.0(algosdk@3.5.2)
+        version: 1.8.0(algosdk@3.9.0)
       '@perawallet/onramp':
         specifier: ^1.1.1
         version: 1.1.1
@@ -45,8 +45,8 @@ importers:
         specifier: 2.26.0
         version: 2.26.0(typescript@5.9.3)
       algosdk:
-        specifier: 3.5.2
-        version: 3.5.2
+        specifier: 3.9.0
+        version: 3.9.0
       js-sha256:
         specifier: ^1.0.0
         version: 1.0.0
@@ -2250,9 +2250,9 @@ packages:
     resolution: {integrity: sha512-08k7pBQnkaUB5p+jL7f1TRaUIlTSDE0cesFu1mD7llLao+1cAhtvvZmGE3OnisTd0xOn118QMw74SRqddqaYvw==}
     engines: {node: '>= 14'}
 
-  algosdk@3.5.2:
-    resolution: {integrity: sha512-frhGtZl1JvfrLRKmMvUm880wj4OiWsWo2FhbreNWh7pdFsKuWPj60fV682wt/CYefLI70iwHavPOwGBkTVt0VA==}
-    engines: {node: '>=18.0.0'}
+  algosdk@3.9.0:
+    resolution: {integrity: sha512-v6DoM9UNWVmoKAhF9a/jQa6TnvCB5kf+lDlURdS3Qn1gLGxmEtkLmW5aUzBzgJXp18euvm8eS/0bNYFdB9bcVQ==}
+    engines: {node: '>=22.0'}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -8469,11 +8469,11 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.6.0
     optional: true
 
-  '@perawallet/connect@1.8.0(algosdk@3.5.2)':
+  '@perawallet/connect@1.8.0(algosdk@3.9.0)':
     dependencies:
       '@evanhahn/lottie-web-light': 5.8.1
       '@perawallet/walletconnect': 1.0.2
-      algosdk: 3.5.2
+      algosdk: 3.9.0
       bowser: 2.11.0
       buffer: 6.0.3
       qr-code-styling: 1.6.0-rc.1
@@ -9521,7 +9521,7 @@ snapshots:
 
   algorand-msgpack@1.1.0: {}
 
-  algosdk@3.5.2:
+  algosdk@3.9.0:
     dependencies:
       algorand-msgpack: 1.1.0
       hi-base32: 0.5.1
