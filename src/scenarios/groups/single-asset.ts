@@ -50,10 +50,15 @@ export const singleAssetScenarios: Scenario[] = [
                 const assetInfo = await clientForChain(chain)
                     .getAssetByID(assetId)
                     .do()
+                if (!assetInfo.params) {
+                    throw new Error(
+                        `Asset ${assetId} has no parameters (was it destroyed?).`,
+                    )
+                }
                 const roles = {
-                    manager: String(assetInfo.params?.manager ?? ''),
-                    freeze: String(assetInfo.params?.freeze ?? ''),
-                    clawback: String(assetInfo.params?.clawback ?? ''),
+                    manager: String(assetInfo.params.manager ?? ''),
+                    freeze: String(assetInfo.params.freeze ?? ''),
+                    clawback: String(assetInfo.params.clawback ?? ''),
                 }
                 const wrongRoles = Object.entries(roles)
                     .filter(([, holder]) => holder !== address)
