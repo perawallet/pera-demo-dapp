@@ -1,49 +1,55 @@
-import algosdk, { type Address, type SuggestedParams } from "algosdk";
+import algosdk, { type Address, type SuggestedParams } from 'algosdk'
+
+import { noteBytes } from '@lib/bytes'
 
 export interface BuildOnlineKeyregArgs {
-  sender: string | Address;
-  voteKey: string;
-  selectionKey: string;
-  stateProofKey: string;
-  voteFirst: number;
-  voteLast: number;
-  voteKeyDilution: number;
-  note?: string;
-  rekeyTo?: string | Address;
-  suggestedParams: SuggestedParams;
+    sender: string | Address
+    voteKey: string
+    selectionKey: string
+    stateProofKey: string
+    voteFirst: number
+    voteLast: number
+    voteKeyDilution: number
+    note?: string
+    rekeyTo?: string | Address
+    suggestedParams: SuggestedParams
 }
 
-export const buildOnlineKeyreg = (args: BuildOnlineKeyregArgs): algosdk.Transaction => {
-  return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
-    sender: args.sender,
-    // algosdk v3 requires participation keys as raw bytes (v2 accepted base64
-    // strings), so decode the base64 literals at the boundary.
-    voteKey: algosdk.base64ToBytes(args.voteKey),
-    selectionKey: algosdk.base64ToBytes(args.selectionKey),
-    stateProofKey: algosdk.base64ToBytes(args.stateProofKey),
-    voteFirst: args.voteFirst,
-    voteLast: args.voteLast,
-    voteKeyDilution: args.voteKeyDilution,
-    note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
-    ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
-    suggestedParams: args.suggestedParams
-  });
-};
+export const buildOnlineKeyreg = (
+    args: BuildOnlineKeyregArgs,
+): algosdk.Transaction => {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+        sender: args.sender,
+        // algosdk v3 requires participation keys as raw bytes (v2 accepted base64
+        // strings), so decode the base64 literals at the boundary.
+        voteKey: algosdk.base64ToBytes(args.voteKey),
+        selectionKey: algosdk.base64ToBytes(args.selectionKey),
+        stateProofKey: algosdk.base64ToBytes(args.stateProofKey),
+        voteFirst: args.voteFirst,
+        voteLast: args.voteLast,
+        voteKeyDilution: args.voteKeyDilution,
+        note: noteBytes(args.note),
+        ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
+        suggestedParams: args.suggestedParams,
+    })
+}
 
 export interface BuildOfflineKeyregArgs {
-  sender: string | Address;
-  nonParticipation?: boolean;
-  note?: string;
-  rekeyTo?: string | Address;
-  suggestedParams: SuggestedParams;
+    sender: string | Address
+    nonParticipation?: boolean
+    note?: string
+    rekeyTo?: string | Address
+    suggestedParams: SuggestedParams
 }
 
-export const buildOfflineKeyreg = (args: BuildOfflineKeyregArgs): algosdk.Transaction => {
-  return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
-    sender: args.sender,
-    nonParticipation: args.nonParticipation,
-    note: args.note ? new Uint8Array(Buffer.from(args.note)) : undefined,
-    ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
-    suggestedParams: args.suggestedParams
-  });
-};
+export const buildOfflineKeyreg = (
+    args: BuildOfflineKeyregArgs,
+): algosdk.Transaction => {
+    return algosdk.makeKeyRegistrationTxnWithSuggestedParamsFromObject({
+        sender: args.sender,
+        nonParticipation: args.nonParticipation,
+        note: noteBytes(args.note),
+        ...(args.rekeyTo ? { rekeyTo: args.rekeyTo } : {}),
+        suggestedParams: args.suggestedParams,
+    })
+}
