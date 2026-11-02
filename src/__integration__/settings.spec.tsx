@@ -130,6 +130,22 @@ describe('settings menu', () => {
         expect(screen.queryByText('12.345678 ALGO')).not.toBeInTheDocument()
     })
 
+    it('switches to the dark theme and persists it', async () => {
+        const user = setupUser()
+        render(<App />)
+
+        const menu = await openSettings(user)
+        await user.click(menu.getByRole('combobox', { name: 'Theme' }))
+        await user.click(
+            within(await screen.findByRole('listbox')).getByText('Dark'),
+        )
+
+        await waitFor(() =>
+            expect(document.documentElement).toHaveClass('dark'),
+        )
+        expect(localStorage.getItem('mui-mode')).toBe('dark')
+    })
+
     it('shows the connection target once connected', async () => {
         const user = setupUser()
         render(<App />)
