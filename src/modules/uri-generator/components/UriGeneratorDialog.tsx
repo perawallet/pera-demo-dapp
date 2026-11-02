@@ -168,7 +168,7 @@ export const UriGeneratorDialog = ({
                                     flex: 1,
                                     px: 1.5,
                                     py: 1,
-                                    bgcolor: 'grey.100',
+                                    bgcolor: 'action.hover',
                                     borderRadius: 1,
                                     fontSize: 12,
                                     wordBreak: 'break-all',

@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { useState } from 'react'
 
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import HistoryIcon from '@mui/icons-material/History'
 import LinkIcon from '@mui/icons-material/Link'
@@ -18,6 +19,7 @@ import {
     Select,
     Switch,
     Typography,
+    useColorScheme,
 } from '@mui/material'
 import { useShallow } from 'zustand/react/shallow'
 
@@ -31,6 +33,12 @@ import {
 import { useSessionStore } from '@modules/session/hooks/useSessionStore'
 import { useExtensionAvailability } from '@modules/settings/hooks/useExtensionAvailability'
 import { useSettingsStore } from '@modules/settings/hooks/useSettingsStore'
+
+const THEME_MODES = [
+    { value: 'system', label: 'System' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+] as const
 
 const stopPropagation = (e: MouseEvent) => e.stopPropagation()
 
@@ -58,6 +66,7 @@ interface SettingsMenuProps {
 export const SettingsMenu = ({ onOpenActivityLog }: SettingsMenuProps) => {
     const [anchor, setAnchor] = useState<HTMLElement | null>(null)
     const isExtensionAvailable = useExtensionAvailability()
+    const { mode, setMode } = useColorScheme()
     const {
         isCompactMode,
         shouldPreferExtension,
@@ -162,6 +171,28 @@ export const SettingsMenu = ({ onOpenActivityLog }: SettingsMenuProps) => {
                                     value={version}
                                 >
                                     {version}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </SettingRow>
+                <SettingRow icon={<DarkModeIcon fontSize={'small'} />}>
+                    <ListItemText>{'Theme'}</ListItemText>
+                    <FormControl
+                        size={'small'}
+                        sx={{ ml: 2, minWidth: 72 }}
+                    >
+                        <Select
+                            value={mode ?? 'system'}
+                            inputProps={{ 'aria-label': 'Theme' }}
+                            onChange={e => setMode(e.target.value)}
+                        >
+                            {THEME_MODES.map(({ value, label }) => (
+                                <MenuItem
+                                    key={value}
+                                    value={value}
+                                >
+                                    {label}
                                 </MenuItem>
                             ))}
                         </Select>
