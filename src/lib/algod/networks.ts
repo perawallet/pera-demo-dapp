@@ -1,0 +1,182 @@
+import { readJson, writeItem } from '@lib/storage/localStore'
+import { STORAGE_KEYS } from '@lib/storage/storageKeys'
+
+export enum ChainType {
+    MainNet = 'mainnet',
+    TestNet = 'testnet',
+    BetaNet = 'betanet',
+    LocalNet = 'localnet',
+    Custom = 'custom',
+}
+
+/** Exported: ARC-60 signer resolution is only possible on the two networks
+ *  Pera Connect can read accounts on. See `arc60Signer.ts`. */
+export const MAINNET_CHAIN_ID = 416_001
+export const TESTNET_CHAIN_ID = 416_002
+const BETANET_CHAIN_ID = 416_003
+/** Network-agnostic: the wallet signs the bytes it is handed regardless of
+ *  which network they target. Used for LocalNet and custom endpoints, which
+ *  have no chain ID of their own. */
+const ANY_NETWORK_CHAIN_ID = 4160
+/** AlgoKit LocalNet's algod token is 64 repetitions of "a". */
+const LOCALNET_TOKEN_LENGTH = 64
+
+/** Chain IDs Pera Connect accepts. `ANY_NETWORK_CHAIN_ID` is network-agnostic. */
+export type AlgorandChainId =
+    | typeof MAINNET_CHAIN_ID
+    | typeof TESTNET_CHAIN_ID
+    | typeof BETANET_CHAIN_ID
+    | typeof ANY_NETWORK_CHAIN_ID
+
+/** Scenario availability class. Mirrors `Network` in `src/scenarios/types.ts`. */
+type ScenarioNetwork = 'testnet' | 'mainnet'
+
+export interface CustomNetworkSettings {
+    baseServer: string
+    port: number | string
+    token: string
+}
+
+export interface NetworkConfig {
+    id: ChainType
+    /** Display name shown in the network picker. */
+    label: string
+    algod: { token: string; baseServer: string; port: number | string }
+    /** Handed to Pera Connect so the wallet knows which network to sign for. */
+    chainId: AlgorandChainId
+    /** Which scenario set this network gets. See `getScenarios`. */
+    scenarioNetwork: ScenarioNetwork
+    /** Standard base64 genesis hash. Absent for networks without a fixed
+     *  identity (LocalNet, Custom); those cannot be addressed over WC v2. */
+    genesisHash?: string
+    /** Absent when no Pera API exists for this network. */
+    peraApiBaseUrl?: string
+    /** Sample application. Absent → app scenarios are disabled. */
+    appIndex?: number
+    /** Sample assets. Absent → asset scenarios are disabled. */
+    assetIds?: { transfer: number; optIn: number; close: number }
+}
+
+/** AlgoKit LocalNet defaults. Also seed the Custom form, since the common
+ *  custom case is a LocalNet on a non-standard port. */
+export const LOCALNET_DEFAULTS: CustomNetworkSettings = {
+    baseServer: 'http://localhost',
+    port: 4001,
+    token: 'a'.repeat(LOCALNET_TOKEN_LENGTH),
+}
+
+const PRESETS: Record<Exclude<ChainType, ChainType.Custom>, NetworkConfig> = {
+    [ChainType.MainNet]: {
+        id: ChainType.MainNet,
+        label: 'MainNet',
+        algod: {
+            token: '',
+            baseServer: 'https://mainnet-api.algonode.cloud',
+            port: '',
+        },
+        chainId: MAINNET_CHAIN_ID,
+        genesisHash: 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=',
+        scenarioNetwork: 'mainnet',
+        peraApiBaseUrl: 'https://mainnet.api.perawallet.app/v1/',
+        appIndex: 305_162_725,
+        assetIds: { transfer: 604, optIn: 312_769, close: 672 },
+    },
+    [ChainType.TestNet]: {
+        id: ChainType.TestNet,
+        label: 'TestNet',
+        algod: {
+            token: '',
+            baseServer: 'https://testnet-api.algonode.cloud',
+            port: '',
+        },
+        chainId: TESTNET_CHAIN_ID,
+        genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+        scenarioNetwork: 'testnet',
+        peraApiBaseUrl: 'https://testnet.api.perawallet.app/v1/',
+        appIndex: 22_314_999,
+        assetIds: { transfer: 11_711, optIn: 135_270, close: 180_132 },
+    },
+    [ChainType.BetaNet]: {
+        id: ChainType.BetaNet,
+        label: 'BetaNet',
+        algod: {
+            token: '',
+            baseServer: 'https://betanet-api.algonode.cloud',
+            port: '',
+        },
+        chainId: BETANET_CHAIN_ID,
+        genesisHash: 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=',
+        scenarioNetwork: 'testnet',
+    },
+    [ChainType.LocalNet]: {
+        id: ChainType.LocalNet,
+        label: 'LocalNet',
+        algod: { ...LOCALNET_DEFAULTS },
+        chainId: ANY_NETWORK_CHAIN_ID,
+        scenarioNetwork: 'testnet',
+    },
+}
+
+/** Display order for the network picker. */
+export const NETWORK_ORDER: ChainType[] = [
+    ChainType.MainNet,
+    ChainType.TestNet,
+    ChainType.BetaNet,
+    ChainType.LocalNet,
+    ChainType.Custom,
+]
+
+export const getCustomNetworkSettings = (): CustomNetworkSettings => {
+    const parsed = readJson<Partial<CustomNetworkSettings>>(
+        STORAGE_KEYS.CUSTOM_NETWORK,
+    )
+
+    if (typeof parsed?.baseServer !== 'string' || !parsed.baseServer) {
+        return { ...LOCALNET_DEFAULTS }
+    }
+
+    return {
+        baseServer: parsed.baseServer,
+        port: parsed.port ?? '',
+        token: typeof parsed.token === 'string' ? parsed.token : '',
+    }
+}
+
+export const setCustomNetworkSettings = (
+    settings: CustomNetworkSettings,
+): void => writeItem(STORAGE_KEYS.CUSTOM_NETWORK, JSON.stringify(settings))
+
+export const getNetworkConfig = (chain: ChainType): NetworkConfig => {
+    if (chain === ChainType.Custom) {
+        return {
+            id: ChainType.Custom,
+            label: 'Custom',
+            algod: getCustomNetworkSettings(),
+            chainId: ANY_NETWORK_CHAIN_ID,
+            scenarioNetwork: 'testnet',
+        }
+    }
+
+    return PRESETS[chain]
+}
+
+export const ALGORAND_CAIP2_NAMESPACE = 'algorand'
+const CAIP2_REFERENCE_LENGTH = 32
+
+/** CAIP-2 chain id as the Pera mobile app computes it: `algorand:` plus the
+ *  first 32 characters of the genesis hash in the URL-safe base64 alphabet.
+ *  Null for networks with no fixed genesis hash. */
+export const caip2ChainId = (chain: ChainType): string | null => {
+    const { genesisHash } = getNetworkConfig(chain)
+
+    if (!genesisHash || genesisHash.length < CAIP2_REFERENCE_LENGTH) {
+        return null
+    }
+
+    const reference = genesisHash
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .slice(0, CAIP2_REFERENCE_LENGTH)
+
+    return `${ALGORAND_CAIP2_NAMESPACE}:${reference}`
+}

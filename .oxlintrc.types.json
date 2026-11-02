@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": [
+    "./.oxlintrc.json"
+  ],
+  "ignorePatterns": [
+    "build/**",
+    "coverage/**",
+    "node_modules/**",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "options": {
+    "typeAware": true,
+    "typeCheck": false
+  },
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unnecessary-type-assertion": "error"
+  }
+}

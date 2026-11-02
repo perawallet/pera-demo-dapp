@@ -1,28 +1,21 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
 
-# testing
-/coverage
-
-# production
+# build & test output
 /build
+/coverage
+*.tsbuildinfo
 
-# misc
+# env files with secrets (Reown project ID etc.)
+.env*.local
+
+# logs
+*.log
+
+# OS / editor
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-docs/superpowers/specs/2026-05-19-dapp-redesign-design.md
-/docs/superpowers
+.idea/
 
 # local Claude Code config
-.claude/
+.claude/settings.local.json
+/docs/superpowers
