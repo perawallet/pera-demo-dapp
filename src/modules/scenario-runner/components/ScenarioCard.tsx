@@ -43,80 +43,104 @@ export const ScenarioCard = ({
                 <Box
                     sx={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.5,
+                        alignItems: 'center',
+                        gap: 1,
                         width: '100%',
                     }}
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography
-                            variant={'body2'}
-                            sx={{ color: 'text.secondary', minWidth: 32 }}
-                        >
-                            {`${scenario.number}.`}
-                        </Typography>
-                        <Typography
-                            variant={'body1'}
-                            sx={{ fontWeight: 500, flexGrow: 1 }}
-                        >
-                            {scenario.title}
-                        </Typography>
-                        <Button
-                            variant={'contained'}
-                            size={'small'}
-                            disabled={isInvoking || Boolean(disabledReason)}
-                            title={disabledReason}
-                            onClick={handleInvokeClick}
-                            startIcon={
-                                isInvoking ? (
-                                    <CircularProgress
-                                        size={16}
-                                        color={'inherit'}
-                                    />
-                                ) : undefined
-                            }
-                            sx={{ flexShrink: 0 }}
-                        >
-                            {isInvoking ? 'Working...' : 'Invoke'}
-                        </Button>
-                    </Box>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip
-                            size={'small'}
-                            label={scenario.category}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 0.5,
+                            flexGrow: 1,
+                            minWidth: 0,
+                        }}
+                    >
+                        <Box
                             sx={{
-                                backgroundColor: '#fef9c3',
-                                color: '#713f12',
-                                fontWeight: 500,
-                                border: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
                             }}
-                        />
-                        {scenario.modifiers.map(m => (
+                        >
+                            <Typography
+                                variant={'body2'}
+                                sx={{ color: 'text.secondary', minWidth: 32 }}
+                            >
+                                {`${scenario.number}.`}
+                            </Typography>
+                            <Typography
+                                variant={'body1'}
+                                sx={{ fontWeight: 500, flexGrow: 1 }}
+                            >
+                                {scenario.title}
+                            </Typography>
+                        </Box>
+                        {/* pl lines the chips up with the title: number column (32px) + gap (8px). */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 0.5,
+                                pl: 5,
+                            }}
+                        >
                             <Chip
-                                key={m}
                                 size={'small'}
-                                label={m}
+                                label={scenario.category}
                                 sx={{
-                                    backgroundColor: '#f3f4f6',
-                                    color: '#374151',
+                                    backgroundColor: '#fef9c3',
+                                    color: '#713f12',
                                     fontWeight: 500,
                                     border: 'none',
                                 }}
                             />
-                        ))}
-                        {disabledReason && (
-                            <Chip
-                                size={'small'}
-                                label={disabledReason}
-                                sx={{
-                                    backgroundColor: '#fee2e2',
-                                    color: '#991b1b',
-                                    fontWeight: 500,
-                                    border: 'none',
-                                }}
-                            />
-                        )}
+                            {scenario.modifiers.map(m => (
+                                <Chip
+                                    key={m}
+                                    size={'small'}
+                                    label={m}
+                                    sx={{
+                                        backgroundColor: '#f3f4f6',
+                                        color: '#374151',
+                                        fontWeight: 500,
+                                        border: 'none',
+                                    }}
+                                />
+                            ))}
+                            {disabledReason && (
+                                <Chip
+                                    size={'small'}
+                                    label={disabledReason}
+                                    sx={{
+                                        backgroundColor: '#fee2e2',
+                                        color: '#991b1b',
+                                        fontWeight: 500,
+                                        border: 'none',
+                                    }}
+                                />
+                            )}
+                        </Box>
                     </Box>
+                    <Button
+                        variant={'contained'}
+                        size={'small'}
+                        disabled={isInvoking || Boolean(disabledReason)}
+                        title={disabledReason}
+                        onClick={handleInvokeClick}
+                        startIcon={
+                            isInvoking ? (
+                                <CircularProgress
+                                    size={16}
+                                    color={'inherit'}
+                                />
+                            ) : undefined
+                        }
+                        sx={{ flexShrink: 0 }}
+                    >
+                        {isInvoking ? 'Working...' : 'Invoke'}
+                    </Button>
                 </Box>
             </AccordionSummary>
             <AccordionDetails>
