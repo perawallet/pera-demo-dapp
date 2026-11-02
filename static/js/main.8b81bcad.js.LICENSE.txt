@@ -16,8 +16,6 @@
  * @license MIT
  */
 
-/*! noble-ciphers - MIT License (c) 2023 Paul Miller (paulmillr.com) */
-
 /**
  * @license React
  * react-dom.production.min.js
