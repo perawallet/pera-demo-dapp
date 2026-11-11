@@ -16,7 +16,7 @@ export const atomicGroupScenarios: Scenario[] = [
         description:
             '2-txn atomic group: an asset opt-in by the connected account and an asset transfer from a different sender (signers: []).',
         expected:
-            'Wallet shows one popup containing both txns and marks the second slot as external / not-signed-here. User signs the opt-in only; the second slot returns null/unsigned. Group is incomplete until the external party co-signs.',
+            'Wallet shows one popup containing both txns and marks the second slot as external / not-signed-here. User signs the opt-in only; the second slot returns null/unsigned. The dApp then signs the external slot itself with the bundled testAccounts[0] key and submits the group; the log notes the co-signed slot. testAccounts[0] holds none of the transfer asset (11711), so algod rejects the group until that account is opted in and funded.',
         category: 'atomic-group',
         modifiers: ['partial-sign'],
         requiresFixtures: ['asset'],
@@ -62,7 +62,7 @@ export const atomicGroupScenarios: Scenario[] = [
         description:
             '3-txn atomic group: an asset opt-in by the connected account, an asset transfer from a different sender (signers: []), and a payment from the connected account.',
         expected:
-            'Wallet shows one popup containing all 3 txns and marks slot 2 as external. User signs slots 1 and 3; slot 2 returns null/unsigned. Group remains incomplete until the external party co-signs.',
+            'Wallet shows one popup containing all 3 txns and marks slot 2 as external. User signs slots 1 and 3; slot 2 returns null/unsigned. The dApp then signs slot 2 itself with the bundled testAccounts[0] key and submits the group; the log notes the co-signed slot. testAccounts[0] holds none of the transfer asset (11711), so algod rejects the group until that account is opted in and funded.',
         category: 'atomic-group',
         modifiers: ['partial-sign'],
         requiresFixtures: ['asset'],
@@ -375,7 +375,7 @@ export const atomicGroupScenarios: Scenario[] = [
         description:
             '7-txn atomic group covering a wide mix: asset opt-in, asset transfer, asset close, payment, account-close payment, account-rekey payment, and a payment with both close and rekey.',
         expected:
-            'Wallet shows one popup containing all 7 txns with type-specific UI per slot and warnings on every close/rekey slot. User can sign; algod accepts all 7 atomically.',
+            "Wallet shows one popup containing all 7 txns with type-specific UI per slot and warnings on every close/rekey slot. User can sign. On submit, algod rejects the whole group (nothing lands): the account close in slot 5 fails while the account still holds assets, and slots 6–7 spend from the closed account (slot 7 is also no longer authorized after slot 6's rekey).",
         category: 'atomic-group',
         modifiers: [],
         requiresFixtures: ['asset'],
@@ -493,7 +493,7 @@ export const atomicGroupScenarios: Scenario[] = [
                     receiver: address,
                     amount: 0,
                     assetIndex,
-                    note: 'example note value',
+                    note: `example note value ${i * 2 + 1} of 16`,
                     suggestedParams,
                 })
                 const closeOut = buildAssetTransfer({
@@ -501,7 +501,7 @@ export const atomicGroupScenarios: Scenario[] = [
                     receiver: address,
                     amount: 0,
                     assetIndex,
-                    note: 'example note value',
+                    note: `example note value ${i * 2 + 2} of 16`,
                     closeRemainderTo: testAccounts[1].addr,
                     suggestedParams,
                 })
@@ -517,7 +517,7 @@ export const atomicGroupScenarios: Scenario[] = [
         description:
             "2-txn atomic group where slot 1 has its fee set to 0 and slot 2 absorbs both txns' fees via fee pooling. Slot 1 is sent from a different account (signers: []) so the wallet signs only slot 2.",
         expected:
-            'Wallet shows one popup with both txns: slot 1 marked external and 0-fee, slot 2 showing a doubled fee. User signs slot 2 only; algod accepts the group because pooled fees cover both txns.',
+            'Wallet shows one popup with both txns: slot 1 marked external and 0-fee, slot 2 showing a doubled fee. User signs slot 2 only; the dApp signs slot 1 with the bundled testAccounts[0] key, and algod accepts the group because pooled fees cover both txns.',
         category: 'atomic-group',
         modifiers: [],
         networks: ['testnet'],
@@ -566,35 +566,35 @@ export const atomicGroupScenarios: Scenario[] = [
                 sender: address,
                 receiver: testAccounts[0].addr,
                 amount: 1_000_000,
-                note: 'example note value',
+                note: 'example note value 1 of 5',
                 suggestedParams,
             })
             const txn2 = buildPayment({
                 sender: address,
                 receiver: testAccounts[0].addr,
                 amount: 1_000_000,
-                note: 'example note value',
+                note: 'example note value 2 of 5',
                 suggestedParams,
             })
             const txn3 = buildPayment({
                 sender: address,
                 receiver: testAccounts[0].addr,
                 amount: 1_000_000,
-                note: 'example note value',
+                note: 'example note value 3 of 5',
                 suggestedParams,
             })
             const txn4 = buildPayment({
                 sender: address,
                 receiver: testAccounts[0].addr,
                 amount: 1_000_000,
-                note: 'example note value',
+                note: 'example note value 4 of 5',
                 suggestedParams,
             })
             const txn5 = buildPayment({
                 sender: testAccounts[0].addr,
                 receiver: address,
                 amount: 1_000_000,
-                note: 'example note value',
+                note: 'example note value 5 of 5',
                 suggestedParams,
             })
 
@@ -618,7 +618,7 @@ export const atomicGroupScenarios: Scenario[] = [
         description:
             '3-txn atomic group where every slot has `signers: []` (all txns are sent by another account). The connected wallet has nothing to sign.',
         expected:
-            'Wallet either rejects the request up front (nothing-to-sign) or returns three null/unsigned slots. No signatures are produced. // TODO: verify expected behavior in the wallet',
+            'Wallet either rejects the request up front (nothing-to-sign) or returns three null/unsigned slots; the wallet produces no signatures. If it returns the nulls, the dApp signs all three slots with the bundled testAccounts[0] key and submits them, and the log says the wallet signed none of the submitted slots. // TODO: verify expected behavior in the wallet',
         category: 'atomic-group',
         modifiers: ['invalid'],
         networks: ['testnet'],

@@ -2,6 +2,7 @@ import algosdk, { type Algodv2 } from 'algosdk'
 
 import type { SignerTransaction } from '@perawallet/connect'
 
+import { errorMessage } from '@lib/format/format'
 import type { WalletSigner } from '@lib/wallet/transport/WalletTransport'
 import { testAccounts } from '@scenarios/test-accounts'
 
@@ -23,6 +24,11 @@ export interface SignAndSubmitResult {
      *  account was available to fill the gap. These can't be submitted; algod
      *  would reject with "incomplete group". */
     partialSignGroups: number
+    /** Slots of submitted groups that the wallet signed. */
+    walletSignedSlots?: number
+    /** Slots of submitted groups that the dApp signed itself with a bundled
+     *  test key (`signers: []` slots whose sender is a test account). */
+    locallySignedSlots?: number
     /** Asset ID created by the confirmed txn, when captureAssetIndex was set. */
     createdAssetIndex?: number
 }
@@ -42,6 +48,43 @@ const signSlotLocally = (slot: SignerTransaction): Uint8Array | null => {
 
 const isExternallySignedSlot = (slot: SignerTransaction): boolean => {
     return slot.signers !== undefined && slot.signers.length === 0
+}
+
+interface AssembledGroup {
+    bytes: Uint8Array[]
+    walletSlots: number
+    localSlots: number
+}
+
+/** Reads the id from the posted bytes, since a wallet may have raised the fee
+ *  and so changed it, and never lets building the report hide the algod error
+ *  it is reporting. */
+const safeTxId = (signedBlob: Uint8Array): string => {
+    try {
+        return algosdk.decodeSignedTransaction(signedBlob).txn.txID()
+    } catch {
+        return '?'
+    }
+}
+
+/** Sequential submission stops at the first rejection, so the groups sent
+ *  before it are already on chain; the error has to say which. */
+const describeRejection = (
+    error: unknown,
+    rejectedIndex: number,
+    groupCount: number,
+    submittedFirstBlobs: Uint8Array[],
+): Error => {
+    const txIds = submittedFirstBlobs.map(safeTxId)
+    const landed =
+        txIds.length > 0
+            ? `${txIds.length} earlier group(s) already submitted (txIDs: ${txIds.join(', ')}).`
+            : '0 earlier group(s) already submitted.'
+
+    return new Error(
+        `Group ${rejectedIndex + 1} of ${groupCount} rejected by algod: ${errorMessage(error)}. ${landed}`,
+        { cause: error },
+    )
 }
 
 const pollForCreatedAssetIndex = async (
@@ -85,6 +128,10 @@ const pollForCreatedAssetIndex = async (
  * matches one of the dApp's bundled test accounts we sign locally with
  * `algosdk.signTransaction`; otherwise we skip submission for that group
  * (algod would reject "incomplete group").
+ *
+ * Groups go to algod one at a time and the first rejection stops the run;
+ * when there is more than one group, the error names the rejected group and
+ * the ones that already landed.
  */
 export const signAndSubmit = async ({
     wallet,
@@ -114,7 +161,7 @@ export const signAndSubmit = async ({
      * Returns the full per-slot byte array if every slot was signed by
      * wallet-or-local, or null if any slot remained unsigned.
      */
-    const assembleGroupBytes = (groupIdx: number): Uint8Array[] | null => {
+    const assembleGroupBytes = (groupIdx: number): AssembledGroup | null => {
         const group = txnsToSign[groupIdx]
         const walletSigned = signedByGroup[groupIdx]
         const result: (Uint8Array | null)[] = new Array(group.length).fill(null)
@@ -127,19 +174,38 @@ export const signAndSubmit = async ({
             walletSlotIdx += 1
         }
 
+        let localSlots = 0
         for (let slotIdx = 0; slotIdx < group.length; slotIdx++) {
             if (result[slotIdx]) continue
             const localBytes = signSlotLocally(group[slotIdx])
             if (!localBytes) return null
             result[slotIdx] = localBytes
+            localSlots += 1
         }
 
-        return result as Uint8Array[]
+        return {
+            bytes: result as Uint8Array[],
+            walletSlots: walletSlotIdx,
+            localSlots,
+        }
     }
 
     let submittedGroups = 0
     let partialSignGroups = 0
+    let walletSignedSlots = 0
+    let locallySignedSlots = 0
     let createdAssetIndex: number | undefined
+    const countSlots = ({ walletSlots, localSlots }: AssembledGroup) => {
+        walletSignedSlots += walletSlots
+        locallySignedSlots += localSlots
+    }
+    const summary = (): SignAndSubmitResult => ({
+        submittedGroups,
+        partialSignGroups,
+        walletSignedSlots,
+        locallySignedSlots,
+        createdAssetIndex,
+    })
 
     if (transactionTimeout) {
         await new Promise<void>((resolve, reject) => {
@@ -151,8 +217,9 @@ export const signAndSubmit = async ({
                         partialSignGroups += 1
                         continue
                     }
-                    submittable.push(...assembled)
+                    submittable.push(...assembled.bytes)
                     submittedGroups += 1
+                    countSlots(assembled)
                 }
                 if (submittable.length === 0) {
                     resolve()
@@ -165,9 +232,10 @@ export const signAndSubmit = async ({
                     .catch(reject)
             }, transactionTimeout)
         })
-        return { submittedGroups, partialSignGroups, createdAssetIndex }
+        return summary()
     }
 
+    const submittedFirstBlobs: Uint8Array[] = []
     for (let i = 0; i < signedByGroup.length; i++) {
         if (signedByGroup[i].length === 0 && txnsToSign[i].length === 0)
             continue
@@ -176,8 +244,20 @@ export const signAndSubmit = async ({
             partialSignGroups += 1
             continue
         }
-        await algod.sendRawTransaction(assembled).do()
+        try {
+            await algod.sendRawTransaction(assembled.bytes).do()
+        } catch (error) {
+            if (txnsToSign.length === 1) throw error
+            throw describeRejection(
+                error,
+                i,
+                txnsToSign.length,
+                submittedFirstBlobs,
+            )
+        }
         submittedGroups += 1
+        submittedFirstBlobs.push(assembled.bytes[0])
+        countSlots(assembled)
         if (captureAssetIndex && createdAssetIndex === undefined) {
             createdAssetIndex = await pollForCreatedAssetIndex(
                 algod,
@@ -186,5 +266,5 @@ export const signAndSubmit = async ({
         }
     }
 
-    return { submittedGroups, partialSignGroups, createdAssetIndex }
+    return summary()
 }

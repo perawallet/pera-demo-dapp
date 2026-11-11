@@ -10,6 +10,10 @@ import type { Scenario } from '../types'
 
 const GROUP_SIZE = 16
 
+// setTimeout fires at once for longer delays, which would submit the txn
+// before its validity window opens.
+const MAX_FUTURE_MINUTES = Math.floor((2 ** 31 - 1) / 60_000)
+
 const buildNTxnsAcrossGroups = async (
     chain: Parameters<Scenario['build']>[0],
     address: string,
@@ -42,9 +46,9 @@ export const edgeCaseScenarios: Scenario[] = [
         id: 'scale-64-txns',
         title: 'Sign 64 txns (4 atomic groups of 16)',
         description:
-            'Aggregate-volume test that builds 64 zero-amount payments spread across 4 max-size atomic groups of 16 and submits each group as a separate algo_signTxn request.',
+            'Aggregate-volume test that builds 64 zero-amount payments spread across 4 max-size atomic groups of 16 and sends all of them in one algo_signTxn request.',
         expected:
-            'Wallet shows 4 sequential popups, each containing a 16-tx atomic group. All 64 txns sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 4 groups, each a 16-tx atomic group. All 64 txns sign; the dApp submits the groups one by one and all land on TestNet.',
         category: 'edge-case',
         modifiers: ['scale'],
         networks: ['testnet'],
@@ -65,7 +69,7 @@ export const edgeCaseScenarios: Scenario[] = [
         description:
             "Builds 65 zero-amount payments spread across 4 atomic groups of 16 plus a trailing group of 1. Tests behavior at counts that aren't a clean multiple of the group size.",
         expected:
-            'Wallet shows 5 sequential popups (4 groups of 16, then 1 single). All 65 txns sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 5 groups (4 groups of 16, then 1 single). All 65 txns sign; the dApp submits the groups one by one and all land on TestNet.',
         category: 'edge-case',
         modifiers: ['scale'],
         networks: ['testnet'],
@@ -86,7 +90,7 @@ export const edgeCaseScenarios: Scenario[] = [
         description:
             'Mid-scale aggregate-volume test. Builds 512 zero-amount payments spread across 32 max-size atomic groups of 16.',
         expected:
-            'Wallet shows 32 sequential popups, each containing a 16-tx atomic group. All 512 txns sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 32 groups, each a 16-tx atomic group. All 512 txns sign; the dApp submits the groups one by one and all land on TestNet.',
         category: 'edge-case',
         modifiers: ['scale'],
         networks: ['testnet'],
@@ -107,7 +111,7 @@ export const edgeCaseScenarios: Scenario[] = [
         description:
             "Builds 1000 zero-amount payments at the wallet's stated aggregate maximum, spread across 62 atomic groups of 16 plus a trailing group of 8. Takes ~1-2 seconds to build.",
         expected:
-            'Wallet shows 63 sequential popups (62 groups of 16, then 1 group of 8). All 1000 txns sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 63 groups (62 groups of 16, then 1 group of 8). All 1000 txns sign; the dApp submits the groups one by one and all land on TestNet.',
         category: 'edge-case',
         modifiers: ['scale'],
         networks: ['testnet'],
@@ -126,7 +130,7 @@ export const edgeCaseScenarios: Scenario[] = [
         id: 'scale-1001-txns',
         title: 'Sign 1001 txns (over wallet max) - expected reject',
         description:
-            "Builds 1001 zero-amount payments across 62 atomic groups of 16 plus one group of 9 (one over the wallet's stated aggregate maximum), then submits each group as a separate algo_signTxn request.",
+            "Builds 1001 zero-amount payments across 62 atomic groups of 16 plus one group of 9 (one over the wallet's stated aggregate maximum), all sent in one algo_signTxn request.",
         expected:
             'Wallet rejects with a max-count / too-many-txns error and refuses to display the request. dApp surfaces the rejection in the activity log; no txns submitted.',
         category: 'edge-case',
@@ -147,7 +151,7 @@ export const edgeCaseScenarios: Scenario[] = [
         id: 'future-transaction',
         title: 'Sign future-dated transaction',
         description:
-            'Prompts for a minutes offset and constructs a single payment whose firstValid/lastValid window is shifted that many minutes into the future. The dApp defers submission by the same duration.',
+            'Prompts for a minutes offset and constructs a single payment whose firstValid/lastValid window is shifted that many minutes into the future. The dApp defers submission by the same duration. Cancelling, a blank answer, or anything but a positive number of minutes (at most 35791) stops with a notice and no wallet request.',
         expected:
             'Wallet shows a payment with the future firstValid/lastValid window. User signs. The dApp waits the requested duration and then submits; algod accepts the txn inside its validity window.',
         category: 'edge-case',
@@ -156,11 +160,28 @@ export const edgeCaseScenarios: Scenario[] = [
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const minutes = prompt(
+            const answer = prompt(
                 'Please enter minutes for future transaction: ',
             )
+
+            if (answer === null || answer.trim() === '') {
+                return { notice: 'Future transaction cancelled.' }
+            }
+
+            const minutes = Number(answer)
+
+            if (
+                !Number.isFinite(minutes) ||
+                minutes <= 0 ||
+                minutes > MAX_FUTURE_MINUTES
+            ) {
+                return {
+                    notice: `Enter a positive number of minutes (at most ${MAX_FUTURE_MINUTES}).`,
+                }
+            }
+
             const exactDate = new Date().getTime()
-            const futureTrxDate = exactDate + Number(minutes) * 60_000
+            const futureTrxDate = exactDate + minutes * 60_000
 
             const differenceInSeconds = Math.round(
                 (futureTrxDate - exactDate) / 1000,

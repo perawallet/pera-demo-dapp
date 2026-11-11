@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -18,6 +18,10 @@ import { runScenario, scenarioBlockReason } from '../runScenario'
 // Scenario results can be long; give the tester time to read them.
 const RESULT_TOAST_TIMEOUT_MS = 10_000
 
+/** The run returns as soon as algod has the txn, before it is confirmed, so
+ *  the immediate refresh still sees the old balance. Rounds take about 3s. */
+export const BALANCE_REFRESH_DELAY_MS = 4500
+
 const log = (message: string) =>
     notify({ message, timeout: RESULT_TOAST_TIMEOUT_MS })
 
@@ -35,6 +39,9 @@ export const useScenarioRunner = (): UseScenarioRunnerResult => {
     const accounts = useSessionStore(state => state.accounts)
     const activeAddress = useSessionStore(state => state.activeAddress)
     const [invokingId, setInvokingId] = useState<string | null>(null)
+    const balanceRefreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+    useEffect(() => () => clearTimeout(balanceRefreshTimer.current), [])
 
     const scenarioNetwork = scenarioNetworkForChain(chain)
     const scenarios = useMemo(
@@ -101,9 +108,17 @@ export const useScenarioRunner = (): UseScenarioRunnerResult => {
             })
         } finally {
             setInvokingId(null)
-            void queryClient.invalidateQueries({
-                queryKey: accountInformationQueryKey,
-            })
+            const refreshBalance = () =>
+                void queryClient.invalidateQueries({
+                    queryKey: accountInformationQueryKey,
+                })
+
+            refreshBalance()
+            clearTimeout(balanceRefreshTimer.current)
+            balanceRefreshTimer.current = setTimeout(
+                refreshBalance,
+                BALANCE_REFRESH_DELAY_MS,
+            )
         }
     }
 

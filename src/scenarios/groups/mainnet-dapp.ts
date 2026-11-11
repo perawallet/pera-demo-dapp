@@ -1,5 +1,7 @@
 import algosdk from 'algosdk'
 
+import type { SignerTransaction } from '@perawallet/connect'
+
 import { apiGetTxnParams } from '@lib/algod/algod'
 import { utf8ToBytes } from '@lib/bytes'
 
@@ -63,16 +65,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-algofi-swap-algo-usdc',
         title: 'Swap Algo to USDC (algofi)',
         description:
-            'MainNet algofi ALGO->USDC swap flow: 3 non-atomic groups — opt-in to USDC, 5 ALGO payment to the pool address, NoOp app call (fee doubled) against the USDC pool.',
+            'MainNet algofi ALGO->USDC swap flow: 3 non-atomic groups — opt-in to USDC, 5 ALGO payment to the pool address, NoOp app call (fee doubled) against the USDC pool. Sign-only: the dApp never submits it.',
         expected:
-            "MainNet. Wallet shows 3 sequential popups (opt-in, payment, app call). User signs all three. If algofi's USDC pool contracts are still live, algod accepts and the user receives USDC; otherwise the app call fails at submit because the pool has rotted.",
+            "MainNet. Wallet shows one popup containing all 3 groups (opt-in, payment, app call). User signs all three. The dApp does not submit: replayed as standalone groups, the app call cannot see the payment, so broadcasting would only send the 5 ALGO to the pool. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
@@ -129,16 +132,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-algofi-swap-algo-goeth',
         title: 'Swap Algo to GoETH (algofi)',
         description:
-            'MainNet algofi ALGO->goETH swap flow: 3 non-atomic groups — opt-in to goETH, 3 ALGO payment to the pool address, NoOp app call (fee doubled) against the goETH pool.',
+            'MainNet algofi ALGO->goETH swap flow: 3 non-atomic groups — opt-in to goETH, 3 ALGO payment to the pool address, NoOp app call (fee doubled) against the goETH pool. Sign-only: the dApp never submits it.',
         expected:
-            "MainNet. Wallet shows 3 sequential popups (opt-in, payment, app call). User signs all three. If algofi's goETH pool contracts are still live, algod accepts and the user receives goETH; otherwise the app call fails at submit because the pool has rotted.",
+            "MainNet. Wallet shows one popup containing all 3 groups (opt-in, payment, app call). User signs all three. The dApp does not submit: replayed as standalone groups, the app call cannot see the payment, so broadcasting would only send the 3 ALGO to the pool. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
@@ -195,16 +199,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-folksfinance-deposit-algo',
         title: 'Deposit Algo (folksfinance)',
         description:
-            'MainNet folksfinance ALGO deposit flow: 2 non-atomic groups — 2 ALGO payment to the deposit address, then a NoOp app call (fee tripled) against the deposit app.',
+            'MainNet folksfinance ALGO deposit flow: 2 non-atomic groups — 2 ALGO payment to the deposit address, then a NoOp app call (fee tripled) against the deposit app. Sign-only: the dApp never submits it.',
         expected:
-            "MainNet. Wallet shows 2 sequential popups (payment, app call). User signs both. If folksfinance's deposit app is still live, algod accepts and the user's ALGO is deposited; otherwise the app call fails at submit because the contracts have rotted.",
+            "MainNet. Wallet shows one popup containing both groups (payment, app call). User signs both. The dApp does not submit: replayed as standalone groups, the app call cannot see the payment, so broadcasting would only send the 2 ALGO to the deposit address. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject(
@@ -248,16 +253,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-folksfinance-pool-algo-usdc',
         title: 'Pool ALGO-USDC (folksfinance)',
         description:
-            'MainNet folksfinance ALGO/USDC pool flow: 10 non-atomic groups — LP opt-in, USDC and ALGO deposits to the pool, and a chain of pool_step_1..pool_step_7 NoOp app calls (with a 29000 µAlgo fee on step 1).',
+            'MainNet folksfinance ALGO/USDC pool flow: 10 non-atomic groups — LP opt-in, USDC and ALGO deposits to the pool, and a chain of pool_step_1..pool_step_7 NoOp app calls (with a 29000 µAlgo fee on step 1). Sign-only: the dApp never submits it.',
         expected:
-            "MainNet. Wallet shows 10 sequential popups. User signs all of them. If folksfinance's pool app is still live, algod accepts and the user gets LP tokens; otherwise one of the pool-step app calls fails at submit because the contracts have rotted.",
+            "MainNet. Wallet shows one popup containing all 10 groups. User signs all of them. The dApp does not submit: replayed as standalone groups, the pool-step app calls cannot see the deposits, so broadcasting would only send the 1.16 USDC and 3.98 ALGO to the pool. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
@@ -386,14 +392,15 @@ export const mainnetDappScenarios: Scenario[] = [
         description:
             "MainNet algogems auth: a single zero-amount self-payment carrying an `challenge/1449301/gems` note (the protocol's sign-in challenge).",
         expected:
-            'MainNet. Wallet shows one popup with a 0-Algo self-payment whose note is the auth challenge. User signs. The signed (but typically un-submitted) txn is the auth proof returned to the dApp.',
+            "MainNet. Wallet shows one popup with a 0-Algo self-payment whose note is the auth challenge. User signs. The signed txn is the auth proof returned to the dApp, which does not submit it. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makePaymentTxnWithSuggestedParamsFromObject(
@@ -418,16 +425,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-algogems-buy-nft',
         title: 'Buy NFT (algogems)',
         description:
-            'MainNet algogems NFT purchase flow: 4 non-atomic groups — opt-in to the NFT asset, receive the NFT from the seller (external sender, signers default), 3.6 ALGO primary payout, 0.4 ALGO secondary payout.',
+            "MainNet algogems NFT purchase flow: 4 non-atomic groups — opt-in to the NFT asset, receive the NFT from the seller (the seller's slot is marked signers: []), 3.6 ALGO primary payout, 0.4 ALGO secondary payout. Sign-only: the dApp never submits it.",
         expected:
-            "MainNet. Wallet shows 4 sequential popups. User signs the opt-in and both payouts; the seller's NFT-send slot is external and not signed here. If the seller co-signs and the protocol is still live, all groups land and the NFT lands in the user's wallet.",
+            "MainNet. Wallet shows one popup containing all 4 groups. User signs the opt-in and both payouts; the seller's NFT-send slot is marked external and not signed here (a wallet that refuses a group with nothing for it to sign rejects the whole request instead). The dApp does not submit: nobody can co-sign the seller's slot, and the payouts on their own would only send 4 ALGO away. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
@@ -452,6 +460,7 @@ export const mainnetDappScenarios: Scenario[] = [
                                 suggestedParams,
                             },
                         ),
+                        signers: [],
                     },
                 ],
                 [
@@ -494,16 +503,17 @@ export const mainnetDappScenarios: Scenario[] = [
         id: 'mainnet-algoxnft-buy-nft',
         title: 'Buy NFT (algoxnft)',
         description:
-            'MainNet algoxnft NFT purchase flow: 6 non-atomic groups — opt-in to the NFT asset, receive the NFT from the seller (external sender), and four ALGO payments splitting fees/royalties across the seller and two payout addresses.',
+            "MainNet algoxnft NFT purchase flow: 6 non-atomic groups — opt-in to the NFT asset, receive the NFT from the seller (the seller's slot is marked signers: []), and four ALGO payments splitting fees/royalties across the seller and three payout addresses. Sign-only: the dApp never submits it.",
         expected:
-            "MainNet. Wallet shows 6 sequential popups. User signs the opt-in and the four ALGO payouts; the seller's NFT-send slot is external. If the seller co-signs and the protocol is still live, all groups land and the NFT lands in the user's wallet.",
+            "MainNet. Wallet shows one popup containing all 6 groups. User signs the opt-in and the four ALGO payouts; the seller's NFT-send slot is marked external and not signed here (a wallet that refuses a group with nothing for it to sign rejects the whole request instead). The dApp does not submit: nobody can co-sign the seller's slot, and the payouts on their own would only send about 19.69 ALGO away. The log reads 'Signed (not submitted: …)'.",
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],
+        signOnly: true,
         async build(chain, address) {
             const suggestedParams = await apiGetTxnParams(chain)
 
-            const groups: Array<Array<{ txn: algosdk.Transaction }>> = [
+            const groups: SignerTransaction[][] = [
                 [
                     {
                         txn: algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject(
@@ -528,6 +538,7 @@ export const mainnetDappScenarios: Scenario[] = [
                                 suggestedParams,
                             },
                         ),
+                        signers: [],
                     },
                 ],
                 [
@@ -596,7 +607,7 @@ export const mainnetDappScenarios: Scenario[] = [
         description:
             'MainNet single asset transfer of 1,000,000 base units of the Zone ASA (asset id 444035862) to a hardcoded test account.',
         expected:
-            'MainNet. Wallet shows a single asset transfer txn. User signs. Algod accepts if the sender is opted-in to the Zone ASA and holds enough balance; otherwise rejects with an asset-balance / not-opted-in error.',
+            'MainNet. Wallet shows a single asset transfer txn. User signs. Algod accepts only if the sender is opted-in to the Zone ASA and holds enough balance, and the receiver (public testAccounts[0]) is opted in too, which it currently is not on MainNet; otherwise rejects with an asset-balance / not-opted-in error.',
         category: 'mainnet-dapp',
         modifiers: [],
         networks: ['mainnet'],

@@ -1,6 +1,9 @@
 import algosdk from 'algosdk'
 
-import type { SignerTransaction } from '@perawallet/connect'
+import type {
+    PeraWalletArbitraryData,
+    SignerTransaction,
+} from '@perawallet/connect'
 
 import type {
     PairingUi,
@@ -45,7 +48,9 @@ export const createFakeTransport = (version: WalletConnectVersion) => {
                 .filter(slot => slot.signers?.length !== 0)
                 .map((_, i) => new Uint8Array([i])),
         ),
-        signData: vi.fn(async () => [new Uint8Array([1])]),
+        signData: vi.fn(async (data: PeraWalletArbitraryData[]) =>
+            data.map(() => new Uint8Array([1])),
+        ),
         signArc60Data: vi.fn(async () => ({
             signature: new Uint8Array([1]),
         })) as unknown as WalletTransport['signArc60Data'],

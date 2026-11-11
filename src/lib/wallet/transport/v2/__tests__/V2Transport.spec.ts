@@ -372,13 +372,33 @@ describe('V2Transport signing', () => {
             'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
         ),
     }
-    const pay = () =>
+    const pay = (amount = 1) =>
         algosdk.makePaymentTxnWithSuggestedParamsFromObject({
             sender: A.addr,
             receiver: B.addr,
-            amount: 1,
+            amount,
             suggestedParams: params,
         })
+    const signedBy = (
+        account: algosdk.Account,
+        txn: algosdk.Transaction,
+    ): Uint8Array => algosdk.signTransaction(txn, account.sk).blob
+    const b64 = (bytes: Uint8Array) => Buffer.from(bytes).toString('base64')
+    /** What a wallet that raises one txn's fee sends back: copies of the
+     *  group with that fee and a group id recomputed over the new fees. */
+    const regroupWithFee = (
+        txns: algosdk.Transaction[],
+        index: number,
+        fee: bigint,
+    ): algosdk.Transaction[] => {
+        const copies = txns.map(txn =>
+            algosdk.Transaction.fromEncodingData(txn.toEncodingData()),
+        )
+        copies[index].fee = fee
+        copies.forEach(txn => (txn.group = undefined))
+        algosdk.assignGroupID(copies)
+        return copies
+    }
 
     const connected = async (over: Partial<V2TransportDeps> = {}) => {
         const made = makeTransport(over)
@@ -400,6 +420,8 @@ describe('V2Transport signing', () => {
     it('sends algo_signTxn with [WalletTransaction[]] on the session chain and decodes results', async () => {
         const { transport, client } = await connected()
         const txn = pay()
+        const signed = signedBy(A, txn)
+        ;(client.request as Mock).mockResolvedValueOnce([b64(signed), null])
 
         const result = await transport.signTransaction([
             [{ txn }, { txn: pay(), signers: [] }],
@@ -422,7 +444,185 @@ describe('V2Transport signing', () => {
                 ],
             },
         })
-        expect(result).toEqual([new Uint8Array([1, 2, 3])])
+        expect(result).toEqual([signed])
+    })
+
+    describe('checks the signed transactions against the request', () => {
+        const signTxnError = (error: unknown) =>
+            isWcV2Error(error, 'SIGN_TRANSACTIONS')
+
+        it.each([
+            ['fewer results', (one: string) => [one], 2, 1],
+            ['more results', (one: string) => [one, one, one], 2, 3],
+            ['a null in a signable slot', (one: string) => [one, null], 2, 1],
+        ])('rejects %s', async (_label, answer, expected, received) => {
+            const { transport, client } = await connected()
+            const txns = [pay(), pay(2)]
+            algosdk.assignGroupID(txns)
+            ;(client.request as Mock).mockResolvedValueOnce(
+                answer(b64(signedBy(A, txns[0]))),
+            )
+
+            const error = await transport
+                .signTransaction([txns.map(txn => ({ txn }))])
+                .catch(e => e)
+
+            expect(signTxnError(error)).toBe(true)
+            expect(error.message).toBe(
+                `Expected ${expected} signed transaction(s) from the wallet but received ${received}`,
+            )
+        })
+
+        it('rejects a transaction the dApp did not ask for', async () => {
+            const { transport, client } = await connected()
+            ;(client.request as Mock).mockResolvedValueOnce([
+                b64(signedBy(A, pay(999))),
+            ])
+
+            const error = await transport
+                .signTransaction([[{ txn: pay() }]])
+                .catch(e => e)
+
+            expect(signTxnError(error)).toBe(true)
+            expect(error.message).toBe(
+                'The wallet returned a different transaction than the one requested at position 0',
+            )
+        })
+
+        it('rejects a blob that is not a signed transaction', async () => {
+            const { transport, client } = await connected()
+            ;(client.request as Mock).mockResolvedValueOnce(['AQID'])
+
+            await expect(
+                transport.signTransaction([[{ txn: pay() }]]),
+            ).rejects.toSatisfy(signTxnError)
+        })
+
+        it('keeps the decode failure as the cause of an undecodable blob', async () => {
+            const { transport, client } = await connected()
+            ;(client.request as Mock).mockResolvedValueOnce(['AQID'])
+
+            const error = await transport
+                .signTransaction([[{ txn: pay() }]])
+                .catch(e => e)
+
+            expect(signTxnError(error)).toBe(true)
+            expect(error.message).toBe(
+                'The wallet returned a different transaction than the one requested at position 0',
+            )
+            expect(error.cause).toBeInstanceOf(Error)
+            expect(error.cause).not.toBe(error)
+        })
+
+        it('accepts a raised fee when the group id is recomputed for it', async () => {
+            const { transport, client } = await connected()
+            const txns = [pay(), pay(2)]
+            algosdk.assignGroupID(txns)
+            const [raised, other] = regroupWithFee(txns, 0, 2000n)
+            ;(client.request as Mock).mockResolvedValueOnce([
+                b64(signedBy(A, raised)),
+                b64(signedBy(A, other)),
+            ])
+
+            await expect(
+                transport.signTransaction([txns.map(txn => ({ txn }))]),
+            ).resolves.toHaveLength(2)
+        })
+
+        it('rejects a raised fee that keeps the stale group id', async () => {
+            const { transport, client } = await connected()
+            const txns = [pay(), pay(2)]
+            algosdk.assignGroupID(txns)
+            const raised = algosdk.Transaction.fromEncodingData(
+                txns[0].toEncodingData(),
+            )
+            raised.fee = 2000n
+            ;(client.request as Mock).mockResolvedValueOnce([
+                b64(signedBy(A, raised)),
+                b64(signedBy(A, txns[1])),
+            ])
+
+            await expect(
+                transport.signTransaction([txns.map(txn => ({ txn }))]),
+            ).rejects.toSatisfy(signTxnError)
+        })
+
+        it('rejects a changed group id when no fee changed', async () => {
+            const { transport, client } = await connected()
+            const txns = [pay(), pay(2)]
+            algosdk.assignGroupID(txns)
+            const regrouped = algosdk.Transaction.fromEncodingData(
+                txns[0].toEncodingData(),
+            )
+            regrouped.group = new Uint8Array(32).fill(7)
+            ;(client.request as Mock).mockResolvedValueOnce([
+                b64(signedBy(A, regrouped)),
+                b64(signedBy(A, txns[1])),
+            ])
+
+            await expect(
+                transport.signTransaction([txns.map(txn => ({ txn }))]),
+            ).rejects.toSatisfy(signTxnError)
+        })
+
+        it.each([
+            ['with nulls', (one: string) => [null, one, null]],
+            ['filtered', (one: string) => [one]],
+        ])(
+            'accepts nulls only on `signers: []` slots (%s)',
+            async (_label, answer) => {
+                const { transport, client } = await connected()
+                const txns = [pay(1), pay(2), pay(3)]
+                algosdk.assignGroupID(txns)
+                const signed = signedBy(A, txns[1])
+                ;(client.request as Mock).mockResolvedValueOnce(
+                    answer(b64(signed)),
+                )
+
+                await expect(
+                    transport.signTransaction([
+                        [
+                            { txn: txns[0], signers: [] },
+                            { txn: txns[1] },
+                            { txn: txns[2], signers: [] },
+                        ],
+                    ]),
+                ).resolves.toEqual([signed])
+            },
+        )
+
+        it('counts only listed slots as signable in signerAddress mode', async () => {
+            const { transport, client } = await connected()
+            const txns = [pay(1), pay(2)]
+            algosdk.assignGroupID(txns)
+            const signed = signedBy(A, txns[0])
+            ;(client.request as Mock).mockResolvedValueOnce([b64(signed), null])
+
+            await expect(
+                transport.signTransaction(
+                    [[{ txn: txns[0], signers: [ADDR_A] }, { txn: txns[1] }]],
+                    ADDR_A,
+                ),
+            ).resolves.toEqual([signed])
+        })
+
+        it('matches positions across several groups', async () => {
+            const { transport, client } = await connected()
+            const first = [pay(1), pay(2)]
+            algosdk.assignGroupID(first)
+            const standalone = pay(3)
+            ;(client.request as Mock).mockResolvedValueOnce([
+                b64(signedBy(A, first[1])),
+                b64(signedBy(A, standalone)),
+            ])
+
+            await expect(
+                transport.signTransaction([
+                    [{ txn: first[0], signers: [] }, { txn: first[1] }],
+                    [{ txn: standalone }],
+                ]),
+            ).resolves.toHaveLength(2)
+        })
     })
 
     it('sends legacy algo_signData as an array with the numeric chain id', async () => {
@@ -451,6 +651,40 @@ describe('V2Transport signing', () => {
             },
         })
     })
+
+    it.each([
+        ['no signatures', []],
+        ['only nulls', [null, null]],
+        ['one signature for two payloads', ['AQ==']],
+        ['three signatures for two payloads', ['AQ==', 'AQ==', 'AQ==']],
+    ])(
+        'rejects signData answers with %s, whether or not it verifies',
+        async (_label, answer) => {
+            const received = answer.filter(item => item !== null).length
+            for (const verify of [false, true]) {
+                const { transport, client } = await connected()
+                ;(client.request as Mock).mockResolvedValueOnce(answer)
+
+                const error = await transport
+                    .signData(
+                        [
+                            { data: new Uint8Array([1]), message: 'one' },
+                            { data: new Uint8Array([2]), message: 'two' },
+                        ],
+                        ADDR_A,
+                        verify,
+                    )
+                    .catch(e => e)
+
+                expect(isWcV2Error(error, 'SIGN_DATA_COUNT_MISMATCH')).toBe(
+                    true,
+                )
+                expect(error.message).toBe(
+                    `Wallet returned ${received} signatures for 2 payloads`,
+                )
+            }
+        },
+    )
 
     it('wraps a raw JSON-RPC rejection in a readable WcV2Error', async () => {
         const { transport, client } = await connected()
@@ -662,14 +896,21 @@ describe('V2Transport signing', () => {
         await pending
         const dismiss = vi.fn()
         touch.ui.showSignPrompt.mockReturnValueOnce(dismiss)
+        const txn = pay()
+        ;(touch.client.request as Mock).mockResolvedValueOnce([
+            b64(signedBy(A, txn)),
+        ])
 
-        await touch.transport.signTransaction([[{ txn: pay() }]])
+        await touch.transport.signTransaction([[{ txn }]])
 
         expect(touch.ui.showSignPrompt).toHaveBeenCalledTimes(1)
         expect(dismiss).toHaveBeenCalledTimes(1)
 
         const desktop = await connected()
-        await desktop.transport.signTransaction([[{ txn: pay() }]])
+        ;(desktop.client.request as Mock).mockResolvedValueOnce([
+            b64(signedBy(A, txn)),
+        ])
+        await desktop.transport.signTransaction([[{ txn }]])
         expect(desktop.ui.showSignPrompt).not.toHaveBeenCalled()
     })
 })

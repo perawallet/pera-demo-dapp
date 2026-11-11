@@ -105,6 +105,23 @@ describe('PeraConnectManager', () => {
         expect(onDisconnect).toHaveBeenCalledTimes(1)
     })
 
+    // A network change under v1 reaches the manager twice: from the v1
+    // transport and from the settings store.
+    it('rebuilds once when the same chain id is applied twice', async () => {
+        const manager = new PeraConnectManager(OPTIONS)
+        const onDisconnect = vi.fn()
+        await manager.connectAndSetupEventHandlers({ onDisconnect })
+        const first = latest()
+
+        manager.updateConfig({ chainId: 416_001 })
+        manager.updateConfig({ chainId: 416_001 })
+
+        expect(instances).toHaveLength(2)
+        expect(first.dispose).toHaveBeenCalledTimes(1)
+        expect(latest().dispose).not.toHaveBeenCalled()
+        expect(onDisconnect).toHaveBeenCalledTimes(1)
+    })
+
     it('forwards SDK disconnect events after connecting', async () => {
         const manager = new PeraConnectManager(OPTIONS)
         const onDisconnect = vi.fn()
