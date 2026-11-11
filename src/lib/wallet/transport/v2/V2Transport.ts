@@ -20,6 +20,7 @@ import type { PairingUi, WalletTransport } from '../WalletTransport'
 import { addressesForChain } from './caip'
 import { isArc60OriginMismatch } from './originBinding'
 import { RELAY_URL } from './signClientFactory'
+import { assertSignedTransactionsMatch } from './signedTxnMatch'
 import { verifyArc60Signature, verifyLegacySignature } from './verify'
 import type { WcClient, WcMetadata, WcSession } from './wcClient'
 import { WcV2Error } from './WcV2Error'
@@ -209,12 +210,22 @@ export class V2Transport implements WalletTransport {
         groups: SignerTransaction[][],
         signerAddress?: string,
     ): Promise<Uint8Array[]> {
-        const result = await this.request(
-            WC_METHOD_SIGN_TXN,
-            buildSignTxnParams(groups, signerAddress),
+        const params = buildSignTxnParams(groups, signerAddress)
+        // Signable slots come from the wire array, because signerAddress
+        // mode marks unlisted slots external on the way out.
+        const signableIndexes = params[0].flatMap((wireTxn, index) =>
+            wireTxn.signers?.length === 0 ? [] : [index],
+        )
+        const result = await this.request(WC_METHOD_SIGN_TXN, params)
+        const signed = decodeSignedResults(result)
+
+        assertSignedTransactionsMatch(
+            groups.flat().map(slot => slot.txn),
+            signableIndexes,
+            signed,
         )
 
-        return decodeSignedResults(result)
+        return signed
     }
 
     async signData(
@@ -228,6 +239,13 @@ export class V2Transport implements WalletTransport {
             buildLegacySignDataParams(data, signer, chainId),
         )
         const signatures = decodeSignedResults(result)
+
+        if (signatures.length !== data.length) {
+            throw new WcV2Error(
+                'SIGN_DATA_COUNT_MISMATCH',
+                `Wallet returned ${signatures.length} signatures for ${data.length} payloads`,
+            )
+        }
 
         if (verifySignature) {
             const effectiveSigner = await this.effectiveSigner(signer)

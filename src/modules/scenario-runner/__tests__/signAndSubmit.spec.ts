@@ -1,5 +1,7 @@
 import algosdk from 'algosdk'
 
+import type { SignerTransaction } from '@perawallet/connect'
+
 import { testAccounts } from '@scenarios/test-accounts'
 
 import { signAndSubmit } from '../signAndSubmit'
@@ -250,6 +252,228 @@ describe('signAndSubmit', () => {
         expect(result.createdAssetIndex).toBe(777)
     })
 
+    describe('when algod rejects a group', () => {
+        const suggestedParams = {
+            fee: 1000n,
+            firstValid: 1n,
+            lastValid: 1000n,
+            genesisID: 'testnet-v1.0',
+            genesisHash: new Uint8Array(32),
+            flatFee: true,
+            minFee: 1000n,
+        } as unknown as algosdk.SuggestedParams
+        const pay = (amount: number) =>
+            algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                sender: testAccounts[1].addr,
+                receiver: testAccounts[0].addr,
+                amount,
+                suggestedParams,
+            })
+        const signEverything = {
+            signTransaction: async (groups: SignerTransaction[][]) =>
+                groups.flat().map(({ txn }) => txn.signTxn(testAccounts[1].sk)),
+        }
+        const rejectingAt = (rejectedCall: number) => {
+            const sendRawTransaction = vi.fn((_bytes: Uint8Array[]) => ({
+                do: async () => {
+                    if (sendRawTransaction.mock.calls.length === rejectedCall) {
+                        throw new Error('overspend (account X)')
+                    }
+                    return {}
+                },
+            }))
+            return sendRawTransaction
+        }
+
+        it('names the rejected group and the groups that already landed', async () => {
+            const sendRawTransaction = rejectingAt(2)
+            const first = pay(1)
+
+            const error = await signAndSubmit({
+                wallet: signEverything,
+                algod: { sendRawTransaction } as never,
+                txnsToSign: [
+                    [{ txn: first }],
+                    [{ txn: pay(2) }],
+                    [{ txn: pay(3) }],
+                ],
+            }).catch((e: unknown) => e)
+
+            expect(sendRawTransaction).toHaveBeenCalledTimes(2)
+            expect(error).toBeInstanceOf(Error)
+            const { message, cause } = error as Error
+            expect(message).toContain('Group 2 of 3 rejected by algod')
+            expect(message).toContain('overspend (account X)')
+            expect(message).toContain('1 earlier group(s) already submitted')
+            expect(message).toContain(first.txID())
+            expect((cause as Error).message).toBe('overspend (account X)')
+        })
+
+        it('says no earlier group landed when the first of several is rejected', async () => {
+            const sendRawTransaction = rejectingAt(1)
+
+            await expect(
+                signAndSubmit({
+                    wallet: signEverything,
+                    algod: { sendRawTransaction } as never,
+                    txnsToSign: [[{ txn: pay(1) }], [{ txn: pay(2) }]],
+                }),
+            ).rejects.toThrow(
+                'Group 1 of 2 rejected by algod: overspend (account X). 0 earlier group(s) already submitted.',
+            )
+            expect(sendRawTransaction).toHaveBeenCalledTimes(1)
+        })
+
+        it('rethrows the algod error unchanged for a single group', async () => {
+            const original = new Error('overspend (account X)')
+            const algod = {
+                sendRawTransaction: () => ({
+                    do: async () => {
+                        throw original
+                    },
+                }),
+            } as never
+
+            await expect(
+                signAndSubmit({
+                    wallet: signEverything,
+                    algod,
+                    txnsToSign: [[{ txn: pay(1) }]],
+                }),
+            ).rejects.toBe(original)
+        })
+
+        // A wallet may raise the fee; what is on chain is what was posted.
+        it('names the txID of the bytes that landed, not of the request', async () => {
+            const sendRawTransaction = rejectingAt(2)
+            const first = pay(1)
+            const raised = algosdk.Transaction.fromEncodingData(
+                first.toEncodingData(),
+            )
+            raised.fee = 2000n
+
+            const error = await signAndSubmit({
+                wallet: {
+                    signTransaction: async () => [
+                        raised.signTxn(testAccounts[1].sk),
+                        new Uint8Array([1]),
+                    ],
+                },
+                algod: { sendRawTransaction } as never,
+                txnsToSign: [[{ txn: first }], [{ txn: pay(2) }]],
+            }).catch((e: unknown) => e)
+
+            expect((error as Error).message).toContain(
+                `(txIDs: ${raised.txID()})`,
+            )
+            expect((error as Error).message).not.toContain(first.txID())
+        })
+
+        it('keeps the algod error when an earlier txn id cannot be computed', async () => {
+            const sendRawTransaction = rejectingAt(2)
+
+            await expect(
+                signAndSubmit({
+                    wallet: {
+                        signTransaction: async () => [
+                            new Uint8Array([0]),
+                            new Uint8Array([1]),
+                        ],
+                    },
+                    algod: { sendRawTransaction } as never,
+                    txnsToSign: [[{ txn: pay(1) }], [{ txn: pay(2) }]],
+                }),
+            ).rejects.toThrow(
+                'Group 2 of 2 rejected by algod: overspend (account X). 1 earlier group(s) already submitted (txIDs: ?).',
+            )
+        })
+    })
+
+    describe('slot attribution', () => {
+        const suggestedParams = {
+            fee: 1000n,
+            firstValid: 1n,
+            lastValid: 1000n,
+            genesisID: 'testnet-v1.0',
+            genesisHash: new Uint8Array(32),
+            flatFee: true,
+            minFee: 1000n,
+        } as unknown as algosdk.SuggestedParams
+        const pay = (sender: algosdk.Address, amount: number) =>
+            algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+                sender,
+                receiver: testAccounts[1].addr,
+                amount,
+                suggestedParams,
+            })
+        const algod = {
+            sendRawTransaction: () => ({ do: async () => ({}) }),
+        } as never
+
+        it('counts wallet-signed and dApp-signed slots of submitted groups', async () => {
+            const txns = [
+                pay(testAccounts[1].addr, 1),
+                pay(testAccounts[0].addr, 2),
+            ]
+            algosdk.assignGroupID(txns)
+
+            const result = await signAndSubmit({
+                wallet: { signTransaction: async () => [new Uint8Array([1])] },
+                algod,
+                txnsToSign: [[{ txn: txns[0] }, { txn: txns[1], signers: [] }]],
+            })
+
+            expect(result).toMatchObject({
+                submittedGroups: 1,
+                walletSignedSlots: 1,
+                locallySignedSlots: 1,
+            })
+        })
+
+        it('does not count local signatures of a group that was skipped', async () => {
+            const txns = [
+                pay(testAccounts[0].addr, 1),
+                pay(algosdk.generateAccount().addr, 2),
+            ]
+            algosdk.assignGroupID(txns)
+
+            const result = await signAndSubmit({
+                wallet: { signTransaction: async () => [] },
+                algod,
+                txnsToSign: [
+                    [
+                        { txn: txns[0], signers: [] },
+                        { txn: txns[1], signers: [] },
+                    ],
+                ],
+            })
+
+            expect(result).toMatchObject({
+                submittedGroups: 0,
+                partialSignGroups: 1,
+                walletSignedSlots: 0,
+                locallySignedSlots: 0,
+            })
+        })
+
+        it('reports a group the dApp signed entirely by itself', async () => {
+            const txns = [1, 2, 3].map(n => pay(testAccounts[0].addr, n))
+            algosdk.assignGroupID(txns)
+
+            const result = await signAndSubmit({
+                wallet: { signTransaction: async () => [] },
+                algod,
+                txnsToSign: [txns.map(txn => ({ txn, signers: [] }))],
+            })
+
+            expect(result).toMatchObject({
+                submittedGroups: 1,
+                walletSignedSlots: 0,
+                locallySignedSlots: 3,
+            })
+        })
+    })
+
     describe('with a submission delay (future transactions)', () => {
         const signEverything = {
             signTransaction: async (groups: unknown[][]) =>
@@ -281,6 +505,8 @@ describe('signAndSubmit', () => {
             await expect(pending).resolves.toEqual({
                 submittedGroups: 2,
                 partialSignGroups: 0,
+                walletSignedSlots: 3,
+                locallySignedSlots: 0,
                 createdAssetIndex: undefined,
             })
             expect(sendRawTransaction).toHaveBeenCalledTimes(1)

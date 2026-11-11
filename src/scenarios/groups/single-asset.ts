@@ -373,7 +373,7 @@ export const singleAssetScenarios: Scenario[] = [
         id: 'single-acfg-create-metadata-hash',
         title: 'Sign single asset create txn (metadata hash + unicode name)',
         description:
-            "Create an asset with a 32-byte `assetMetadataHash` and a long unicode asset name ('Tëst 🚀 Ässet — ünïcödé nàmé'), exercising metadata display formatting.",
+            "Create an asset with a 32-byte `assetMetadataHash` and a unicode asset name with diacritics and an emoji ('Tëst 🚀 Ässet ünïcödé', 29 of the 32 bytes allowed), exercising metadata display formatting.",
         expected:
             'Wallet shows the asset-create txn, renders the unicode name correctly, and displays the metadata hash (base64 or hex). User signs; algod accepts.',
         category: 'single-acfg',
@@ -387,7 +387,7 @@ export const singleAssetScenarios: Scenario[] = [
                 decimals: 0,
                 defaultFrozen: false,
                 unitName: 'TÜST',
-                assetName: 'Tëst 🚀 Ässet — ünïcödé nàmé',
+                assetName: 'Tëst 🚀 Ässet ünïcödé',
                 assetMetadataHash: new Uint8Array(32).fill(7),
                 manager: address,
                 note: 'single-acfg-create-metadata-hash',

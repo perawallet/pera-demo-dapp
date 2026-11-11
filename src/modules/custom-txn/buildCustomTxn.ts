@@ -13,9 +13,9 @@ const UINT64_MAX = 2n ** 64n - 1n
 
 // Protocol limits algosdk does not enforce; the node rejects the signed txn.
 const NOTE_MAX_BYTES = 1024
-const UNIT_NAME_MAX_BYTES = 8
-const ASSET_NAME_MAX_BYTES = 32
-const ASSET_URL_MAX_BYTES = 96
+export const UNIT_NAME_MAX_BYTES = 8
+export const ASSET_NAME_MAX_BYTES = 32
+export const ASSET_URL_MAX_BYTES = 96
 const MAX_DECIMALS = 19
 const VOTE_KEY_BYTES = 32
 const SELECTION_KEY_BYTES = 32

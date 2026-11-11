@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import {
     ChainType,
     getCustomNetworkSettings,
+    getNetworkConfig,
     setCustomNetworkSettings,
     type CustomNetworkSettings,
 } from '@lib/algod/networks'
@@ -51,6 +52,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     setChain: chain => {
         persistNetwork(chain)
         wallet.setChain(chain)
+        // ARC-60 signer lookups use the v1 SDK's chain whatever transport is
+        // active. Under v1 the transport already did this, so it is a no-op.
+        peraConnect.updateConfig({ chainId: getNetworkConfig(chain).chainId })
         set(state => ({ chain, endpointRevision: state.endpointRevision + 1 }))
     },
     saveCustomNetwork: settings => {

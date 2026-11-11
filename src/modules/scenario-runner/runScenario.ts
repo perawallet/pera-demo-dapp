@@ -33,15 +33,36 @@ export const scenarioBlockReason = (
         ? `This scenario needs at least ${scenario.minAccounts} connected accounts (currently ${connectedAccountCount}). Reconnect and approve more accounts.`
         : null
 
+const SIGN_ONLY_REASON = 'protocol flow replayed non-atomically'
+
 export const describeSubmission = (
     title: string,
-    { submittedGroups, partialSignGroups }: SignAndSubmitResult,
+    {
+        submittedGroups,
+        partialSignGroups,
+        walletSignedSlots,
+        locallySignedSlots = 0,
+    }: SignAndSubmitResult,
 ): string => {
+    // Without this the dApp's own test-key signatures read as the wallet's.
+    const coSigned =
+        locallySignedSlots > 0
+            ? ` (${locallySignedSlots} slot(s) co-signed by the dApp with a bundled test key)`
+            : ''
+
+    if (submittedGroups > 0 && walletSignedSlots === 0) {
+        const skipped =
+            partialSignGroups > 0
+                ? ` ${partialSignGroups} group(s) skipped (unsigned slot whose sender isn't a known test account).`
+                : ''
+
+        return `Sent without a wallet signature: ${title} — wallet signed none of the submitted slots; the dApp co-signed ${locallySignedSlots} slot(s) with a bundled test key.${skipped}`
+    }
     if (submittedGroups > 0 && partialSignGroups === 0) {
-        return `Signed and sent: ${title}`
+        return `Signed and sent: ${title}${coSigned}`
     }
     if (submittedGroups > 0) {
-        return `Signed: ${title} — ${submittedGroups} group(s) submitted, ${partialSignGroups} group(s) skipped (unsigned slot whose sender isn't a known test account).`
+        return `Signed: ${title} — ${submittedGroups} group(s) submitted${coSigned}, ${partialSignGroups} group(s) skipped (unsigned slot whose sender isn't a known test account).`
     }
     if (partialSignGroups > 0) {
         return `Signed: ${title} — not submitted (an unsigned slot's sender isn't a known test account; algod would reject as incomplete group).`
@@ -95,6 +116,27 @@ const runTransactionScenario = async (
     }
     if (!('transaction' in result)) {
         throw new Error('kind mismatch: expected transaction')
+    }
+
+    if (scenario.signOnly) {
+        // Each of these needs a submission the runner is about to skip.
+        if (
+            scenario.captureCreatedAsset ||
+            scenario.clearsOwnedAssetOnSuccess ||
+            result.transactionTimeout
+        ) {
+            throw new Error(
+                `${scenario.id} is sign-only, which cannot capture or clear the owned asset or delay a submission.`,
+            )
+        }
+
+        const signed = await ctx.wallet.signTransaction(result.transaction)
+
+        ctx.log(
+            `Signed (not submitted: ${SIGN_ONLY_REASON}): ${scenario.title} — wallet returned ${signed.length} signed transaction(s).`,
+        )
+        console.info({ scenario: scenario.id, signed })
+        return
     }
 
     const submission = await signAndSubmit({
@@ -151,8 +193,20 @@ export const runScenario = async (
                 true,
             )
 
+            // connect (v1) does not compare the count, so a wallet that drops
+            // payloads would otherwise pass.
+            if (signedData.length !== result.data.length) {
+                throw new Error(
+                    `Wallet returned ${signedData.length} signatures for ${result.data.length} payloads`,
+                )
+            }
+
             ctx.log(`Arbitrary data signed: ${scenario.title}`)
-            console.info({ scenario: scenario.id, signedData })
+            console.info({
+                scenario: scenario.id,
+                count: signedData.length,
+                signedData,
+            })
             return
         }
         case 'arc60': {

@@ -6,17 +6,24 @@ export type WcV2ErrorType =
     | 'NO_PAIRING_URI'
     | 'NO_SIGNATURE'
     | 'REQUEST_FAILED'
+    | 'SIGN_DATA_COUNT_MISMATCH'
     | 'SIGN_DATA_DOMAIN_MISMATCH'
     | 'SIGN_DATA_VERIFICATION_FAILED'
     | 'NOT_SUPPORTED'
+    | 'SIGN_TRANSACTIONS'
 
 export class WcV2Error extends Error {
     readonly type: WcV2ErrorType
     /** JSON-RPC error code, when the wallet or relay supplied one. */
     readonly code?: number
 
-    constructor(type: WcV2ErrorType, message: string, code?: number) {
-        super(message)
+    constructor(
+        type: WcV2ErrorType,
+        message: string,
+        code?: number,
+        options?: ErrorOptions,
+    ) {
+        super(message, options)
         this.name = 'WcV2Error'
         this.type = type
         this.code = code

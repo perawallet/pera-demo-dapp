@@ -80,4 +80,26 @@ describe('useSettingsStore', () => {
 
         await useSettingsStore.getState().setWcVersion('v1')
     })
+
+    // ARC-60 signer lookups always go through the v1 SDK, whichever
+    // transport signs, so it has to follow the network under v2 as well.
+    it.each([
+        [ChainType.MainNet, 416_001],
+        [ChainType.TestNet, 416_002],
+    ])(
+        'points the connect SDK at %s under WalletConnect v2',
+        async (chain, chainId) => {
+            useSettingsStore.getState().setChain(ChainType.BetaNet)
+            await useSettingsStore.getState().setWcVersion('v2')
+            testWallet.peraConnect.updateConfig.mockClear()
+
+            useSettingsStore.getState().setChain(chain)
+
+            expect(testWallet.peraConnect.updateConfig).toHaveBeenCalledWith({
+                chainId,
+            })
+
+            await useSettingsStore.getState().setWcVersion('v1')
+        },
+    )
 })

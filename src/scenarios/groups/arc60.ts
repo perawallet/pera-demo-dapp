@@ -121,7 +121,8 @@ export const arc60Scenarios: Scenario[] = [
     {
         id: 'arc60-alternate-chain-id',
         title: 'ARC-60 auth — different chain id',
-        description: "SIWA payload with `chain_id: 'algorand:mainnet'`.",
+        description:
+            "SIWA payload with `chain_id: '999'`, a chain id no network uses (the default is '283').",
         expected: 'Wallet signs the request per ARC-60.',
         category: 'arc60',
         modifiers: ['invalid'],

@@ -13,7 +13,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
         description:
             'Three independent payment txns submitted as separate non-atomic groups. Regression case for the ARC-1 multi-group signing bug (previously connect-beta flat-batched these into one wallet call and algod rejected the resulting per-group POSTs).',
         expected:
-            "Wallet shows three sequential signing popups (one per group). All three txns sign and submit successfully on TestNet. Activity log shows three 'Signed and sent' entries.",
+            "Wallet shows one popup containing all 3 groups. All three txns sign; the dApp submits each group to algod and all land on TestNet. Activity log shows one 'Signed and sent' entry.",
         category: 'non-atomic-multi',
         modifiers: [],
         networks: ['testnet'],
@@ -47,7 +47,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
         description:
             'Three independent asset transfers (opt-in, transfer, transfer) submitted as separate non-atomic groups.',
         expected:
-            'Wallet shows three sequential popups (one per group): opt-in, transfer, transfer. All three sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 3 groups: opt-in, transfer, transfer. All three sign; the dApp submits each group to algod and all land on TestNet.',
         category: 'non-atomic-multi',
         modifiers: [],
         requiresFixtures: ['asset'],
@@ -98,7 +98,7 @@ export const nonAtomicMultiScenarios: Scenario[] = [
         description:
             'Three independent txns of different types (payment, asset opt-in, asset transfer) submitted as separate non-atomic groups.',
         expected:
-            'Wallet shows three sequential popups, each rendering the correct type-specific UI (payment, opt-in, transfer). All three sign and submit successfully on TestNet.',
+            'Wallet shows one popup containing all 3 groups, each rendering the correct type-specific UI (payment, opt-in, transfer). All three sign; the dApp submits each group to algod and all land on TestNet.',
         category: 'non-atomic-multi',
         modifiers: [],
         requiresFixtures: ['asset'],

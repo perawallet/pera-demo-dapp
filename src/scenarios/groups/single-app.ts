@@ -13,6 +13,16 @@ import type { Scenario } from '../types'
 const APPROVAL_PROGRAM = Uint8Array.from([4, 129, 1, 67])
 const CLEAR_PROGRAM = Uint8Array.from([3, 129, 1, 67])
 
+// The update re-deploys what the TestNet sample app already runs (v4). algod
+// refuses to lower a clear program's version, and the sample app is shared:
+// an approval program that allows everything would let any tester delete it.
+// v4 TEAL: OnCompletion >= UpdateApplication ? Sender == CreatorAddress : 1
+const UPDATE_APPROVAL_PROGRAM = Uint8Array.from([
+    0x04, 0x81, 0x01, 0x32, 0x09, 0x31, 0x00, 0x12, 0x31, 0x19, 0x81, 0x04,
+    0x0f, 0x4d, 0x43,
+])
+const UPDATE_CLEAR_PROGRAM = Uint8Array.from([0x04, 0x81, 0x01])
+
 // Args copied verbatim from the old scenarios.
 const DEFAULT_APP_ARGS: Uint8Array[] = [
     Uint8Array.from([0]),
@@ -327,9 +337,9 @@ export const singleAppScenarios: Scenario[] = [
         id: 'single-appl-update',
         title: 'Sign single app update',
         description:
-            "Update the TestNet sample app's approval/clear programs to the tiny verbatim TEAL bytecode. Sender must currently be the app's creator.",
+            "Update the TestNet sample app, re-deploying its existing creator-gated v4 approval and clear programs (so a successful update leaves the app as it was). Sender must currently be the app's creator.",
         expected:
-            "Wallet shows an app-update txn (on-complete=UpdateApplication) with the new program bytes. User signs. On submit, algod accepts only if the sender is the app's creator; otherwise rejects with an authorization error.",
+            "Wallet shows an app-update txn (on-complete=UpdateApplication) with the program bytes. User signs. On submit, algod accepts only if the sender is the app's creator; anyone else gets 'rejected by ApprovalProgram'.",
         category: 'single-appl',
         modifiers: [],
         requiresFixtures: ['app'],
@@ -339,8 +349,8 @@ export const singleAppScenarios: Scenario[] = [
             const txn = algosdk.makeApplicationUpdateTxnFromObject({
                 sender: address,
                 appIndex: getAppIndex(chain),
-                approvalProgram: APPROVAL_PROGRAM,
-                clearProgram: CLEAR_PROGRAM,
+                approvalProgram: UPDATE_APPROVAL_PROGRAM,
+                clearProgram: UPDATE_CLEAR_PROGRAM,
                 appArgs: DEFAULT_APP_ARGS,
                 note: utf8ToBytes('single-appl-update'),
                 suggestedParams,

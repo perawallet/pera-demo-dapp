@@ -99,6 +99,13 @@ export interface Scenario {
     /** After a successful submit, clear the stored owned asset (destroy). */
     clearsOwnedAssetOnSuccess?: boolean
     /**
+     * Transaction scenarios only. The wallet request is sent unchanged, but
+     * nothing is posted to algod. For MainNet protocol flows replayed as
+     * standalone groups: their app calls cannot see the payments they belong
+     * to, so submitting would only move real funds into protocol accounts.
+     */
+    signOnly?: boolean
+    /**
      * @param address The active/selected account (first approved account by
      *   default). Single-signer scenarios use only this.
      * @param accounts All session-approved accounts, in wallet order. Multi-signer
