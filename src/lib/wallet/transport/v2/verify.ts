@@ -1,6 +1,6 @@
+import { ed25519 } from '@noble/curves/ed25519.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 import algosdk from 'algosdk'
-import { sha256 } from 'js-sha256'
-import nacl from 'tweetnacl'
 
 /*
  * `@perawallet/connect` verifies wallet signatures with private helpers. These
@@ -33,11 +33,11 @@ export const verifyArc60Signature = (
     try {
         const { publicKey } = algosdk.decodeAddress(signerAddress)
         const toBeVerified = new Uint8Array([
-            ...sha256.array(data),
-            ...sha256.array(authenticatorData),
+            ...sha256(data),
+            ...sha256(authenticatorData),
         ])
 
-        return nacl.sign.detached.verify(toBeVerified, signature, publicKey)
+        return ed25519.verify(signature, toBeVerified, publicKey)
     } catch {
         return false
     }

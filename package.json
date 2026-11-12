@@ -31,16 +31,16 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
     "@perawallet/connect": "1.10.0",
     "@tanstack/react-query": "^5.105.1",
     "@walletconnect/sign-client": "2.26.0",
     "algosdk": "3.9.0",
     "buffer": "^6.0.3",
-    "js-sha256": "^1.0.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tweetnacl": "^1.0.3",
     "zustand": "^5.0.16"
   },
   "devDependencies": {
