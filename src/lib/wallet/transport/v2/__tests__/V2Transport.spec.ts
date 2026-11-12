@@ -1,9 +1,10 @@
+import { ed25519 } from '@noble/curves/ed25519.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 import algosdk from 'algosdk'
-import { sha256 } from 'js-sha256'
-import nacl from 'tweetnacl'
 import type { Mock } from 'vitest'
 
 import { ChainType } from '@lib/algod/algod'
+import { utf8ToBytes } from '@lib/bytes'
 
 import type { PairingUi } from '../../WalletTransport'
 import {
@@ -849,7 +850,7 @@ describe('V2Transport signing', () => {
         const { transport, client } = await connected()
         const json = `{"domain":"${PAGE_DOMAIN}"}`
         const jsonBytes = new Uint8Array(Buffer.from(json))
-        const authenticatorData = new Uint8Array(sha256.array(PAGE_DOMAIN))
+        const authenticatorData = sha256(utf8ToBytes(PAGE_DOMAIN))
         const payload = {
             data: Buffer.from(json).toString('base64'),
             signer: algosdk.decodeAddress(ADDR_A).publicKey,
@@ -858,10 +859,10 @@ describe('V2Transport signing', () => {
         }
         // ARC-60: ed25519(sha256(data) || sha256(authenticatorData)), no prefix.
         const message = new Uint8Array([
-            ...sha256.array(jsonBytes),
-            ...sha256.array(authenticatorData),
+            ...sha256(jsonBytes),
+            ...sha256(authenticatorData),
         ])
-        const good = nacl.sign.detached(message, A.sk)
+        const good = ed25519.sign(message, A.sk.slice(0, 32))
         ;(client.request as Mock).mockResolvedValueOnce([
             Buffer.from(good).toString('base64'),
         ])

@@ -1,6 +1,8 @@
+import { ed25519 } from '@noble/curves/ed25519.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 import algosdk from 'algosdk'
-import { sha256 } from 'js-sha256'
-import nacl from 'tweetnacl'
+
+import { utf8ToBytes } from '@lib/bytes'
 
 import { verifyArc60Signature, verifyLegacySignature } from '../verify'
 
@@ -41,16 +43,33 @@ describe('verifyLegacySignature', () => {
     })
 })
 
+describe('noble primitives', () => {
+    it('sha256 matches the FIPS 180-2 "abc" vector', () => {
+        expect(algosdk.bytesToHex(sha256(utf8ToBytes('abc')))).toBe(
+            'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+        )
+    })
+
+    it('ed25519 signs the same bytes as algosdk (tweetnacl)', () => {
+        const data = utf8ToBytes('same bytes')
+        const prefixed = new Uint8Array([...utf8ToBytes('MX'), ...data])
+
+        expect(ed25519.sign(prefixed, account.sk.slice(0, 32))).toEqual(
+            algosdk.signBytes(data, account.sk),
+        )
+    })
+})
+
 describe('verifyArc60Signature', () => {
-    const data = Buffer.from('{"domain":"example.com"}')
-    const authenticatorData = new Uint8Array(sha256.array('example.com'))
+    const data = utf8ToBytes('{"domain":"example.com"}')
+    const authenticatorData = sha256(utf8ToBytes('example.com'))
     const message = new Uint8Array([
-        ...sha256.array(data),
-        ...sha256.array(authenticatorData),
+        ...sha256(data),
+        ...sha256(authenticatorData),
     ])
 
     it('accepts ed25519 over sha256(data) || sha256(authenticatorData)', () => {
-        const signature = nacl.sign.detached(message, account.sk)
+        const signature = ed25519.sign(message, account.sk.slice(0, 32))
 
         expect(
             verifyArc60Signature(data, authenticatorData, signature, address),
@@ -58,9 +77,7 @@ describe('verifyArc60Signature', () => {
     })
 
     it('rejects a raw signature over data (no hashing)', () => {
-        // tweetnacl's `instanceof Uint8Array` guard rejects Node Buffers under
-        // jsdom (separate realm), so copy into a plain Uint8Array first.
-        const signature = nacl.sign.detached(new Uint8Array(data), account.sk)
+        const signature = ed25519.sign(data, account.sk.slice(0, 32))
 
         expect(
             verifyArc60Signature(data, authenticatorData, signature, address),
@@ -68,7 +85,7 @@ describe('verifyArc60Signature', () => {
     })
 
     it('rejects a wrong signer', () => {
-        const signature = nacl.sign.detached(message, account.sk)
+        const signature = ed25519.sign(message, account.sk.slice(0, 32))
         const other = algosdk.generateAccount().addr.toString()
 
         expect(
