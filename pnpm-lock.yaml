@@ -79,8 +79,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(vitest@5.0.5)
       jsdom:
-        specifier: ^31.0.0
-        version: 31.0.0(@noble/hashes@2.2.0)
+        specifier: ^31.0.1
+        version: 31.0.1(@noble/hashes@2.2.0)
       oxfmt:
         specifier: ^0.77.0
         version: 0.77.0
@@ -98,7 +98,7 @@ importers:
         version: 8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1)
       vitest:
         specifier: ^5.0.5
-        version: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.0(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
+        version: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.1(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
 
 packages:
 
@@ -141,8 +141,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/runtime@7.29.13':
-    resolution: {integrity: sha512-v+oN26xP4YIlQsbQ/CbTH1WG5m/l/DjKKZNy/Kp3f/AFvbgt7Em/D0FeMM3O2hX0YzeN2M16W8lOpyhIkfCBcQ==}
+  '@babel/runtime@7.29.14':
+    resolution: {integrity: sha512-Y5tqevQaUAZhhj82BpYMNC1ssvLQTVAfwKdm8iy8qwmhvC2/CpcAu8OC+QEtjM7pMk7knx83u1Qj8gzkicyelw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.2':
@@ -1416,8 +1416,8 @@ packages:
   immer@9.0.21:
     resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
 
-  immutable@5.1.9:
-    resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
+  immutable@5.2.1:
+    resolution: {integrity: sha512-CgXNM1BhKqpMjFHTyqQSk09OWqzHNJ/U4BdeBgXoBdR2DdgBdOSv131cO1/YMgzopqnka3B/i949UaMLEKUxOA==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -1479,8 +1479,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  jsdom@31.0.0:
-    resolution: {integrity: sha512-xAkhD9z1eyFC5+QUi9K24CaZJgdCQ2GOGLW1GdVDoQvkp/AxEH9TQ0pAplPOlIiV92hfcgnFOADZypbjgbBT6Q==}
+  jsdom@31.0.1:
+    resolution: {integrity: sha512-CbhJL8ZQg3eKswxSZth4QO9tW0jPIhmR0vtSXQSbKSfWbwIT6hoRc17wdHIVTQ43KI0mdV5iTJr3281IDgVZ5g==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
     peerDependencies:
       '@napi-rs/canvas': ^1.0.13
@@ -1892,11 +1892,11 @@ packages:
     resolution: {integrity: sha512-LgO3D9yZJjApUiuUfl9iFAwrtaX4+lok3wJIqttGoKCHlWUqHqbQpnxCf82L8FjgKsh4iGo78hqJwgL8F6To2A==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.4.19:
-    resolution: {integrity: sha512-goNXV6Ho9TIOfpJZanTd6CKG5DyYgYAL+k+22T0SLh8l6+KHIfBUPFuePuSZv05UttIaaLmI9tb7TmGIdK5AkQ==}
+  tldts-core@7.5.4:
+    resolution: {integrity: sha512-9+4zWtKEDZ3V3FoZ1B97rv+5z5oqp7yeXGVze3CxgQ+CJro9do9DCPD00wxstYZDXDMXsurkBerFfiB6GYtPbA==}
 
-  tldts@7.4.19:
-    resolution: {integrity: sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==}
+  tldts@7.5.4:
+    resolution: {integrity: sha512-Rn2ABgjHZrA+jzqom5zhxA0hLohzYrIgfCPyhpTUxqsUrcsBYuab49LseR9waB9Jr8/MxdodvMHA91oRiGLO3Q==}
     hasBin: true
 
   tough-cookie@6.1.0:
@@ -2188,7 +2188,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.8
 
-  '@babel/runtime@7.29.13': {}
+  '@babel/runtime@7.29.14': {}
 
   '@babel/runtime@7.29.2': {}
 
@@ -2719,7 +2719,7 @@ snapshots:
   '@testing-library/dom@10.4.2':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/runtime': 7.29.13
+      '@babel/runtime': 7.29.14
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -2737,7 +2737,7 @@ snapshots:
       picocolors: 1.1.1
       redent: 3.0.0
     optionalDependencies:
-      vitest: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.0(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
+      vitest: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.1(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
 
   '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
@@ -2864,7 +2864,7 @@ snapshots:
       obug: 3.0.0
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.0(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
+      vitest: 5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.1(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
 
   '@vitest/istanbul-lib-coverage@1.0.2': {}
 
@@ -3344,7 +3344,7 @@ snapshots:
   immer@9.0.21:
     optional: true
 
-  immutable@5.1.9:
+  immutable@5.2.1:
     optional: true
 
   import-fresh@3.3.1:
@@ -3396,7 +3396,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  jsdom@31.0.0(@noble/hashes@2.2.0):
+  jsdom@31.0.1(@noble/hashes@2.2.0):
     dependencies:
       '@exodus/bytes': 1.16.0(@noble/hashes@2.2.0)
       bcp-47: 2.1.2
@@ -3749,7 +3749,7 @@ snapshots:
   sass@1.105.1:
     dependencies:
       chokidar: 5.0.0
-      immutable: 5.1.9
+      immutable: 5.2.1
       source-map-js: 1.2.2
     optionalDependencies:
       '@parcel/watcher': 2.6.0
@@ -3817,15 +3817,15 @@ snapshots:
 
   tinyrainbow@3.2.0: {}
 
-  tldts-core@7.4.19: {}
+  tldts-core@7.5.4: {}
 
-  tldts@7.4.19:
+  tldts@7.5.4:
     dependencies:
-      tldts-core: 7.4.19
+      tldts-core: 7.5.4
 
   tough-cookie@6.1.0:
     dependencies:
-      tldts: 7.4.19
+      tldts: 7.5.4
 
   tr46@7.0.0:
     dependencies:
@@ -3898,7 +3898,7 @@ snapshots:
       sass: 1.105.1
       terser: 5.46.1
 
-  vitest@5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.0(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1)):
+  vitest@5.0.5(@types/node@25.6.0)(@vitest/coverage-v8@5.0.5)(jsdom@31.0.1(@noble/hashes@2.2.0))(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.5(vite@8.3.6(@types/node@25.6.0)(jiti@1.21.7)(sass@1.105.1)(terser@5.46.1))
@@ -3917,7 +3917,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.6.0
       '@vitest/coverage-v8': 5.0.5(vitest@5.0.5)
-      jsdom: 31.0.0(@noble/hashes@2.2.0)
+      jsdom: 31.0.1(@noble/hashes@2.2.0)
     transitivePeerDependencies:
       - msw
 
